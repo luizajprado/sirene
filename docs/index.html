@@ -1905,6 +1905,373 @@ void main(){
   requestAnimationFrame(tick);
 })();
 </script>
+<!--i18n--><script>
+// Shared vocabulary: places, molecules, factors and the small words composed sentences are made of.
+window.I18N_FRAG = {
+  en: [
+    ["Mundo todo", "Whole world"], ["Planalto Tibetano, China", "Tibetan Plateau, China"], ["Norte da Austrália", "Northern Australia"], ["Okavango, Botsuana", "Okavango, Botswana"],
+    ["Sudão do Sul", "South Sudan"], ["Costa do Pacífico, México", "Pacific Coast, Mexico"], ["Nova Escócia, Canadá", "Nova Scotia, Canada"], ["Nova Délhi", "New Delhi"],
+    ["Jacarta", "Jakarta"], ["Cidade do México", "Mexico City"], ["Madri", "Madrid"], ["Daca", "Dhaka"], ["Pequim", "Beijing"], ["Cairo", "Cairo"],
+    ["Sudão", "Sudan"], ["Austrália", "Australia"], ["Botsuana", "Botswana"], ["México", "Mexico"], ["EUA, Canadá, Saint-Pierre", "USA, Canada, Saint-Pierre"],
+    ["AUSTRÁLIA", "AUSTRALIA"], ["BOTSUANA", "BOTSWANA"], ["MÉXICO", "MEXICO"], ["SUDÃO DO SUL", "SOUTH SUDAN"], ["EUA, CANADÁ, SAINT-PIERRE", "USA, CANADA, SAINT-PIERRE"],
+    ["adrenalina", "adrenaline"], ["noradrenalina", "noradrenaline"], ["glutamato", "glutamate"], ["interleucina", "interleukin"], ["serotonina", "serotonin"], ["grelina", "ghrelin"],
+    ["melatonina", "melatonin"], ["ocitocina", "oxytocin"], ["dopamina", "dopamine"], ["acetilcolina", "acetylcholine"], ["histamina", "histamine"], ["substância P", "substance P"],
+    ["vasopressina", "vasopressin"], ["beta-endorfina", "beta-endorphin"], ["anandamida", "anandamide"],
+    ["violência e crise política", "violence and political crisis"], ["guerra e conflito armado", "war and armed conflict"], ["deslocamento forçado", "forced displacement"],
+    ["aflição coletiva", "collective distress"], ["pressão econômica", "economic pressure"], ["luz e escuridão", "light and darkness"], ["esperança e vínculo", "hope and bonds"],
+    ["desastre", "disaster"], ["terremoto", "earthquake"], ["incêndio", "wildfire"], ["tempestade", "storm"], ["calor", "heat"], ["ruído", "noise"], ["fome", "hunger"], ["guerra", "war"],
+    ["cortisol do lugar", "place cortisol"], ["cuidado", "care"], ["violência", "violence"], ["deslocamento", "displacement"], ["ar", "air"],
+    ["aconteceu", "happened"], ["acontecendo", "happening"], ["previsto", "forecast"], ["projetado", "projected"], ["agora", "now"],
+    ["avança", "advances"], ["dispara", "surges"], ["sobe", "rises"], ["renova máxima", "hits a record"], ["recua", "retreats"], ["cede", "eases"], ["cai", "falls"], ["devolve ganhos", "gives back gains"],
+    ["explode", "explodes"], ["e fecha a", "and closes at"], ["fecha em alta de", "closes up"], ["fecha em baixa de", "closes down"], ["No mesmo pregão,", "On the same trading day,"],
+    ["Contraponto:", "Counterpoint:"], ["Pressão vem de", "Pressure comes from"], ["Analistas apontam ajuda e cooperação relatadas na região.", "Analysts point to aid and cooperation reported in the region."],
+    ["Índice do medo dos mercados em", "Market fear index at"], ["Índice de aflição de", "Affliction index of"], ["Só um deles terá injeção de liquidez.", "Only one of them will get a liquidity injection."],
+    ["cotado a", "quoted at"], ["Cooperação também é notícia, só circula menos.", "Cooperation is news too; it just travels less."], ["em", "in"], 
+    ["Maior carga agora:", "Highest load now:"], ["Maior risco humanitário:", "Highest humanitarian risk:"], ["alertas de desastre em", "disaster alerts in"], ["artigos novos na semana", "new papers this week"],
+    ["vermelhos ou laranja.", "red or orange."], ["Cada alerta entra como adrenalina e noradrenalina no lugar atingido.", "Each alert enters as adrenaline and noradrenaline in the place it hits."],
+    ["Cortisol do lugar em", "Place cortisol at"], ["de 100", "out of 100"], ["valor de demonstração", "demo value"], ["coleta automática", "automatic collection"],
+    ["próxima fonte em", "next source in"], ["parado nesta fonte", "holding on this source"], ["no pregão agora:", "on the floor now:"], ["ver a cadeia completa:", "see the full chain:"],
+    ["sincronizando", "syncing"], ["memória sincronizada", "memory synced"], ["ao vivo", "live"], ["carga", "load"], ["alerta verde", "green alert"], ["alerta laranja", "orange alert"], ["alerta vermelho", "red alert"],
+    ["passo", "step"], ["anel", "ring"], ["pétalas", "petals"], ["nuvem principal", "main cloud"], ["densidade", "density"], ["torção", "twist"], ["filamentos", "filaments"], ["brilho", "brightness"],
+    ["manchas", "patches"], ["área", "area"], ["pontos de luz", "points of light"], ["cor de", "colour of"], ["modo", "mode"], ["volume", "volume"], ["massa em oitavas", "mass in octaves"],
+    ["média de", "mean of"], ["lugares", "places"], ["real", "real"], ["exemplo", "example"], ["a coletar", "to be collected"], ["estimado", "estimated"], ["calculado", "calculated"],
+    ["nenhum perto", "none nearby"], ["hora local", "local time"], ["h de luz", "h of daylight"], ["noite agora", "night now"], ["fumaça real", "real smoke"], ["mortes em conflitos no país", "conflict deaths in the country"],
+    ["mês de", "month of"], ["da população analisada em fase IPC 3 ou pior", "of the analysed population in IPC phase 3 or worse"], ["deslocados internos no país", "internally displaced people in the country"],
+    ["dado do país", "country data"], ["inflação", "inflation"], ["desemprego", "unemployment"], ["sem dados", "no data"], ["ontem × semana", "yesterday × week"], ["por mil posts", "per thousand posts"],
+    ["eventos", "events"], ["ajuda", "aid"], ["acordos", "agreements"], ["cooperação", "cooperation"], ["peso", "weight"], ["cuidado e esperança", "care and hope"],
+  ],
+  es: [
+    ["Mundo todo", "Todo el mundo"], ["Planalto Tibetano, China", "Meseta tibetana, China"], ["Norte da Austrália", "Norte de Australia"], ["Okavango, Botsuana", "Okavango, Botsuana"],
+    ["Sudão do Sul", "Sudán del Sur"], ["Costa do Pacífico, México", "Costa del Pacífico, México"], ["Nova Escócia, Canadá", "Nueva Escocia, Canadá"], ["Nova Délhi", "Nueva Delhi"],
+    ["Jacarta", "Yakarta"], ["Cidade do México", "Ciudad de México"], ["Madri", "Madrid"], ["Daca", "Daca"], ["Pequim", "Pekín"], ["Cairo", "El Cairo"],
+    ["Sudão", "Sudán"], ["Austrália", "Australia"], ["Botsuana", "Botsuana"], ["México", "México"], ["EUA, Canadá, Saint-Pierre", "EE. UU., Canadá, Saint-Pierre"],
+    ["AUSTRÁLIA", "AUSTRALIA"], ["BOTSUANA", "BOTSUANA"], ["MÉXICO", "MÉXICO"], ["SUDÃO DO SUL", "SUDÁN DEL SUR"], ["EUA, CANADÁ, SAINT-PIERRE", "EE. UU., CANADÁ, SAINT-PIERRE"],
+    ["adrenalina", "adrenalina"], ["noradrenalina", "noradrenalina"], ["glutamato", "glutamato"], ["interleucina", "interleucina"], ["serotonina", "serotonina"], ["grelina", "grelina"],
+    ["melatonina", "melatonina"], ["ocitocina", "oxitocina"], ["dopamina", "dopamina"], ["acetilcolina", "acetilcolina"], ["histamina", "histamina"], ["substância P", "sustancia P"],
+    ["vasopressina", "vasopresina"], ["beta-endorfina", "beta-endorfina"], ["anandamida", "anandamida"],
+    ["violência e crise política", "violencia y crisis política"], ["guerra e conflito armado", "guerra y conflicto armado"], ["deslocamento forçado", "desplazamiento forzado"],
+    ["aflição coletiva", "aflicción colectiva"], ["pressão econômica", "presión económica"], ["luz e escuridão", "luz y oscuridad"], ["esperança e vínculo", "esperanza y vínculo"],
+    ["desastre", "desastre"], ["terremoto", "terremoto"], ["incêndio", "incendio"], ["tempestade", "tormenta"], ["calor", "calor"], ["ruído", "ruido"], ["fome", "hambre"], ["guerra", "guerra"],
+    ["cortisol do lugar", "cortisol del lugar"], ["cuidado", "cuidado"], ["violência", "violencia"], ["deslocamento", "desplazamiento"], ["ar", "aire"],
+    ["aconteceu", "ocurrió"], ["acontecendo", "en curso"], ["previsto", "previsto"], ["projetado", "proyectado"], ["agora", "ahora"],
+    ["avança", "avanza"], ["dispara", "se dispara"], ["sobe", "sube"], ["renova máxima", "marca un récord"], ["recua", "retrocede"], ["cede", "cede"], ["cai", "cae"], ["devolve ganhos", "devuelve ganancias"],
+    ["explode", "se dispara"], ["e fecha a", "y cierra en"], ["fecha em alta de", "cierra al alza de"], ["fecha em baixa de", "cierra a la baja de"], ["No mesmo pregão,", "En la misma sesión,"],
+    ["Contraponto:", "Contrapunto:"], ["Pressão vem de", "La presión viene de"], ["Analistas apontam ajuda e cooperação relatadas na região.", "Los analistas señalan ayuda y cooperación en la región."],
+    ["Índice do medo dos mercados em", "Índice del miedo de los mercados en"], ["Índice de aflição de", "Índice de aflicción de"], ["Só um deles terá injeção de liquidez.", "Solo uno de ellos recibirá una inyección de liquidez."],
+    ["cotado a", "cotizado a"], ["Cooperação também é notícia, só circula menos.", "La cooperación también es noticia; solo circula menos."], ["em", "en"], 
+    ["Maior carga agora:", "Mayor carga ahora:"], ["Maior risco humanitário:", "Mayor riesgo humanitario:"], ["alertas de desastre em", "alertas de desastre en"], ["artigos novos na semana", "artículos nuevos en la semana"],
+    ["vermelhos ou laranja.", "rojas o naranjas."], ["Cada alerta entra como adrenalina e noradrenalina no lugar atingido.", "Cada alerta entra como adrenalina y noradrenalina en el lugar afectado."],
+    ["Cortisol do lugar em", "Cortisol del lugar en"], ["de 100", "de 100"], ["valor de demonstração", "valor de demostración"], ["coleta automática", "recolección automática"],
+    ["próxima fonte em", "próxima fuente en"], ["parado nesta fonte", "detenido en esta fuente"], ["no pregão agora:", "en la sesión ahora:"], ["ver a cadeia completa:", "ver la cadena completa:"],
+    ["sincronizando", "sincronizando"], ["memória sincronizada", "memoria sincronizada"], ["ao vivo", "en vivo"], ["carga", "carga"], ["alerta verde", "alerta verde"], ["alerta laranja", "alerta naranja"], ["alerta vermelho", "alerta roja"],
+    ["passo", "paso"], ["anel", "anillo"], ["pétalas", "pétalos"], ["nuvem principal", "nube principal"], ["densidade", "densidad"], ["torção", "torsión"], ["filamentos", "filamentos"], ["brilho", "brillo"],
+    ["manchas", "manchas"], ["área", "área"], ["pontos de luz", "puntos de luz"], ["cor de", "color de"], ["modo", "modo"], ["volume", "volumen"], ["massa em oitavas", "masa en octavas"],
+    ["média de", "media de"], ["lugares", "lugares"], ["real", "real"], ["exemplo", "ejemplo"], ["a coletar", "por recolectar"], ["estimado", "estimado"], ["calculado", "calculado"],
+    ["nenhum perto", "ninguno cerca"], ["hora local", "hora local"], ["h de luz", "h de luz"], ["noite agora", "noche ahora"], ["fumaça real", "humo real"], ["mortes em conflitos no país", "muertes en conflictos en el país"],
+    ["mês de", "mes de"], ["da população analisada em fase IPC 3 ou pior", "de la población analizada en fase CIF 3 o peor"], ["deslocados internos no país", "desplazados internos en el país"],
+    ["dado do país", "dato del país"], ["inflação", "inflación"], ["desemprego", "desempleo"], ["sem dados", "sin datos"], ["ontem × semana", "ayer × semana"], ["por mil posts", "por mil publicaciones"],
+    ["eventos", "eventos"], ["ajuda", "ayuda"], ["acordos", "acuerdos"], ["cooperação", "cooperación"], ["peso", "peso"], ["cuidado e esperança", "cuidado y esperanza"],
+  ],
+};
+
+window.I18N_DICT = {
+en: {
+"Carga Alostática": "Allostatic Load", "O que é a loucura? · laboratório": "What is madness? · laboratory",
+"A primeira fotografia aparece depois do primeiro minuto.": "The first photograph appears after the first minute.",
+"ALERTA VERMELHO": "RED ALERT", "Agora": "Now", "agora": "now",
+"Aqui: Du = {#} · Dv = {#} · Δt = {#} · laplaciano {#}×{#} ({#} nos lados, {#} nas diagonais).": "Here: Du = {#} · Dv = {#} · Δt = {#} · {#}×{#} Laplacian ({#} on the sides, {#} on the diagonals).",
+"As fotografias aparecem aqui enquanto a figura se transforma.": "Photographs appear here as the figure transforms.",
+"Buscar lugar": "Search place", "buscar": "search", "buscar qualquer lugar do mundo · cidade, região, país": "search any place in the world · city, region, country",
+"Cada figura é um lugar do mundo. Ela junta tudo o que pode pesar na saúde mental de quem vive ali (desastres próximos, calor, ar, ruído, luz, conflito) e se transforma sem parar, passando de um lugar ao próximo sem recomeçar. Dois motores: nebulosa e rede.": "Each figure is a place in the world. It gathers everything that can weigh on the mental health of the people who live there (nearby disasters, heat, air, noise, light, conflict) and transforms without pause, moving from one place to the next without restarting. Two engines: nebula and network.",
+"Cada lugar como tinta na água e como som. Os fatores que mais pesam ali soltam cor, que se espalha e vai se dissipando; as mesmas frequências desenham a cimática ao lado e tocam sem parar. O retrato também pode ser lido como partitura: uma linha percorre a imagem e cada faixa de altura vira uma frequência.": "Each place as ink in water and as sound. The factors that weigh most there release colour that spreads and slowly fades; the same frequencies draw the cymatics alongside and play without stopping. The portrait can also be read as a score: a line sweeps the image and each height band becomes a frequency.",
+"Cada retrato é um lugar do mundo como tinta na água: os fatores que mais pesam ali soltam cor, que se espalha, se mistura e vai se dissipando. Na troca de lugar, a imagem anterior se desfaz enquanto a nova nasce. No modo automático, a máquina passa de um lugar a outro e guarda fotografias no mural abaixo.": "Each portrait is a place in the world as ink in water: the factors that weigh most there release colour that spreads, mixes and slowly fades. When the place changes, the previous image dissolves as the new one is born. In automatic mode, the machine moves from place to place and keeps photographs on the wall below.",
+"Carga ao longo do tempo": "Load over time", "Cascata espectral": "Spectral cascade",
+"Duas substâncias se espalham e reagem. u é o alimento, v é o organismo. F controla quanto alimento entra; k controla quanto organismo se perde. Pequenas mudanças em F e k produzem células, vermes, labirintos ou corais, como na formação de manchas em tecidos vivos descrita por Alan Turing em {#}.": "Two substances spread and react. u is the food, v is the organism. F controls how much food comes in; k controls how much organism is lost. Small changes in F and k produce cells, worms, labyrinths or corals, like the pattern formation in living tissue described by Alan Turing in {#}.",
+"Eventos": "Events", "Figuras": "Figures", "figuras": "figures", "Fontes": "Sources", "Método": "Method", "método": "method", "metodo": "method", "Seções": "Sections", "Retratos": "Portraits", "Retrato e som": "Portrait and sound", "retrato e som": "portrait and sound",
+"Figura de Chladni gerada pelas frequências do lugar": "Chladni figure generated from the place's frequencies",
+"Figura gerada continuamente a partir dos dados": "Figure generated continuously from the data",
+"GDACS, Global Disaster Alert and Coordination System (ONU e Comissão Europeia). Lido em {#}/{#}/{#}, {#} UTC.": "GDACS, Global Disaster Alert and Coordination System (UN and European Commission). Read on {#}/{#}/{#}, {#} UTC.",
+"Luiza Jesus do Prado, {#}": "Luiza Jesus do Prado, {#}",
+"Luz do dia: calculada pela latitude e pela data de hoje. Temperatura, PM{#}, ruído e conflitos: valores de exemplo até a conexão com Open-Meteo, mapas de ruído e UCDP (que exige chave de acesso).": "Daylight: computed from latitude and today's date. Temperature, PM{#}, noise and conflicts: sample values until connected to Open-Meteo, noise maps and UCDP (which requires an access key).",
+"Mapa do mundo em pontos com o organismo crescendo nas posições dos alertas": "Dotted world map with the organism growing at the alert positions",
+"Mapa esquemático.": "Schematic map.", "Massa do organismo ao longo do tempo": "Organism mass over time",
+"Nebulosa gerada continuamente a partir dos dados": "Nebula generated continuously from the data",
+"Numa placa vibrando, a areia se junta onde ela não se move. Cada frequência do lugar vira um modo (n, m) e desenha suas linhas; os modos se somam.": "On a vibrating plate, sand gathers where the plate does not move. Each frequency of the place becomes a mode (n, m) and draws its lines; the modes add up.",
+"O QUE PESA AQUI": "WHAT WEIGHS HERE", "O modelo, as regras de tradução e os dados brutos.": "The model, the translation rules and the raw data.",
+"O som de cada mediador vem da sua massa molecular, levada por oitavas até a faixa audível (massa em g/mol = Hz, dividida ou multiplicada por {#}). As correspondências entre fatores e mediadores simplificam a literatura de psicobiologia do estresse: descrevem tendências em populações, nunca a medida do corpo de alguém.": "Each mediator's sound comes from its molecular mass, folded by octaves into the audible range (mass in g/mol = Hz, divided or multiplied by {#}). The links between factors and mediators simplify the psychobiology-of-stress literature: they describe trends in populations, never a measure of anyone's body.",
+"O som do lugar é contínuo: segue o lugar da tela e muda junto com os dados, e só para quando você desligar. Volume limitado por compressor.": "The place's sound is continuous: it follows the place on screen and changes with the data, and stops only when you turn it off. Volume limited by a compressor.",
+"Organismo contínuo sobre o mapa do mundo, com a faixa da noite em violeta": "Continuous organism over the world map, with the night band in violet",
+"Os alertas entram no mapa na ordem em que aconteceram. Cada um abre uma zona onde o organismo pode crescer. Toque no mapa para inserir um corpo.": "Alerts enter the map in the order they happened. Each one opens a zone where the organism can grow. Tap the map to add a body.",
+"Os retratos concluídos aparecem aqui.": "Finished portraits appear here.",
+"PESO × CONTRAPONTO": "WEIGHT × COUNTERPOINT", "Partitura do lugar: uma onda por fator, com sua frequência e seu peso": "Score of the place: one wave per factor, with its frequency and weight",
+"QUÍMICA DO LUGAR": "CHEMISTRY OF THE PLACE", "Reprise {#} h": "Replay {#} h", "reprise {#} h": "replay {#} h",
+"Retrato com a linha de leitura sonora": "Portrait with the sound-reading line", "Retrato do evento sendo gerado": "Portrait of the event being generated",
+"Tudo aqui é calculado ao vivo no seu navegador, a partir de {#} alertas reais do GDACS ({#} a {#}/{#}/{#}). Teclas {#} a {#} trocam de seção. Espaço liga e desliga o som.": "Everything here is computed live in your browser, from {#} real GDACS alerts ({#} to {#}/{#}/{#}). Keys {#} to {#} switch sections. Space turns the sound on and off.",
+"Um drone acompanha a carga. Rajadas vêm do ruído das cidades; sirenes, dos alertas vermelhos.": "A drone follows the load. Bursts come from city noise; sirens, from red alerts.",
+"Um único organismo que nunca recomeça. Ele roda no relógio real, guarda a memória de cada alerta, acumula carga quando os eventos se sobrepõem e desacelera no lado do planeta onde é noite.": "A single organism that never restarts. It runs on real time, keeps the memory of each alert, accumulates load when events overlap and slows down on the side of the planet where it is night.",
+"aflição coletiva (buscas e posts)": "collective distress (searches and posts)",
+"aguardando o primeiro alerta…": "waiting for the first alert…",
+"alarme agudo: coração e respiração aceleram em segundos": "acute alarm: heart and breathing speed up within seconds",
+"alerta novo": "new alert", "alertas": "alerts", "alertas ativos": "active alerts",
+"alívio da dor; sobe no trauma e também no toque, no riso e no movimento": "pain relief; rises with trauma and also with touch, laughter and movement",
+"ambiente e psicobiologia": "environment and psychobiology", "ao vivo · UTC": "live · UTC", "ar (PM{#})": "air (PM{#})",
+"arquivo · uma fotografia a cada {#} s ·": "archive · one photograph every {#} s ·", "arquivo · uma fotografia por minuto (na versão final, uma por hora)": "archive · one photograph per minute (one per hour in the final version)",
+"atenção e vigília; mantém o cérebro em alerta diante de ruído e estímulo": "attention and wakefulness; keeps the brain alert in the face of noise and stimulus",
+"automático: ligado": "automatic: on", "automático: desligado": "automatic: off", "automático": "automatic",
+"calor varia com a hora local": "heat varies with local time", "carga alostática do planeta": "allostatic load of the planet",
+"cicatriz": "scar", "cicatrizes": "scars", "cidades": "cities", "cimática · figuras de Chladni das frequências": "cymatics · Chladni figures of the frequencies", "cimática · frequência → modo de vibração": "cymatics · frequency → vibration mode",
+"cobertura": "coverage", "coluna x da imagem (varre em {#} s)": "image column x (sweeps in {#} s)", "como ele muda": "how it changes", "compressor −{#} dB → saída": "compressor −{#} dB → output",
+"controle": "control", "cor": "colour", "corpos": "bodies", "cortisol e alerta · rajadas que reiniciam o crescimento": "cortisol and alert · bursts that restart growth",
+"cresce com √(idade / {#} h)": "grows with √(age / {#} h)", "cresce por {#} h": "grows for {#} h", "crescendo": "growing", "crescimento mais lento": "slower growth",
+"cuidado: ajuda, acordos, cooperação": "care: aid, agreements, cooperation", "cuidado: ajuda, acordos, cooperação (contraponto)": "care: aid, agreements, cooperation (counterpoint)",
+"dados brutos · GDACS · {#} alertas": "raw data · GDACS · {#} alerts", "data UTC": "UTC date", "demais": "others",
+"desastre · incêndio": "disaster · wildfire", "desastre · tempestade": "disaster · storm", "desastre · terremoto": "disaster · earthquake",
+"desligado": "off", "ligado": "on", "dor e inflamação; ligada à ansiedade e ao trauma": "pain and inflammation; linked to anxiety and trauma",
+"endocanabinoide do corpo; amortece o estresse e acompanha o bem-estar": "the body's own endocannabinoid; buffers stress and accompanies wellbeing",
+"enfraquece em ~{#} dias": "fades in ~{#} days", "entrada (dado real)": "input (real data)",
+"esperança e vínculo (buscas e posts)": "hope and bond (searches and posts)", "esperança e vínculo (contraponto)": "hope and bond (counterpoint)", "estado": "state",
+"estresse prolongado (eixo HPA); desgaste que se acumula": "prolonged stress (HPA axis); wear that builds up",
+"excitação neural intensa; memória do trauma, medo condicionado": "intense neural excitation; trauma memory, conditioned fear",
+"fator → mediadores": "factor → mediators", "fonte": "source", "fonte agora": "source now", "gerar de novo": "generate again", "grade": "grid",
+"humor e saciedade; cai com a falta de triptofano na fome": "mood and satiety; falls with tryptophan shortage in hunger",
+"inflamação; ligada a sintomas depressivos e fadiga": "inflammation; linked to depressive symptoms and fatigue",
+"intensidade EQ": "EQ intensity", "intensidade TC": "TC intensity", "intensidade WF": "WF intensity",
+"leitura": "reading", "leitura do retrato": "reading the portrait", "ler retrato como som": "read portrait as sound", "ligar som": "turn on sound",
+"local": "local", "lugares · do maior peso para o menor, agora": "places · from heaviest to lightest, now", "luz do dia": "daylight",
+"marca que nunca some": "mark that never fades", "massa incêndio": "wildfire mass", "massa tempestade": "storm mass", "massa terremoto": "earthquake mass",
+"memória": "memory", "modelo de Gray-Scott (reação-difusão, {#})": "Gray-Scott model (reaction-diffusion, {#})",
+"motivação e expectativa; sustenta a esperança e o movimento": "motivation and anticipation; sustains hope and movement",
+"mural · gerados nesta sessão": "wall · made in this session", "nebulosa": "nebula", "rede": "network", "neuroinflamação · labirinto": "neuroinflammation · labyrinth",
+"noite": "night", "nível": "level", "o comando do estresse no hipotálamo; dispara a cascata que termina no cortisol": "the stress command in the hypothalamus; triggers the cascade that ends in cortisol",
+"o que pesa neste lugar · e como vira figura": "what weighs on this place · and how it becomes a figure",
+"onda larga = grave · apertada = agudo · altura = peso": "wide wave = low · tight = high · height = weight",
+"ouvir este retrato": "listen to this portrait", "passos": "steps",
+"poluição do ar": "air pollution", "pressão econômica (inflação, desemprego, medo dos mercados)": "economic pressure (inflation, unemployment, market fear)",
+"processo": "process", "quantidade de organismo na faixa → volume": "amount of organism in the band → volume", "química · mediador → cor e som": "chemistry · mediator → colour and sound",
+"raio do retrato": "portrait radius", "recomeçar": "restart", "regras de tradução": "translation rules",
+"repouso e calma; o estado de base quando pouco pesa": "rest and calm; the baseline state when little weighs",
+"retrato · tinta na água": "portrait · ink in water", "ritmo circadiano · o organismo pulsa": "circadian rhythm · the organism pulses",
+"ritmo do sono; alterada por luz, calor e ruído à noite": "sleep rhythm; altered by light, heat and noise at night",
+"sementes": "seeds", "sinal de fome; eleva ansiedade e alerta": "hunger signal; raises anxiety and alertness", "sincronizando": "syncing",
+"sobreposição": "overlap", "som": "sound", "som contínuo": "continuous sound", "som do lugar: desligado": "place sound: off", "som do lugar: ligado": "place sound: on", "som ligado": "sound on",
+"soma → compressor → saída": "sum → compressor → output", "sono e regulação térmica · células em divisão": "sleep and thermal regulation · dividing cells",
+"síntese do lugar · Hz calculados": "synthesis of the place · computed Hz", "tempestade, inundação": "storm, flood", "tipo": "type", "tocar": "play",
+"tradução em parâmetros": "translation into parameters", "trauma e deslocamento · labirinto denso com rajadas": "trauma and displacement · dense labyrinth with bursts",
+"valor": "value", "velocidade {#}×": "speed {#}×", "vento / {#}": "wind / {#}", "verde": "green", "vermelho": "red",
+"vigilância e hiperalerta; sono leve, sobressalto": "vigilance and hyperarousal; light sleep, startle",
+"vigília e inflamação; sobe com ar ruim, calor e noites mal dormidas": "wakefulness and inflammation; rises with bad air, heat and poorly slept nights",
+"vira labirinto (carga)": "becomes a labyrinth (load)", "vista": "view",
+"vínculo e pertencimento; abalada pela perda de lugar, fortalecida pelo cuidado": "bond and belonging; shaken by the loss of place, strengthened by care",
+"zona": "zone", "zona no mapa": "zone on the map", "{#} faixas de altura → {#} senoides, {#} a {#} Hz": "{#} height bands → {#} sine waves, {#} to {#} Hz",
+"{#}% do planeta": "{#}% of the planet", "água do corpo e vigilância social; sobe com calor e desidratação": "body water and social vigilance; rises with heat and dehydration",
+"cresce": "grows", "labirinto aberto": "open labyrinth", "coral ramificado": "branching coral", "fibras curtas": "short fibres", "filamentos errantes": "wandering filaments", "labirinto denso": "dense labyrinth", "anel pulsante": "pulsing ring", "coral": "coral",
+"células": "cells", "células de comando": "command cells", "fios de atenção": "threads of attention", "grão inquieto": "restless grain", "estilhaços": "shards", "órbitas": "orbits", "órbitas de água": "water orbits", "laços quentes": "warm loops", "vórtices macios": "soft vortices",
+"Tromsø": "Tromsø", "São Paulo": "São Paulo", "Lagos": "Lagos",
+},
+es: {
+"Carga Alostática": "Carga Alostática", "O que é a loucura? · laboratório": "¿Qué es la locura? · laboratorio",
+"A primeira fotografia aparece depois do primeiro minuto.": "La primera fotografía aparece después del primer minuto.",
+"ALERTA VERMELHO": "ALERTA ROJA", "Agora": "Ahora", "agora": "ahora",
+"Aqui: Du = {#} · Dv = {#} · Δt = {#} · laplaciano {#}×{#} ({#} nos lados, {#} nas diagonais).": "Aquí: Du = {#} · Dv = {#} · Δt = {#} · laplaciano {#}×{#} ({#} en los lados, {#} en las diagonales).",
+"As fotografias aparecem aqui enquanto a figura se transforma.": "Las fotografías aparecen aquí mientras la figura se transforma.",
+"Buscar lugar": "Buscar lugar", "buscar": "buscar", "buscar qualquer lugar do mundo · cidade, região, país": "buscar cualquier lugar del mundo · ciudad, región, país",
+"Cada figura é um lugar do mundo. Ela junta tudo o que pode pesar na saúde mental de quem vive ali (desastres próximos, calor, ar, ruído, luz, conflito) e se transforma sem parar, passando de um lugar ao próximo sem recomeçar. Dois motores: nebulosa e rede.": "Cada figura es un lugar del mundo. Reúne todo lo que puede pesar en la salud mental de quien vive allí (desastres cercanos, calor, aire, ruido, luz, conflicto) y se transforma sin parar, pasando de un lugar al siguiente sin reiniciar. Dos motores: nebulosa y red.",
+"Cada lugar como tinta na água e como som. Os fatores que mais pesam ali soltam cor, que se espalha e vai se dissipando; as mesmas frequências desenham a cimática ao lado e tocam sem parar. O retrato também pode ser lido como partitura: uma linha percorre a imagem e cada faixa de altura vira uma frequência.": "Cada lugar como tinta en el agua y como sonido. Los factores que más pesan allí sueltan color, que se esparce y se va disipando; las mismas frecuencias dibujan la cimática al lado y suenan sin parar. El retrato también puede leerse como partitura: una línea recorre la imagen y cada franja de altura se vuelve una frecuencia.",
+"Cada retrato é um lugar do mundo como tinta na água: os fatores que mais pesam ali soltam cor, que se espalha, se mistura e vai se dissipando. Na troca de lugar, a imagem anterior se desfaz enquanto a nova nasce. No modo automático, a máquina passa de um lugar a outro e guarda fotografias no mural abaixo.": "Cada retrato es un lugar del mundo como tinta en el agua: los factores que más pesan allí sueltan color, que se esparce, se mezcla y se va disipando. Al cambiar de lugar, la imagen anterior se deshace mientras nace la nueva. En modo automático, la máquina pasa de un lugar a otro y guarda fotografías en el mural de abajo.",
+"Carga ao longo do tempo": "Carga a lo largo del tiempo", "Cascata espectral": "Cascada espectral",
+"Duas substâncias se espalham e reagem. u é o alimento, v é o organismo. F controla quanto alimento entra; k controla quanto organismo se perde. Pequenas mudanças em F e k produzem células, vermes, labirintos ou corais, como na formação de manchas em tecidos vivos descrita por Alan Turing em {#}.": "Dos sustancias se esparcen y reaccionan. u es el alimento, v es el organismo. F controla cuánto alimento entra; k controla cuánto organismo se pierde. Pequeños cambios en F y k producen células, gusanos, laberintos o corales, como en la formación de manchas en tejidos vivos descrita por Alan Turing en {#}.",
+"Eventos": "Eventos", "Figuras": "Figuras", "figuras": "figuras", "Fontes": "Fuentes", "Método": "Método", "método": "método", "metodo": "método", "Seções": "Secciones", "Retratos": "Retratos", "Retrato e som": "Retrato y sonido", "retrato e som": "retrato y sonido",
+"Figura de Chladni gerada pelas frequências do lugar": "Figura de Chladni generada por las frecuencias del lugar",
+"Figura gerada continuamente a partir dos dados": "Figura generada continuamente a partir de los datos",
+"GDACS, Global Disaster Alert and Coordination System (ONU e Comissão Europeia). Lido em {#}/{#}/{#}, {#} UTC.": "GDACS, Global Disaster Alert and Coordination System (ONU y Comisión Europea). Leído el {#}/{#}/{#}, {#} UTC.",
+"Luiza Jesus do Prado, {#}": "Luiza Jesus do Prado, {#}",
+"Luz do dia: calculada pela latitude e pela data de hoje. Temperatura, PM{#}, ruído e conflitos: valores de exemplo até a conexão com Open-Meteo, mapas de ruído e UCDP (que exige chave de acesso).": "Luz del día: calculada por la latitud y la fecha de hoy. Temperatura, PM{#}, ruido y conflictos: valores de ejemplo hasta la conexión con Open-Meteo, mapas de ruido y UCDP (que exige clave de acceso).",
+"Mapa do mundo em pontos com o organismo crescendo nas posições dos alertas": "Mapa del mundo en puntos con el organismo creciendo en las posiciones de las alertas",
+"Mapa esquemático.": "Mapa esquemático.", "Massa do organismo ao longo do tempo": "Masa del organismo a lo largo del tiempo",
+"Nebulosa gerada continuamente a partir dos dados": "Nebulosa generada continuamente a partir de los datos",
+"Numa placa vibrando, a areia se junta onde ela não se move. Cada frequência do lugar vira um modo (n, m) e desenha suas linhas; os modos se somam.": "En una placa que vibra, la arena se junta donde no se mueve. Cada frecuencia del lugar se vuelve un modo (n, m) y dibuja sus líneas; los modos se suman.",
+"O QUE PESA AQUI": "LO QUE PESA AQUÍ", "O modelo, as regras de tradução e os dados brutos.": "El modelo, las reglas de traducción y los datos brutos.",
+"O som de cada mediador vem da sua massa molecular, levada por oitavas até a faixa audível (massa em g/mol = Hz, dividida ou multiplicada por {#}). As correspondências entre fatores e mediadores simplificam a literatura de psicobiologia do estresse: descrevem tendências em populações, nunca a medida do corpo de alguém.": "El sonido de cada mediador viene de su masa molecular, llevada por octavas hasta la franja audible (masa en g/mol = Hz, dividida o multiplicada por {#}). Las correspondencias entre factores y mediadores simplifican la literatura de psicobiología del estrés: describen tendencias en poblaciones, nunca la medida del cuerpo de alguien.",
+"O som do lugar é contínuo: segue o lugar da tela e muda junto com os dados, e só para quando você desligar. Volume limitado por compressor.": "El sonido del lugar es continuo: sigue el lugar de la pantalla y cambia con los datos, y solo para cuando lo apagas. Volumen limitado por compresor.",
+"Organismo contínuo sobre o mapa do mundo, com a faixa da noite em violeta": "Organismo continuo sobre el mapa del mundo, con la franja de la noche en violeta",
+"Os alertas entram no mapa na ordem em que aconteceram. Cada um abre uma zona onde o organismo pode crescer. Toque no mapa para inserir um corpo.": "Las alertas entran en el mapa en el orden en que ocurrieron. Cada una abre una zona donde el organismo puede crecer. Toca el mapa para insertar un cuerpo.",
+"Os retratos concluídos aparecem aqui.": "Los retratos terminados aparecen aquí.",
+"PESO × CONTRAPONTO": "PESO × CONTRAPUNTO", "Partitura do lugar: uma onda por fator, com sua frequência e seu peso": "Partitura del lugar: una onda por factor, con su frecuencia y su peso",
+"QUÍMICA DO LUGAR": "QUÍMICA DEL LUGAR", "Reprise {#} h": "Repetición {#} h", "reprise {#} h": "repetición {#} h",
+"Retrato com a linha de leitura sonora": "Retrato con la línea de lectura sonora", "Retrato do evento sendo gerado": "Retrato del evento generándose",
+"Tudo aqui é calculado ao vivo no seu navegador, a partir de {#} alertas reais do GDACS ({#} a {#}/{#}/{#}). Teclas {#} a {#} trocam de seção. Espaço liga e desliga o som.": "Todo aquí se calcula en vivo en tu navegador, a partir de {#} alertas reales del GDACS ({#} a {#}/{#}/{#}). Las teclas {#} a {#} cambian de sección. Espacio enciende y apaga el sonido.",
+"Um drone acompanha a carga. Rajadas vêm do ruído das cidades; sirenes, dos alertas vermelhos.": "Un drone acompaña la carga. Las ráfagas vienen del ruido de las ciudades; las sirenas, de las alertas rojas.",
+"Um único organismo que nunca recomeça. Ele roda no relógio real, guarda a memória de cada alerta, acumula carga quando os eventos se sobrepõem e desacelera no lado do planeta onde é noite.": "Un único organismo que nunca reinicia. Corre en el reloj real, guarda la memoria de cada alerta, acumula carga cuando los eventos se superponen y desacelera en el lado del planeta donde es de noche.",
+"aflição coletiva (buscas e posts)": "aflicción colectiva (búsquedas y publicaciones)",
+"aguardando o primeiro alerta…": "esperando la primera alerta…",
+"alarme agudo: coração e respiração aceleram em segundos": "alarma aguda: corazón y respiración se aceleran en segundos",
+"alerta novo": "alerta nueva", "alertas": "alertas", "alertas ativos": "alertas activas",
+"alívio da dor; sobe no trauma e também no toque, no riso e no movimento": "alivio del dolor; sube en el trauma y también con el tacto, la risa y el movimiento",
+"ambiente e psicobiologia": "ambiente y psicobiología", "ao vivo · UTC": "en vivo · UTC", "ar (PM{#})": "aire (PM{#})",
+"arquivo · uma fotografia a cada {#} s ·": "archivo · una fotografía cada {#} s ·", "arquivo · uma fotografia por minuto (na versão final, uma por hora)": "archivo · una fotografía por minuto (en la versión final, una por hora)",
+"atenção e vigília; mantém o cérebro em alerta diante de ruído e estímulo": "atención y vigilia; mantiene el cerebro alerta ante el ruido y el estímulo",
+"automático: ligado": "automático: encendido", "automático: desligado": "automático: apagado", "automático": "automático",
+"calor varia com a hora local": "el calor varía con la hora local", "carga alostática do planeta": "carga alostática del planeta",
+"cicatriz": "cicatriz", "cicatrizes": "cicatrices", "cidades": "ciudades", "cimática · figuras de Chladni das frequências": "cimática · figuras de Chladni de las frecuencias", "cimática · frequência → modo de vibração": "cimática · frecuencia → modo de vibración",
+"cobertura": "cobertura", "coluna x da imagem (varre em {#} s)": "columna x de la imagen (barre en {#} s)", "como ele muda": "cómo cambia", "compressor −{#} dB → saída": "compresor −{#} dB → salida",
+"controle": "control", "cor": "color", "corpos": "cuerpos", "cortisol e alerta · rajadas que reiniciam o crescimento": "cortisol y alerta · ráfagas que reinician el crecimiento",
+"cresce com √(idade / {#} h)": "crece con √(edad / {#} h)", "cresce por {#} h": "crece durante {#} h", "crescendo": "creciendo", "crescimento mais lento": "crecimiento más lento",
+"cuidado: ajuda, acordos, cooperação": "cuidado: ayuda, acuerdos, cooperación", "cuidado: ajuda, acordos, cooperação (contraponto)": "cuidado: ayuda, acuerdos, cooperación (contrapunto)",
+"dados brutos · GDACS · {#} alertas": "datos brutos · GDACS · {#} alertas", "data UTC": "fecha UTC", "demais": "demás",
+"desastre · incêndio": "desastre · incendio", "desastre · tempestade": "desastre · tormenta", "desastre · terremoto": "desastre · terremoto",
+"desligado": "apagado", "ligado": "encendido", "dor e inflamação; ligada à ansiedade e ao trauma": "dolor e inflamación; ligada a la ansiedad y al trauma",
+"endocanabinoide do corpo; amortece o estresse e acompanha o bem-estar": "endocannabinoide del cuerpo; amortigua el estrés y acompaña el bienestar",
+"enfraquece em ~{#} dias": "se debilita en ~{#} días", "entrada (dado real)": "entrada (dato real)",
+"esperança e vínculo (buscas e posts)": "esperanza y vínculo (búsquedas y publicaciones)", "esperança e vínculo (contraponto)": "esperanza y vínculo (contrapunto)", "estado": "estado",
+"estresse prolongado (eixo HPA); desgaste que se acumula": "estrés prolongado (eje HPA); desgaste que se acumula",
+"excitação neural intensa; memória do trauma, medo condicionado": "excitación neural intensa; memoria del trauma, miedo condicionado",
+"fator → mediadores": "factor → mediadores", "fonte": "fuente", "fonte agora": "fuente ahora", "gerar de novo": "generar de nuevo", "grade": "cuadrícula",
+"humor e saciedade; cai com a falta de triptofano na fome": "ánimo y saciedad; cae con la falta de triptófano en el hambre",
+"inflamação; ligada a sintomas depressivos e fadiga": "inflamación; ligada a síntomas depresivos y fatiga",
+"intensidade EQ": "intensidad EQ", "intensidade TC": "intensidad TC", "intensidade WF": "intensidad WF",
+"leitura": "lectura", "leitura do retrato": "lectura del retrato", "ler retrato como som": "leer el retrato como sonido", "ligar som": "encender sonido",
+"local": "local", "lugares · do maior peso para o menor, agora": "lugares · del mayor peso al menor, ahora", "luz do dia": "luz del día",
+"marca que nunca some": "marca que nunca desaparece", "massa incêndio": "masa incendio", "massa tempestade": "masa tormenta", "massa terremoto": "masa terremoto",
+"memória": "memoria", "modelo de Gray-Scott (reação-difusão, {#})": "modelo de Gray-Scott (reacción-difusión, {#})",
+"motivação e expectativa; sustenta a esperança e o movimento": "motivación y expectativa; sostiene la esperanza y el movimiento",
+"mural · gerados nesta sessão": "mural · generados en esta sesión", "nebulosa": "nebulosa", "rede": "red", "neuroinflamação · labirinto": "neuroinflamación · laberinto",
+"noite": "noche", "nível": "nivel", "o comando do estresse no hipotálamo; dispara a cascata que termina no cortisol": "el mando del estrés en el hipotálamo; dispara la cascada que termina en el cortisol",
+"o que pesa neste lugar · e como vira figura": "lo que pesa en este lugar · y cómo se vuelve figura",
+"onda larga = grave · apertada = agudo · altura = peso": "onda ancha = grave · apretada = agudo · altura = peso",
+"ouvir este retrato": "escuchar este retrato", "passos": "pasos",
+"poluição do ar": "contaminación del aire", "pressão econômica (inflação, desemprego, medo dos mercados)": "presión económica (inflación, desempleo, miedo de los mercados)",
+"processo": "proceso", "quantidade de organismo na faixa → volume": "cantidad de organismo en la franja → volumen", "química · mediador → cor e som": "química · mediador → color y sonido",
+"raio do retrato": "radio del retrato", "recomeçar": "reiniciar", "regras de tradução": "reglas de traducción",
+"repouso e calma; o estado de base quando pouco pesa": "reposo y calma; el estado de base cuando poco pesa",
+"retrato · tinta na água": "retrato · tinta en el agua", "ritmo circadiano · o organismo pulsa": "ritmo circadiano · el organismo late",
+"ritmo do sono; alterada por luz, calor e ruído à noite": "ritmo del sueño; alterada por luz, calor y ruido de noche",
+"sementes": "semillas", "sinal de fome; eleva ansiedade e alerta": "señal de hambre; eleva la ansiedad y la alerta", "sincronizando": "sincronizando",
+"sobreposição": "superposición", "som": "sonido", "som contínuo": "sonido continuo", "som do lugar: desligado": "sonido del lugar: apagado", "som do lugar: ligado": "sonido del lugar: encendido", "som ligado": "sonido encendido",
+"soma → compressor → saída": "suma → compresor → salida", "sono e regulação térmica · células em divisão": "sueño y regulación térmica · células en división",
+"síntese do lugar · Hz calculados": "síntesis del lugar · Hz calculados", "tempestade, inundação": "tormenta, inundación", "tipo": "tipo", "tocar": "tocar",
+"tradução em parâmetros": "traducción en parámetros", "trauma e deslocamento · labirinto denso com rajadas": "trauma y desplazamiento · laberinto denso con ráfagas",
+"valor": "valor", "velocidade {#}×": "velocidad {#}×", "vento / {#}": "viento / {#}", "verde": "verde", "vermelho": "rojo",
+"vigilância e hiperalerta; sono leve, sobressalto": "vigilancia e hiperalerta; sueño ligero, sobresalto",
+"vigília e inflamação; sobe com ar ruim, calor e noites mal dormidas": "vigilia e inflamación; sube con aire malo, calor y noches mal dormidas",
+"vira labirinto (carga)": "se vuelve laberinto (carga)", "vista": "vista",
+"vínculo e pertencimento; abalada pela perda de lugar, fortalecida pelo cuidado": "vínculo y pertenencia; sacudida por la pérdida de lugar, fortalecida por el cuidado",
+"zona": "zona", "zona no mapa": "zona en el mapa", "{#} faixas de altura → {#} senoides, {#} a {#} Hz": "{#} franjas de altura → {#} senoides, {#} a {#} Hz",
+"{#}% do planeta": "{#}% del planeta", "água do corpo e vigilância social; sobe com calor e desidratação": "agua del cuerpo y vigilancia social; sube con calor y deshidratación",
+"cresce": "crece", "labirinto aberto": "laberinto abierto", "coral ramificado": "coral ramificado", "fibras curtas": "fibras cortas", "filamentos errantes": "filamentos errantes", "labirinto denso": "laberinto denso", "anel pulsante": "anillo pulsante", "coral": "coral",
+"células": "células", "células de comando": "células de mando", "fios de atenção": "hilos de atención", "grão inquieto": "grano inquieto", "estilhaços": "astillas", "órbitas": "órbitas", "órbitas de água": "órbitas de agua", "laços quentes": "lazos cálidos", "vórtices macios": "vórtices suaves",
+}};
+// page-specific fragments for composed strings ("… · coral", "cor de X e Y", status lines)
+(function () { const F = window.I18N_FRAG; const add = (l, a) => F[l].push(...a);
+add("en", [["coral ramificado","branching coral"],["fibras curtas","short fibres"],["filamentos errantes","wandering filaments"],["labirinto aberto","open labyrinth"],["labirinto denso","dense labyrinth"],["anel pulsante","pulsing ring"],["coral","coral"],["memória sincronizada","memory synced"],["intensidade","intensity"],["alertas","alerts"],["alerta","alert"],["célula","cell"],["ruído","noise"],["e","and"],["carga alostática","allostatic load"],["som do lugar","place sound"],["desligado","off"],["ligado","on"],["automático","automatic"],["poluição do ar","air pollution"],["luz do dia","daylight"],["noite","night"]]);
+add("es", [["coral ramificado","coral ramificado"],["fibras curtas","fibras cortas"],["filamentos errantes","filamentos errantes"],["labirinto aberto","laberinto abierto"],["labirinto denso","laberinto denso"],["anel pulsante","anillo pulsante"],["memória sincronizada","memoria sincronizada"],["intensidade","intensidad"],["célula","célula"],["ruído","ruido"],["e","y"],["som do lugar","sonido del lugar"],["desligado","apagado"],["ligado","encendido"],["poluição do ar","contaminación del aire"],["luz do dia","luz del día"],["noite","noche"]]);
+})();
+window.I18N_POS = "top:10px;right:10px";
+
+// Three languages without touching the page's own code: every Portuguese text node (and placeholder, aria-label,
+// title) is swapped for its English or Spanish version, including text the page writes later. Numbers are kept:
+// "carga 0,62" matches the template "carga {#}". Composed sentences fall back to phrase-by-phrase replacement.
+(() => {
+  const D = window.I18N_DICT || { en: {}, es: {} }, F = window.I18N_FRAG || { en: [], es: [] };
+  const NUM = /\d+(?:[.,:]\d+)*/g, LANGS = ["pt", "en", "es"], LABEL = { pt: "PT", en: "EN", es: "ES" };
+  const pick = () => {
+    let q = null; try { q = new URLSearchParams(location.search).get("lang"); } catch (e) {}
+    let s = null; try { s = localStorage.getItem("lang"); } catch (e) {}
+    const n = (navigator.language || "pt").slice(0, 2).toLowerCase();
+    return [q, s, n].find(x => LANGS.includes(x)) || "pt";
+  };
+  let lang = pick();
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const fragRe = {};
+  for (const l of ["en", "es"]) fragRe[l] = (F[l] || []).slice().sort((a, b) => b[0].length - a[0].length)
+    .map(([pt, tr]) => [new RegExp(`(?<![\\p{L}\\p{N}])${esc(pt)}(?![\\p{L}\\p{N}])`, "gu"), tr]);
+  const fixNum = n => lang !== "en" ? n : /^\d{1,3}(\.\d{3})+$/.test(n) ? n.replace(/\./g, ",") : /^\d+,\d+$/.test(n) ? n.replace(",", ".") : n;
+  function whole(x, d) {
+    if (d[x] != null) return d[x];
+    const nums = x.match(NUM); if (!nums) return null;
+    const v = d[x.replace(NUM, "{#}")]; if (v == null) return null;
+    let i = 0; return v.replace(/\{#\}/g, () => fixNum(nums[i++] ?? ""));
+  }
+  function tr(src) {
+    const t = src.trim(); if (!t || lang === "pt") return null;
+    const d = D[lang] || {};
+    let out = null;
+    if (d[t] != null) out = d[t];
+    else {
+      const nums = t.match(NUM);
+      if (nums) { const v = d[t.replace(NUM, "{#}")]; if (v != null) { let i = 0; out = v.replace(/\{#\}/g, () => fixNum(nums[i++] ?? "")); } }
+    }
+    if (out == null && /, | · /.test(t)) {   // composed labels: "title, status" or "a · b"
+      const parts = t.split(/(, | · )/); let hit = false;
+      const res = parts.map((x, i) => { if (i % 2) return x; const y = whole(x, d); if (y != null) { hit = true; return y; } return x; });
+      if (hit) {   // the parts left over still get phrase-by-phrase treatment
+        out = res.map((x, i) => { if (i % 2 || whole(parts[i], d) != null) return x; let s = x; for (const [re, rep] of fragRe[lang]) s = s.replace(re, rep); return s; }).join("");
+      }
+    }
+    if (out == null) {
+      let s = t; for (const [re, rep] of fragRe[lang]) s = s.replace(re, rep);
+      if (lang === "en") s = s.replace(/(?<![\d.,])\d{1,3}(?:\.\d{3})+(?:,\d+)?(?![\d.])|(?<![\d.,])\d+,\d+(?![\d,])/g, n => n.replace(/\./g, "§").replace(",", ".").replace(/§/g, ","));   // 1.234,5 → 1,234.5
+      if (s !== t) out = s;
+    }
+    return out == null ? null : src.replace(t, out);
+  }
+  const SKIP = new Set(["SCRIPT", "STYLE", "TEXTAREA", "CODE", "NOSCRIPT"]);
+  function doText(n) {
+    const pe = n.parentElement; if (!pe || SKIP.has(pe.tagName) || pe.closest("[data-noi18n]")) return;
+    if (n.__tr === undefined || n.nodeValue !== n.__tr) n.__pt = n.nodeValue;
+    const out = lang === "pt" ? n.__pt : (tr(n.__pt) ?? n.__pt);
+    n.__tr = out; if (n.nodeValue !== out) n.nodeValue = out;
+  }
+  const ATTRS = ["placeholder", "aria-label", "title"];
+  function doAttrs(el) {
+    if (el.closest && el.closest("[data-noi18n]")) return;
+    el.__pa = el.__pa || {}; el.__ta = el.__ta || {};
+    for (const a of ATTRS) {
+      if (!el.hasAttribute(a)) continue; const v = el.getAttribute(a);
+      if (el.__ta[a] === undefined || v !== el.__ta[a]) el.__pa[a] = v;
+      const out = lang === "pt" ? el.__pa[a] : (tr(el.__pa[a]) ?? el.__pa[a]);
+      el.__ta[a] = out; if (v !== out) el.setAttribute(a, out);
+    }
+  }
+  function walk(root) {
+    if (root.nodeType === 3) return doText(root);
+    if (root.nodeType !== 1) return;
+    if (ATTRS.some(a => root.hasAttribute(a))) doAttrs(root);
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    while (w.nextNode()) { const n = w.currentNode; if (n.nodeType === 3) doText(n); else if (ATTRS.some(a => n.hasAttribute(a))) doAttrs(n); }
+  }
+  let titlePt = null;
+  function all() {
+    if (titlePt === null || (document.title !== titleTr)) titlePt = document.title;
+    titleTr = lang === "pt" ? titlePt : (tr(titlePt) ?? titlePt); document.title = titleTr;
+    document.documentElement.lang = lang === "pt" ? "pt-BR" : lang;
+    walk(document.body);
+    document.querySelectorAll("[data-i18n-btn]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.i18nBtn === lang)));
+  }
+  let titleTr = null;
+  new MutationObserver(ms => {
+    for (const m of ms) {
+      if (m.type === "childList") m.addedNodes.forEach(walk);
+      else if (m.type === "characterData") doText(m.target);
+      else if (m.type === "attributes") doAttrs(m.target);
+    }
+  }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+  // the switcher
+  const pos = window.I18N_POS || "bottom:12px;left:12px";
+  const box = document.createElement("div"); box.setAttribute("data-noi18n", ""); box.setAttribute("role", "group"); box.setAttribute("aria-label", "Idioma · Language · Idioma");
+  box.style.cssText = `position:fixed;${pos};z-index:2147483000;display:flex;gap:2px;background:rgba(8,8,7,.82);border:1px solid #2C2820;padding:3px;font:500 11px/1 "IBM Plex Mono",ui-monospace,Menlo,monospace;letter-spacing:.08em;backdrop-filter:blur(6px)`;
+  for (const l of LANGS) {
+    const b = document.createElement("button"); b.type = "button"; b.dataset.i18nBtn = l; b.textContent = LABEL[l];
+    b.style.cssText = "background:none;border:0;color:#BDB3A5;padding:8px 9px;min-width:36px;min-height:32px;cursor:pointer;font:inherit;letter-spacing:inherit";
+    b.addEventListener("click", () => { lang = l; try { localStorage.setItem("lang", l); } catch (e) {} all(); });
+    box.append(b);
+  }
+  const st = document.createElement("style"); st.textContent = `[data-i18n-btn][aria-pressed="true"]{color:#0A0907!important;background:#E8B86A!important}[data-i18n-btn]:focus-visible{outline:2px solid #EDE6D8}`;
+  document.head.append(st);
+  const start = () => { document.body.append(box); all(); };
+  if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
+})();
+
+</script><!--/i18n-->
 
 </body>
 </html>

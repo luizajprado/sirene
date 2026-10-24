@@ -28,7 +28,7 @@ a { color: var(--gold); }
 .btn[aria-pressed="true"] { background: var(--gold); color: var(--bg); }
 .btn.ghost { border-color: var(--line); color: var(--dim); }
 .btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
-.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw); background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding: 18px 18px 90px; display: flex; flex-direction: column; gap: 16px; backdrop-filter: blur(10px); }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; box-sizing: border-box; width: min(420px, 100vw); background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding: 18px 18px 90px; display: flex; flex-direction: column; gap: 16px; backdrop-filter: blur(10px); }
 .drawer h2 { margin: 0; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); font-weight: 500; }
 .sec { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 14px; }
 .sec:first-child { border-top: 0; padding-top: 0; }
@@ -368,3 +368,238 @@ void main(){
   renderArch(); target(); requestAnimationFrame(tick);
 })();
 </script>
+<!--i18n--><script>
+// Shared vocabulary: places, molecules, factors and the small words composed sentences are made of.
+window.I18N_FRAG = {
+  en: [
+    ["Mundo todo", "Whole world"], ["Planalto Tibetano, China", "Tibetan Plateau, China"], ["Norte da Austrália", "Northern Australia"], ["Okavango, Botsuana", "Okavango, Botswana"],
+    ["Sudão do Sul", "South Sudan"], ["Costa do Pacífico, México", "Pacific Coast, Mexico"], ["Nova Escócia, Canadá", "Nova Scotia, Canada"], ["Nova Délhi", "New Delhi"],
+    ["Jacarta", "Jakarta"], ["Cidade do México", "Mexico City"], ["Madri", "Madrid"], ["Daca", "Dhaka"], ["Pequim", "Beijing"], ["Cairo", "Cairo"],
+    ["Sudão", "Sudan"], ["Austrália", "Australia"], ["Botsuana", "Botswana"], ["México", "Mexico"], ["EUA, Canadá, Saint-Pierre", "USA, Canada, Saint-Pierre"],
+    ["AUSTRÁLIA", "AUSTRALIA"], ["BOTSUANA", "BOTSWANA"], ["MÉXICO", "MEXICO"], ["SUDÃO DO SUL", "SOUTH SUDAN"], ["EUA, CANADÁ, SAINT-PIERRE", "USA, CANADA, SAINT-PIERRE"],
+    ["adrenalina", "adrenaline"], ["noradrenalina", "noradrenaline"], ["glutamato", "glutamate"], ["interleucina", "interleukin"], ["serotonina", "serotonin"], ["grelina", "ghrelin"],
+    ["melatonina", "melatonin"], ["ocitocina", "oxytocin"], ["dopamina", "dopamine"], ["acetilcolina", "acetylcholine"], ["histamina", "histamine"], ["substância P", "substance P"],
+    ["vasopressina", "vasopressin"], ["beta-endorfina", "beta-endorphin"], ["anandamida", "anandamide"],
+    ["violência e crise política", "violence and political crisis"], ["guerra e conflito armado", "war and armed conflict"], ["deslocamento forçado", "forced displacement"],
+    ["aflição coletiva", "collective distress"], ["pressão econômica", "economic pressure"], ["luz e escuridão", "light and darkness"], ["esperança e vínculo", "hope and bonds"],
+    ["desastre", "disaster"], ["terremoto", "earthquake"], ["incêndio", "wildfire"], ["tempestade", "storm"], ["calor", "heat"], ["ruído", "noise"], ["fome", "hunger"], ["guerra", "war"],
+    ["cortisol do lugar", "place cortisol"], ["cuidado", "care"], ["violência", "violence"], ["deslocamento", "displacement"], ["ar", "air"],
+    ["aconteceu", "happened"], ["acontecendo", "happening"], ["previsto", "forecast"], ["projetado", "projected"], ["agora", "now"],
+    ["avança", "advances"], ["dispara", "surges"], ["sobe", "rises"], ["renova máxima", "hits a record"], ["recua", "retreats"], ["cede", "eases"], ["cai", "falls"], ["devolve ganhos", "gives back gains"],
+    ["explode", "explodes"], ["e fecha a", "and closes at"], ["fecha em alta de", "closes up"], ["fecha em baixa de", "closes down"], ["No mesmo pregão,", "On the same trading day,"],
+    ["Contraponto:", "Counterpoint:"], ["Pressão vem de", "Pressure comes from"], ["Analistas apontam ajuda e cooperação relatadas na região.", "Analysts point to aid and cooperation reported in the region."],
+    ["Índice do medo dos mercados em", "Market fear index at"], ["Índice de aflição de", "Affliction index of"], ["Só um deles terá injeção de liquidez.", "Only one of them will get a liquidity injection."],
+    ["cotado a", "quoted at"], ["Cooperação também é notícia, só circula menos.", "Cooperation is news too; it just travels less."], ["em", "in"], 
+    ["Maior carga agora:", "Highest load now:"], ["Maior risco humanitário:", "Highest humanitarian risk:"], ["alertas de desastre em", "disaster alerts in"], ["artigos novos na semana", "new papers this week"],
+    ["vermelhos ou laranja.", "red or orange."], ["Cada alerta entra como adrenalina e noradrenalina no lugar atingido.", "Each alert enters as adrenaline and noradrenaline in the place it hits."],
+    ["Cortisol do lugar em", "Place cortisol at"], ["de 100", "out of 100"], ["valor de demonstração", "demo value"], ["coleta automática", "automatic collection"],
+    ["próxima fonte em", "next source in"], ["parado nesta fonte", "holding on this source"], ["no pregão agora:", "on the floor now:"], ["ver a cadeia completa:", "see the full chain:"],
+    ["sincronizando", "syncing"], ["memória sincronizada", "memory synced"], ["ao vivo", "live"], ["carga", "load"], ["alerta verde", "green alert"], ["alerta laranja", "orange alert"], ["alerta vermelho", "red alert"],
+    ["passo", "step"], ["anel", "ring"], ["pétalas", "petals"], ["nuvem principal", "main cloud"], ["densidade", "density"], ["torção", "twist"], ["filamentos", "filaments"], ["brilho", "brightness"],
+    ["manchas", "patches"], ["área", "area"], ["pontos de luz", "points of light"], ["cor de", "colour of"], ["modo", "mode"], ["volume", "volume"], ["massa em oitavas", "mass in octaves"],
+    ["média de", "mean of"], ["lugares", "places"], ["real", "real"], ["exemplo", "example"], ["a coletar", "to be collected"], ["estimado", "estimated"], ["calculado", "calculated"],
+    ["nenhum perto", "none nearby"], ["hora local", "local time"], ["h de luz", "h of daylight"], ["noite agora", "night now"], ["fumaça real", "real smoke"], ["mortes em conflitos no país", "conflict deaths in the country"],
+    ["mês de", "month of"], ["da população analisada em fase IPC 3 ou pior", "of the analysed population in IPC phase 3 or worse"], ["deslocados internos no país", "internally displaced people in the country"],
+    ["dado do país", "country data"], ["inflação", "inflation"], ["desemprego", "unemployment"], ["sem dados", "no data"], ["ontem × semana", "yesterday × week"], ["por mil posts", "per thousand posts"],
+    ["eventos", "events"], ["ajuda", "aid"], ["acordos", "agreements"], ["cooperação", "cooperation"], ["peso", "weight"], ["cuidado e esperança", "care and hope"],
+  ],
+  es: [
+    ["Mundo todo", "Todo el mundo"], ["Planalto Tibetano, China", "Meseta tibetana, China"], ["Norte da Austrália", "Norte de Australia"], ["Okavango, Botsuana", "Okavango, Botsuana"],
+    ["Sudão do Sul", "Sudán del Sur"], ["Costa do Pacífico, México", "Costa del Pacífico, México"], ["Nova Escócia, Canadá", "Nueva Escocia, Canadá"], ["Nova Délhi", "Nueva Delhi"],
+    ["Jacarta", "Yakarta"], ["Cidade do México", "Ciudad de México"], ["Madri", "Madrid"], ["Daca", "Daca"], ["Pequim", "Pekín"], ["Cairo", "El Cairo"],
+    ["Sudão", "Sudán"], ["Austrália", "Australia"], ["Botsuana", "Botsuana"], ["México", "México"], ["EUA, Canadá, Saint-Pierre", "EE. UU., Canadá, Saint-Pierre"],
+    ["AUSTRÁLIA", "AUSTRALIA"], ["BOTSUANA", "BOTSUANA"], ["MÉXICO", "MÉXICO"], ["SUDÃO DO SUL", "SUDÁN DEL SUR"], ["EUA, CANADÁ, SAINT-PIERRE", "EE. UU., CANADÁ, SAINT-PIERRE"],
+    ["adrenalina", "adrenalina"], ["noradrenalina", "noradrenalina"], ["glutamato", "glutamato"], ["interleucina", "interleucina"], ["serotonina", "serotonina"], ["grelina", "grelina"],
+    ["melatonina", "melatonina"], ["ocitocina", "oxitocina"], ["dopamina", "dopamina"], ["acetilcolina", "acetilcolina"], ["histamina", "histamina"], ["substância P", "sustancia P"],
+    ["vasopressina", "vasopresina"], ["beta-endorfina", "beta-endorfina"], ["anandamida", "anandamida"],
+    ["violência e crise política", "violencia y crisis política"], ["guerra e conflito armado", "guerra y conflicto armado"], ["deslocamento forçado", "desplazamiento forzado"],
+    ["aflição coletiva", "aflicción colectiva"], ["pressão econômica", "presión económica"], ["luz e escuridão", "luz y oscuridad"], ["esperança e vínculo", "esperanza y vínculo"],
+    ["desastre", "desastre"], ["terremoto", "terremoto"], ["incêndio", "incendio"], ["tempestade", "tormenta"], ["calor", "calor"], ["ruído", "ruido"], ["fome", "hambre"], ["guerra", "guerra"],
+    ["cortisol do lugar", "cortisol del lugar"], ["cuidado", "cuidado"], ["violência", "violencia"], ["deslocamento", "desplazamiento"], ["ar", "aire"],
+    ["aconteceu", "ocurrió"], ["acontecendo", "en curso"], ["previsto", "previsto"], ["projetado", "proyectado"], ["agora", "ahora"],
+    ["avança", "avanza"], ["dispara", "se dispara"], ["sobe", "sube"], ["renova máxima", "marca un récord"], ["recua", "retrocede"], ["cede", "cede"], ["cai", "cae"], ["devolve ganhos", "devuelve ganancias"],
+    ["explode", "se dispara"], ["e fecha a", "y cierra en"], ["fecha em alta de", "cierra al alza de"], ["fecha em baixa de", "cierra a la baja de"], ["No mesmo pregão,", "En la misma sesión,"],
+    ["Contraponto:", "Contrapunto:"], ["Pressão vem de", "La presión viene de"], ["Analistas apontam ajuda e cooperação relatadas na região.", "Los analistas señalan ayuda y cooperación en la región."],
+    ["Índice do medo dos mercados em", "Índice del miedo de los mercados en"], ["Índice de aflição de", "Índice de aflicción de"], ["Só um deles terá injeção de liquidez.", "Solo uno de ellos recibirá una inyección de liquidez."],
+    ["cotado a", "cotizado a"], ["Cooperação também é notícia, só circula menos.", "La cooperación también es noticia; solo circula menos."], ["em", "en"], 
+    ["Maior carga agora:", "Mayor carga ahora:"], ["Maior risco humanitário:", "Mayor riesgo humanitario:"], ["alertas de desastre em", "alertas de desastre en"], ["artigos novos na semana", "artículos nuevos en la semana"],
+    ["vermelhos ou laranja.", "rojas o naranjas."], ["Cada alerta entra como adrenalina e noradrenalina no lugar atingido.", "Cada alerta entra como adrenalina y noradrenalina en el lugar afectado."],
+    ["Cortisol do lugar em", "Cortisol del lugar en"], ["de 100", "de 100"], ["valor de demonstração", "valor de demostración"], ["coleta automática", "recolección automática"],
+    ["próxima fonte em", "próxima fuente en"], ["parado nesta fonte", "detenido en esta fuente"], ["no pregão agora:", "en la sesión ahora:"], ["ver a cadeia completa:", "ver la cadena completa:"],
+    ["sincronizando", "sincronizando"], ["memória sincronizada", "memoria sincronizada"], ["ao vivo", "en vivo"], ["carga", "carga"], ["alerta verde", "alerta verde"], ["alerta laranja", "alerta naranja"], ["alerta vermelho", "alerta roja"],
+    ["passo", "paso"], ["anel", "anillo"], ["pétalas", "pétalos"], ["nuvem principal", "nube principal"], ["densidade", "densidad"], ["torção", "torsión"], ["filamentos", "filamentos"], ["brilho", "brillo"],
+    ["manchas", "manchas"], ["área", "área"], ["pontos de luz", "puntos de luz"], ["cor de", "color de"], ["modo", "modo"], ["volume", "volumen"], ["massa em oitavas", "masa en octavas"],
+    ["média de", "media de"], ["lugares", "lugares"], ["real", "real"], ["exemplo", "ejemplo"], ["a coletar", "por recolectar"], ["estimado", "estimado"], ["calculado", "calculado"],
+    ["nenhum perto", "ninguno cerca"], ["hora local", "hora local"], ["h de luz", "h de luz"], ["noite agora", "noche ahora"], ["fumaça real", "humo real"], ["mortes em conflitos no país", "muertes en conflictos en el país"],
+    ["mês de", "mes de"], ["da população analisada em fase IPC 3 ou pior", "de la población analizada en fase CIF 3 o peor"], ["deslocados internos no país", "desplazados internos en el país"],
+    ["dado do país", "dato del país"], ["inflação", "inflación"], ["desemprego", "desempleo"], ["sem dados", "sin datos"], ["ontem × semana", "ayer × semana"], ["por mil posts", "por mil publicaciones"],
+    ["eventos", "eventos"], ["ajuda", "ayuda"], ["acordos", "acuerdos"], ["cooperação", "cooperación"], ["peso", "peso"], ["cuidado e esperança", "cuidado y esperanza"],
+  ],
+};
+
+window.I18N_DICT = {
+en: {
+"Mandala do Inconsciente": "Mandala of the Unconscious", "MANDALA DO INCONSCIENTE": "MANDALA OF THE UNCONSCIOUS",
+"Ainda sem buscas: a mandala respira em repouso.": "No searches yet: the mandala breathes at rest.",
+"As mandalas guardadas aparecem aqui.": "Saved mandalas appear here.",
+"Base: Zhang et al. e Zaman et al., Universidade de Rochester, histórico de buscas do Google e YouTube e sinais de depressão e ansiedade.": "Basis: Zhang et al. and Zaman et al., University of Rochester, Google and YouTube search history and signs of depression and anxiety.",
+"Como exportar: takeout.google.com → desmarque tudo → marque “Minha atividade” → escolha só “Pesquisa” e o formato JSON.": "How to export: takeout.google.com → deselect all → tick “My Activity” → choose only “Search” and the JSON format.",
+"Contato com quem te faz bem": "Contact with people who do you good", "Horas de sono": "Hours of sleep", "Movimento hoje": "Movement today", "Tensão no corpo": "Tension in the body",
+"Luiza Jesus do Prado, {#}": "Luiza Jesus do Prado, {#}",
+"Mandala gerada a partir do que você procura": "Mandala generated from what you search for",
+"Não é diagnóstico nem tratamento. As buscas nunca são guardadas: só a imagem, se você pedir. Se estiver em sofrimento, procure apoio:": "This is not diagnosis or treatment. Searches are never stored: only the image, if you ask. If you are struggling, reach out for support:",
+"· no Brasil, CVV {#}.": "· in Brazil, CVV {#}.",
+"Painel": "Panel", "painel": "panel",
+"Solte aqui o arquivo do seu histórico de buscas (Google Takeout, “Minha atividade”, Pesquisa, em JSON ou HTML) ou clique para escolher": "Drop your search history file here (Google Takeout, “My Activity”, Search, as JSON or HTML) or click to choose",
+"Suas buscas guardam sinais do que passa por dentro: pesquisas com centenas de estudantes mostraram que o ritmo e os temas do histórico de buscas acompanham ansiedade e depressão. Aqui elas não viram diagnóstico: viram forma e som. Tudo é lido no seu navegador e nada é enviado.": "Your searches hold signs of what goes on inside: studies with hundreds of students showed that the rhythm and themes of search history track anxiety and depression. Here they do not become a diagnosis: they become form and sound. Everything is read in your browser and nothing is sent.",
+"apagar arquivo": "clear archive", "ar e calor de onde estou": "air and heat where I am", "ar e calor": "air and heat", "arquivo · só neste navegador": "archive · this browser only",
+"como a mandala leu você": "how the mandala read you", "como dormir melhor\nansiedade à noite\npassagem para ver minha mãe": "how to sleep better\nanxiety at night\nticket to see my mum",
+"eixos": "axes", "esquecer buscas": "forget searches", "gerar mandala": "generate mandala", "guardar": "save", "guardada": "saved", "não foi possível guardar aqui": "could not save here",
+"modular: respirar com a mandala": "modulate: breathe with the mandala", "modulando · parar": "modulating · stop", "inspire": "breathe in", "expire": "breathe out",
+"o que você procura": "what you search for", "o que você procura, em forma e som": "what you search for, in form and sound",
+"ou escreva buscas e palavras, uma por linha": "or write searches and words, one per line", "outros sinais · opcional": "other signals · optional",
+"ouvir": "listen", "som ligado": "sound on", "ruído do ambiente": "ambient noise", "ouvindo {#} s…": "listening {#} s…", "lendo…": "reading…",
+"microfone indisponível aqui": "microphone unavailable here", "localização indisponível": "location unavailable", "localização não autorizada": "location not allowed", "sem acesso ao clima aqui": "no weather access here",
+"{#} min": "{#} min", "{#}, pela variedade de temas": "{#}, from the variety of themes", "Buscas esquecidas.": "Searches forgotten.",
+"buscas lidas": "searches read", "de madrugada": "late at night", "{#}% das buscas entre {#} h e {#} h": "{#}% of searches between {#} am and {#} am",
+"ruído": "noise", "ar": "air", "calor": "heat",
+"medo e alerta": "fear and alarm", "sono": "sleep", "tristeza e luto": "sadness and grief", "trabalho e dinheiro": "work and money", "corpo e dor": "body and pain", "comida e fome": "food and hunger", "violência e notícias": "violence and news", "vínculo e amor": "bond and love", "desejo e projeto": "desire and plans", "calma e cuidado": "calm and care",
+},
+es: {
+"Mandala do Inconsciente": "Mandala del Inconsciente", "MANDALA DO INCONSCIENTE": "MANDALA DEL INCONSCIENTE",
+"Ainda sem buscas: a mandala respira em repouso.": "Aún sin búsquedas: la mandala respira en reposo.",
+"As mandalas guardadas aparecem aqui.": "Las mandalas guardadas aparecen aquí.",
+"Base: Zhang et al. e Zaman et al., Universidade de Rochester, histórico de buscas do Google e YouTube e sinais de depressão e ansiedade.": "Base: Zhang et al. y Zaman et al., Universidad de Rochester, historial de búsquedas de Google y YouTube y señales de depresión y ansiedad.",
+"Como exportar: takeout.google.com → desmarque tudo → marque “Minha atividade” → escolha só “Pesquisa” e o formato JSON.": "Cómo exportar: takeout.google.com → desmarca todo → marca “Mi actividad” → elige solo “Búsqueda” y el formato JSON.",
+"Contato com quem te faz bem": "Contacto con quien te hace bien", "Horas de sono": "Horas de sueño", "Movimento hoje": "Movimiento hoy", "Tensão no corpo": "Tensión en el cuerpo",
+"Luiza Jesus do Prado, {#}": "Luiza Jesus do Prado, {#}",
+"Mandala gerada a partir do que você procura": "Mandala generada a partir de lo que buscas",
+"Não é diagnóstico nem tratamento. As buscas nunca são guardadas: só a imagem, se você pedir. Se estiver em sofrimento, procure apoio:": "No es diagnóstico ni tratamiento. Las búsquedas nunca se guardan: solo la imagen, si la pides. Si estás sufriendo, busca apoyo:",
+"· no Brasil, CVV {#}.": "· en Brasil, CVV {#}.",
+"Painel": "Panel", "painel": "panel",
+"Solte aqui o arquivo do seu histórico de buscas (Google Takeout, “Minha atividade”, Pesquisa, em JSON ou HTML) ou clique para escolher": "Suelta aquí el archivo de tu historial de búsquedas (Google Takeout, “Mi actividad”, Búsqueda, en JSON o HTML) o haz clic para elegirlo",
+"Suas buscas guardam sinais do que passa por dentro: pesquisas com centenas de estudantes mostraram que o ritmo e os temas do histórico de buscas acompanham ansiedade e depressão. Aqui elas não viram diagnóstico: viram forma e som. Tudo é lido no seu navegador e nada é enviado.": "Tus búsquedas guardan señales de lo que pasa por dentro: estudios con cientos de estudiantes mostraron que el ritmo y los temas del historial de búsquedas acompañan la ansiedad y la depresión. Aquí no se vuelven diagnóstico: se vuelven forma y sonido. Todo se lee en tu navegador y nada se envía.",
+"apagar arquivo": "borrar archivo", "ar e calor de onde estou": "aire y calor de donde estoy", "ar e calor": "aire y calor", "arquivo · só neste navegador": "archivo · solo en este navegador",
+"como a mandala leu você": "cómo te leyó la mandala", "como dormir melhor\nansiedade à noite\npassagem para ver minha mãe": "cómo dormir mejor\nansiedad de noche\npasaje para ver a mi madre",
+"eixos": "ejes", "esquecer buscas": "olvidar búsquedas", "gerar mandala": "generar mandala", "guardar": "guardar", "guardada": "guardada", "não foi possível guardar aqui": "no se pudo guardar aquí",
+"modular: respirar com a mandala": "modular: respirar con la mandala", "modulando · parar": "modulando · parar", "inspire": "inspira", "expire": "espira",
+"o que você procura": "lo que buscas", "o que você procura, em forma e som": "lo que buscas, en forma y sonido",
+"ou escreva buscas e palavras, uma por linha": "o escribe búsquedas y palabras, una por línea", "outros sinais · opcional": "otras señales · opcional",
+"ouvir": "escuchar", "som ligado": "sonido encendido", "ruído do ambiente": "ruido del ambiente", "ouvindo {#} s…": "escuchando {#} s…", "lendo…": "leyendo…",
+"microfone indisponível aqui": "micrófono no disponible aquí", "localização indisponível": "ubicación no disponible", "localização não autorizada": "ubicación no autorizada", "sem acesso ao clima aqui": "sin acceso al clima aquí",
+"{#} min": "{#} min", "{#}, pela variedade de temas": "{#}, por la variedad de temas", "Buscas esquecidas.": "Búsquedas olvidadas.",
+"buscas lidas": "búsquedas leídas", "de madrugada": "de madrugada", "{#}% das buscas entre {#} h e {#} h": "{#}% de las búsquedas entre las {#} h y las {#} h",
+"ruído": "ruido", "ar": "aire", "calor": "calor",
+"medo e alerta": "miedo y alerta", "sono": "sueño", "tristeza e luto": "tristeza y duelo", "trabalho e dinheiro": "trabajo y dinero", "corpo e dor": "cuerpo y dolor", "comida e fome": "comida y hambre", "violência e notícias": "violencia y noticias", "vínculo e amor": "vínculo y amor", "desejo e projeto": "deseo y proyecto", "calma e cuidado": "calma y cuidado",
+}};
+(function () { const F = window.I18N_FRAG;
+F.en.push(["buscas lidas do que você escreveu","searches read from what you wrote"],["buscas lidas de","searches read from"],["Nada foi enviado nem guardado.","Nothing was sent or stored."],["estimado","estimated"],["anel","ring"],["pétalas","petals"],["Mandala de","Mandala of"]);
+F.es.push(["buscas lidas do que você escreveu","búsquedas leídas de lo que escribiste"],["buscas lidas de","búsquedas leídas de"],["Nada foi enviado nem guardado.","No se envió ni se guardó nada."],["estimado","estimado"],["anel","anillo"],["pétalas","pétalos"],["Mandala de","Mandala de"]);
+})();
+window.I18N_POS = "bottom:16px;left:16px";
+
+// Three languages without touching the page's own code: every Portuguese text node (and placeholder, aria-label,
+// title) is swapped for its English or Spanish version, including text the page writes later. Numbers are kept:
+// "carga 0,62" matches the template "carga {#}". Composed sentences fall back to phrase-by-phrase replacement.
+(() => {
+  const D = window.I18N_DICT || { en: {}, es: {} }, F = window.I18N_FRAG || { en: [], es: [] };
+  const NUM = /\d+(?:[.,:]\d+)*/g, LANGS = ["pt", "en", "es"], LABEL = { pt: "PT", en: "EN", es: "ES" };
+  const pick = () => {
+    let q = null; try { q = new URLSearchParams(location.search).get("lang"); } catch (e) {}
+    let s = null; try { s = localStorage.getItem("lang"); } catch (e) {}
+    const n = (navigator.language || "pt").slice(0, 2).toLowerCase();
+    return [q, s, n].find(x => LANGS.includes(x)) || "pt";
+  };
+  let lang = pick();
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const fragRe = {};
+  for (const l of ["en", "es"]) fragRe[l] = (F[l] || []).slice().sort((a, b) => b[0].length - a[0].length)
+    .map(([pt, tr]) => [new RegExp(`(?<![\\p{L}\\p{N}])${esc(pt)}(?![\\p{L}\\p{N}])`, "gu"), tr]);
+  const fixNum = n => lang !== "en" ? n : /^\d{1,3}(\.\d{3})+$/.test(n) ? n.replace(/\./g, ",") : /^\d+,\d+$/.test(n) ? n.replace(",", ".") : n;
+  function whole(x, d) {
+    if (d[x] != null) return d[x];
+    const nums = x.match(NUM); if (!nums) return null;
+    const v = d[x.replace(NUM, "{#}")]; if (v == null) return null;
+    let i = 0; return v.replace(/\{#\}/g, () => fixNum(nums[i++] ?? ""));
+  }
+  function tr(src) {
+    const t = src.trim(); if (!t || lang === "pt") return null;
+    const d = D[lang] || {};
+    let out = null;
+    if (d[t] != null) out = d[t];
+    else {
+      const nums = t.match(NUM);
+      if (nums) { const v = d[t.replace(NUM, "{#}")]; if (v != null) { let i = 0; out = v.replace(/\{#\}/g, () => fixNum(nums[i++] ?? "")); } }
+    }
+    if (out == null && /, | · /.test(t)) {   // composed labels: "title, status" or "a · b"
+      const parts = t.split(/(, | · )/); let hit = false;
+      const res = parts.map((x, i) => { if (i % 2) return x; const y = whole(x, d); if (y != null) { hit = true; return y; } return x; });
+      if (hit) {   // the parts left over still get phrase-by-phrase treatment
+        out = res.map((x, i) => { if (i % 2 || whole(parts[i], d) != null) return x; let s = x; for (const [re, rep] of fragRe[lang]) s = s.replace(re, rep); return s; }).join("");
+      }
+    }
+    if (out == null) {
+      let s = t; for (const [re, rep] of fragRe[lang]) s = s.replace(re, rep);
+      if (lang === "en") s = s.replace(/(?<![\d.,])\d{1,3}(?:\.\d{3})+(?:,\d+)?(?![\d.])|(?<![\d.,])\d+,\d+(?![\d,])/g, n => n.replace(/\./g, "§").replace(",", ".").replace(/§/g, ","));   // 1.234,5 → 1,234.5
+      if (s !== t) out = s;
+    }
+    return out == null ? null : src.replace(t, out);
+  }
+  const SKIP = new Set(["SCRIPT", "STYLE", "TEXTAREA", "CODE", "NOSCRIPT"]);
+  function doText(n) {
+    const pe = n.parentElement; if (!pe || SKIP.has(pe.tagName) || pe.closest("[data-noi18n]")) return;
+    if (n.__tr === undefined || n.nodeValue !== n.__tr) n.__pt = n.nodeValue;
+    const out = lang === "pt" ? n.__pt : (tr(n.__pt) ?? n.__pt);
+    n.__tr = out; if (n.nodeValue !== out) n.nodeValue = out;
+  }
+  const ATTRS = ["placeholder", "aria-label", "title"];
+  function doAttrs(el) {
+    if (el.closest && el.closest("[data-noi18n]")) return;
+    el.__pa = el.__pa || {}; el.__ta = el.__ta || {};
+    for (const a of ATTRS) {
+      if (!el.hasAttribute(a)) continue; const v = el.getAttribute(a);
+      if (el.__ta[a] === undefined || v !== el.__ta[a]) el.__pa[a] = v;
+      const out = lang === "pt" ? el.__pa[a] : (tr(el.__pa[a]) ?? el.__pa[a]);
+      el.__ta[a] = out; if (v !== out) el.setAttribute(a, out);
+    }
+  }
+  function walk(root) {
+    if (root.nodeType === 3) return doText(root);
+    if (root.nodeType !== 1) return;
+    if (ATTRS.some(a => root.hasAttribute(a))) doAttrs(root);
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    while (w.nextNode()) { const n = w.currentNode; if (n.nodeType === 3) doText(n); else if (ATTRS.some(a => n.hasAttribute(a))) doAttrs(n); }
+  }
+  let titlePt = null;
+  function all() {
+    if (titlePt === null || (document.title !== titleTr)) titlePt = document.title;
+    titleTr = lang === "pt" ? titlePt : (tr(titlePt) ?? titlePt); document.title = titleTr;
+    document.documentElement.lang = lang === "pt" ? "pt-BR" : lang;
+    walk(document.body);
+    document.querySelectorAll("[data-i18n-btn]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.i18nBtn === lang)));
+  }
+  let titleTr = null;
+  new MutationObserver(ms => {
+    for (const m of ms) {
+      if (m.type === "childList") m.addedNodes.forEach(walk);
+      else if (m.type === "characterData") doText(m.target);
+      else if (m.type === "attributes") doAttrs(m.target);
+    }
+  }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+  // the switcher
+  const pos = window.I18N_POS || "bottom:12px;left:12px";
+  const box = document.createElement("div"); box.setAttribute("data-noi18n", ""); box.setAttribute("role", "group"); box.setAttribute("aria-label", "Idioma · Language · Idioma");
+  box.style.cssText = `position:fixed;${pos};z-index:2147483000;display:flex;gap:2px;background:rgba(8,8,7,.82);border:1px solid #2C2820;padding:3px;font:500 11px/1 "IBM Plex Mono",ui-monospace,Menlo,monospace;letter-spacing:.08em;backdrop-filter:blur(6px)`;
+  for (const l of LANGS) {
+    const b = document.createElement("button"); b.type = "button"; b.dataset.i18nBtn = l; b.textContent = LABEL[l];
+    b.style.cssText = "background:none;border:0;color:#BDB3A5;padding:8px 9px;min-width:36px;min-height:32px;cursor:pointer;font:inherit;letter-spacing:inherit";
+    b.addEventListener("click", () => { lang = l; try { localStorage.setItem("lang", l); } catch (e) {} all(); });
+    box.append(b);
+  }
+  const st = document.createElement("style"); st.textContent = `[data-i18n-btn][aria-pressed="true"]{color:#0A0907!important;background:#E8B86A!important}[data-i18n-btn]:focus-visible{outline:2px solid #EDE6D8}`;
+  document.head.append(st);
+  const start = () => { document.body.append(box); all(); };
+  if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
+})();
+
+</script><!--/i18n-->
