@@ -4,6 +4,7 @@ Observatório · bancos de pesquisa em saúde mental (Carga Alostática, Luiza J
 - Europe PMC: artigos publicados na última semana, por tema.
 - ClinicalTrials.gov: ensaios clínicos em saúde mental recrutando agora, e quem os financia.
 - openFDA (FAERS): notificações de efeitos adversos de remédios psiquiátricos nos EUA. Uma vez por dia.
+- Europe PMC, uma vez por dia: revisões sistemáticas e meta-análises recentes sobre efeitos pouco divulgados.
 - PubChem: dados químicos dos mediadores e dos remédios (fórmula, massa). Só o que ainda não estiver salvo.
 
 Notificação não é prova de que o remédio causou o efeito; o site diz isso junto dos números.
@@ -135,6 +136,47 @@ def moleculas(salvas):
     return salvas
 
 
+# "o que pouco chega ao público": revisões sistemáticas e meta-análises recentes sobre efeitos e ligações pouco divulgados.
+# Entram na página marcadas como "ainda não lidas pela curadoria": a coleta acha, uma pessoa confere antes de virar achado.
+POUCO = [
+    ("antidepressivos e ossos", "antidep ossos", '((antidepressant* OR SSRI*) AND (fracture* OR "bone mineral density" OR osteoporosis))'),
+    ("parar antidepressivos", "antidep parar", '((antidepressant* OR SSRI* OR SNRI*) AND (withdrawal OR discontinuation OR tapering))'),
+    ("efeitos sexuais persistentes", "antidep sexual", '((antidepressant* OR SSRI*) AND ("sexual dysfunction" OR PSSD))'),
+    ("calmantes e dependência", "benzo parar", '((benzodiazepine* OR "Z-drug*") AND (dependence OR withdrawal OR dementia OR falls))'),
+    ("antipsicóticos e metabolismo", "antipsi", '(antipsychotic* AND ("weight gain" OR metabolic OR diabetes OR dyslipidemia))'),
+    ("estimulantes e coração", "jovens", '((methylphenidate OR amphetamine* OR "ADHD medication*") AND (cardiovascular OR "blood pressure" OR "heart rate"))'),
+    ("calor, ar e mente", "calor ar", '((heat OR "high temperature*" OR "air pollution" OR PM2.5) AND ("mental health" OR suicide OR depression OR psychiatric))'),
+    ("fome, dívida e mente", "fome dinheiro", '(("food insecurity" OR debt OR "financial strain") AND (depression OR anxiety OR suicide))'),
+]
+REVISAO = '(PUB_TYPE:"Systematic Review" OR PUB_TYPE:"Meta-Analysis" OR TITLE:"meta-analysis" OR TITLE:"systematic review")'
+
+
+def achados(dias=120, por_tema=2):
+    desde = (AGORA - timedelta(days=dias)).strftime("%Y-%m-%d")
+    ate = AGORA.strftime("%Y-%m-%d")
+    out = []
+    for tema, fios, q in POUCO:
+        try:
+            d = baixar("https://www.ebi.ac.uk/europepmc/webservices/rest/search?" + urllib.parse.urlencode(
+                {"query": f"{q} AND {REVISAO} AND FIRST_PDATE:[{desde} TO {ate}] AND SRC:MED", "format": "json",
+                 "pageSize": por_tema, "sort": "FIRST_PDATE desc", "resultType": "core"}))
+        except Exception:
+            continue
+        for r in d.get("resultList", {}).get("result", []):
+            resumo = " ".join((r.get("abstractText") or "").replace("<h4>", " ").replace("</h4>", ": ").split())
+            for tag in ("<b>", "</b>", "<i>", "</i>", "<sup>", "</sup>", "<sub>", "</sub>", "<p>", "</p>"):
+                resumo = resumo.replace(tag, "")
+            out.append({
+                "tema": tema, "fios": fios, "titulo": (r.get("title") or "").rstrip("."),
+                "revista": ((r.get("journalInfo") or {}).get("journal") or {}).get("title"),
+                "data": r.get("firstPublicationDate"),
+                "autores": (r.get("authorString") or "").split(",")[0] + (" et al." if "," in (r.get("authorString") or "") else ""),
+                "resumo": resumo[:420] + ("…" if len(resumo) > 420 else ""),
+                "link": f"https://europepmc.org/article/MED/{r['pmid']}" if r.get("pmid") else (f"https://doi.org/{r['doi']}" if r.get("doi") else None),
+            })
+    return out
+
+
 def coletar():
     """Chamado pelo coletor principal. Devolve o bloco 'pesquisa' e registra o estado de cada fonte."""
     caminho = os.path.join(RAIZ, "data", "pesquisa.json")
@@ -158,6 +200,14 @@ def coletar():
             fontes["openFDA"] = f"falhou ({type(e).__name__}) · mantido o último"
     else:
         fontes["openFDA"] = "ok · atualizado hoje"
+    if not antes.get("achados_em") or antes["achados_em"][:10] != AGORA.strftime("%Y-%m-%d"):   # uma vez por dia
+        try:
+            ach = achados()
+            if ach:
+                out["achados"] = ach; out["achados_em"] = AGORA.strftime("%Y-%m-%dT%H:%MZ")
+            fontes["Europe PMC · revisões"] = f"ok · {len(ach)} revisões"
+        except Exception as e:
+            fontes["Europe PMC · revisões"] = f"falhou ({type(e).__name__}) · mantido o último"
     try:
         out["moleculas"] = moleculas(antes.get("moleculas", {})); fontes["PubChem"] = f"ok · {len(out['moleculas'])} moléculas"
     except Exception as e:
