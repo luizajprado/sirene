@@ -796,7 +796,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     // real time: every minute the place is recalculated (local hour, night, age of each alert) and the colors follow
     if (src.kind === "lugar" && performance.now() - (P.refreshAt || 0) > 60000) {
       P.refreshAt = performance.now();
-      const fresh = srcFromPlace(src.place.pl); src.place = fresh;
+      const fresh = freshSrc(src.place); src.place = fresh;
       src.inRows = fresh.factors.slice().sort((a, b) => b.i - a.i).map(f => [`<span style="color:${f.i > 0 ? hex(COL[f.key]) : "var(--dim)"}">${f.name}</span>`, `${f.i.toFixed(2)} · <span class="dim">${f.tag}</span>`]);
       document.getElementById("pIn").innerHTML = rows(src.inRows) + `<dt>atualizado</dt><dd>${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</dd>`;
       if (RG.ok) for (const e of RG.em) { const f = fresh.factors.find(x => x.key === e.key); if (f) e.i = f.i; }
@@ -1239,6 +1239,17 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     return { id: "pl" + PLACES.indexOf(pl), kind: "lugar", pl, factors, light: li, label: pl.name, lat: pl.lat, lon: pl.lon };
   }
   const PSRC = PLACES.map(srcFromPlace);
+  // "Mundo todo": the mean of every place's factors, shown first in figures and portraits
+  const WORLD_PL = { name: "Mundo todo", lat: 0, lon: 0, world: true };
+  function srcWorld() {
+    const all = PLACES.map(srcFromPlace), acc = {};
+    for (const s of all) for (const f of s.factors) { const a = acc[f.key] || (acc[f.key] = { key: f.key, name: f.name.startsWith("desastre") ? `desastre · ${f.name.split("· ")[1]}` : f.name, positivo: f.positivo, i: 0 }); a.i += f.i / all.length; }
+    WORLD_PL.T = Math.round(PLACES.reduce((a, p) => a + p.T, 0) / PLACES.length);
+    const factors = Object.values(acc).map(f => ({ ...f, tag: `média de ${all.length} lugares` }));
+    return { id: "world", kind: "lugar", pl: WORLD_PL, factors, light: all.reduce((a, s) => a + s.light, 0) / all.length, label: "Mundo todo", lat: 0, lon: 0 };
+  }
+  const freshSrc = ps => (ps.pl && ps.pl.world) || ps.world ? srcWorld() : srcFromPlace(ps.pl || ps);
+  PSRC.unshift(srcWorld());
 
   // retratos built from places: the three heaviest factors of a place, each with its own color and reaction-diffusion regime
   // regimes chosen to avoid isolated round dots: filaments, branching coral and wandering lines read as living tissue
@@ -1249,10 +1260,10 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     LIGHT: () => ({ F: 0.0545, K: 0.062 }), WAR: i => ({ F: 0.026 + 0.004 * (1 - i), K: 0.054 + 0.004 * (1 - i) }) };
   const RDNAME = { DOP: "coral", ADR: "fibras curtas", NOR: "coral ramificado", COR: "filamentos errantes", GLU: "labirinto denso", IL6: "labirinto aberto", SER: "coral", GRE: "filamentos", MEL: "anel pulsante", OXT: "coral", GABA: "coral ramificado", EQ: "labirinto", WF: "coral ramificado", TC: "coral", HEAT: "filamentos errantes", AIR: "labirinto aberto", NOISE: "fibras curtas", LIGHT: "anel pulsante", WAR: "labirinto denso" };
   function portraitFromPlace(ps) {
-    const src = srcFromPlace(ps.pl), top = speciesFor(src);
+    const src = freshSrc(ps), top = speciesFor(src);
     const layers = top.map(([key, i]) => ({ key, i, ch: { ...RDREG[key](i), n: Math.round(16 + 200 * i), R: (0.18 + 0.28 * i) * PS, ring: key === "LIGHT" || key === "MEL" } }));
     const nz = (src.factors.find(f => f.key === "NOISE") || { i: 0 }).i, mx = Math.max(...top.map(x => x[1]));
-    return { id: "rp" + PLACES.indexOf(ps.pl), kind: "lugar", place: src, layers, noise: nz, light: src.light, period: 600,
+    return { id: ps.pl.world ? "rpw" : "rp" + PLACES.indexOf(ps.pl), kind: "lugar", place: src, layers, noise: nz, light: src.light, period: 600,
       target: Math.round(2400 + 2000 * mx), label: ps.pl.name,
       inRows: src.factors.slice().sort((a, b) => b.i - a.i).map(f => [`<span style="color:${f.i > 0 ? hex(COL[f.key]) : "var(--dim)"}">${f.name}</span>`, `${f.i.toFixed(2)} · <span class="dim">${f.tag}</span>`]),
       parRows: layers.map(l => [`<span style="color:${hex(COL[l.key])}">${COLNAME[l.key]}</span>`, `${MED[l.key] ? `${MED[l.key].massa.toLocaleString("pt-BR")} g/mol → ${Math.round(medHz(l.key))} Hz · ` : ""}${RDNAME[l.key] || ""}`]).concat([["passos", Math.round(2400 + 2000 * mx)]]) };
@@ -1260,7 +1271,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
   function buildPlaceChips(el) {
     const d = document.createElement("div"); d.className = "chiphead"; d.textContent = "lugares · tudo o que pesa ali"; el.append(d);
     PSRC.forEach(ps => {
-      const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.id = "rp" + PLACES.indexOf(ps.pl);
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.id = ps.pl.world ? "rpw" : "rp" + PLACES.indexOf(ps.pl);
       b.innerHTML = speciesFor(ps).map(x => `<i style="color:${hex(COL[x[0]])}">●</i>`).join("") + " " + ps.label;
       b.addEventListener("click", () => { setAuto(false); pStart(portraitFromPlace(ps)); }); el.append(b);
     });
@@ -1508,8 +1519,8 @@ void main(){
   function gTick(dt) {
     gFrame++;
     const now = performance.now();
-    if (G.auto && now - G.lastSwitch > G.hold) { const ps = PSRC[G.qi % PSRC.length]; gSet(srcFromPlace(ps.pl)); G.qi++; }
-    if (G.src && G.src.kind === "lugar" && now - (G.refreshAt || now) > 60000) { const fresh = srcFromPlace(G.src.pl); G.src = fresh; nbTarget(fresh); document.getElementById("gParams").innerHTML = placeRows(fresh); G.refreshAt = now; }
+    if (G.auto && now - G.lastSwitch > G.hold) { const ps = PSRC[G.qi % PSRC.length]; gSet(freshSrc(ps)); G.qi++; }
+    if (G.src && G.src.kind === "lugar" && now - (G.refreshAt || now) > 60000) { const fresh = freshSrc(G.src); G.src = fresh; nbTarget(fresh); document.getElementById("gParams").innerHTML = placeRows(fresh); G.refreshAt = now; }
     if (!G.refreshAt) G.refreshAt = now;
     if (NB.mode === "neb") nbTick(dt);
     else { gLerp(dt); gStep(); gPaint(G.ctx, G.cv.width, G.cv.height); }
@@ -1526,7 +1537,7 @@ void main(){
     PSRC.forEach((s) => {
       const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.id = s.id;
       b.innerHTML = speciesFor(s).map(x => `<i style="color:${hex(COL[x[0]])}">●</i>`).join("") + " " + s.label;
-      b.addEventListener("click", () => { gAuto(false); gSet(srcFromPlace(s.pl)); }); el.append(b);
+      b.addEventListener("click", () => { gAuto(false); gSet(freshSrc(s)); }); el.append(b);
     });
   })();
   function gAuto(on) { G.auto = on; const b = document.getElementById("gAuto"); b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "automático: ligado" : "automático: desligado"; if (on) G.lastSwitch = performance.now() - G.hold; }
