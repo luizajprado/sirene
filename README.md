@@ -11,9 +11,19 @@ As correspondências entre fatores e mediadores simplificam a literatura de psic
 1. **Coleta automática.** A cada hora, o GitHub roda `coletor/coletar.py`, que busca dados públicos e grava:
    - `data/ultimo.json`: o retrato mais recente;
    - `data/historico/AAAA-MM-DD/HHMM.json`: o arquivo de cada coleta, aberto para quem quiser estudar;
-   - `docs/dados.js`: o que o site lê.
+   - `data/serie.json`: as últimas 48 coletas, para variações e tendências;
+   - `docs/dados.js` e `docs/dados.json`: o que o site e a extensão leem.
 2. **Site.** A pasta `docs/` é publicada pelo GitHub Pages. As imagens e os sons são gerados no navegador de cada pessoa, a partir do arquivo de dados mais recente.
 3. **Falhas.** Se uma fonte não responder, o coletor mantém o último valor bom e registra a falha. O site mostra o estado de cada fonte.
+
+## Bolsa da Aflição
+
+Obra paralela, em `docs/bolsa/`: um terminal de mercado em que cada fator de cada lugar vira um ativo cotado de 0 a 100 (`VIOL.SAO`, `FOME.SSD`, `CUID.DAC`…), com variação em 24 horas, tendência, boletim na língua do mercado e pregão sonoro contínuo. Ao lado, os índices do dinheiro: S&P 500, Ibovespa e VIX. Fica em `https://luizajprado.github.io/sirene/bolsa/`.
+
+Ela sai do site de duas formas:
+
+- **Robô no Bluesky** (`coletor/robo.py`): depois de cada coleta, se um ativo se moveu 20% ou mais em 24 horas, publica um boletim curto com o link de quem trabalha para que ele caia. No máximo 4 por dia. Para ligar, crie uma conta para o robô, gere uma senha de app (Configurações → Privacidade e segurança → Senhas de app) e cadastre os secrets `BSKY_HANDLE` e `BSKY_APP_PASSWORD`. Sem eles, o robô só escreve no log o que publicaria.
+- **Extensão de navegador** (`extensao/`): troca, nas páginas de notícia, "Ibovespa", "S&P 500", "Dow Jones" e outros pelos índices de aflição do dia. Instruções em `extensao/LEIAME.md`.
 
 ## Fontes
 
@@ -29,6 +39,7 @@ As correspondências entre fatores e mediadores simplificam a literatura de psic
 | Contraponto: ajuda humanitária, acordos, cooperação | GDELT | real, automático |
 | Pressão econômica (inflação, desemprego, por país) | Banco Mundial | real, automático (anual) |
 | Medo dos mercados (VIX) | FRED, Federal Reserve de St. Louis | real, automático (diário); camada mundial pequena |
+| S&P 500 e Ibovespa (só na Bolsa da Aflição) | FRED e Stooq | real, automático (diário) |
 | Ruído | estimativa por lugar | estimado; mapas de ruído oficiais existem só para algumas regiões |
 | Violência e crise política (protestos, repressão, agressões, combates) | GDELT · aberto, a cada 15 min | real, automático; mede o que a imprensa relata |
 | Guerra (mortes em conflitos, por país) | HDX HAPI (OCHA/ONU), dados ACLED | precisa do secret `HAPI_EMAIL` |

@@ -8,7 +8,9 @@ grava o retrato do momento e guarda o histórico.
 Saídas:
   data/ultimo.json                      estado mais recente
   data/historico/AAAA-MM-DD/HHMM.json   arquivo de cada coleta
+  data/serie.json                       as últimas 48 coletas, para variações e tendências
   docs/dados.js                         o que o site lê (window.SIRENE_DATA)
+  docs/dados.json                       o mesmo, em JSON, para a extensão de navegador
 
 Se uma fonte falhar, o coletor mantém o último valor bom e registra a falha em "fontes".
 """
@@ -381,6 +383,33 @@ def economia(lugares):
     return out, vix
 
 
+# ---------------------------------------------------------------- bolsa de valores · FRED (S&P 500, VIX) e Stooq (Ibovespa)
+# Usado pela Bolsa da Aflição, que põe o dinheiro e o sofrimento lado a lado. Guarda [último, anterior, data].
+def _dois_ultimos(linhas, col):
+    vals = []
+    for ln in reversed(linhas[1:]):
+        partes = ln.split(",")
+        if len(partes) > col and partes[col] not in (".", "", "null"):
+            vals.append((float(partes[col]), partes[0]))
+            if len(vals) == 2:
+                break
+    return [round(vals[0][0], 2), round(vals[1][0], 2), vals[0][1]] if len(vals) == 2 else None
+
+
+def mercado():
+    out = {}
+    for chave, serie in (("SP500", "SP500"), ("VIX", "VIXCLS")):
+        try:
+            out[chave] = _dois_ultimos(baixar(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={serie}").decode().strip().splitlines(), 1)
+        except Exception:
+            pass
+    try:  # Stooq: Date,Open,High,Low,Close,Volume; fechamento na coluna 4
+        out["IBOV"] = _dois_ultimos(baixar("https://stooq.com/q/d/l/?s=%5Ebvp&i=d").decode().strip().splitlines(), 4)
+    except Exception:
+        pass
+    return {k: v for k, v in out.items() if v}
+
+
 # ---------------------------------------------------------------- execução
 def carregar(caminho, padrao):
     try:
@@ -458,6 +487,10 @@ def main():
         fontes["HDX"] = f"falhou ({type(e).__name__}) · mantido o último valor"
     antigos = {p["nome"]: p for p in anterior.get("lugares", [])}
 
+    merc = mercado()
+    fontes["Bolsas (FRED, Stooq)"] = ("ok · " + ", ".join(merc)) if merc else "falhou · mantido o último valor"
+    merc = {**(anterior.get("mercado") or {}), **merc}
+
     saida_lugares = []
     for p, m, v in zip(lugares, medidas, violencia):
         extra = (pais or {}).get(p["iso3"]) if pais is not None else {k: antigos.get(p["nome"], {}).get(k) for k in ("guerra", "fome", "deslocamento")}
@@ -486,18 +519,36 @@ def main():
 
     alertas.sort(key=lambda a: a[0])
     inicio = alertas[0][0] if alertas else iso(AGORA - timedelta(hours=72))
+    # série das últimas 48 coletas: valores de cada fator por lugar, para a variação em 24 h e as tendências da Bolsa da Aflição
+    chaves = {"VIOL": "violencia", "GUER": "guerra", "FOME": "fome", "DESL": "deslocamento", "ANSI": "aflicao_coletiva", "ECON": "economia", "CUID": "cuidado"}
+    foto = {"t": iso(AGORA), "lugares": {}}
+    for L in saida_lugares:
+        reg = {"T": L.get("T"), "pm": L.get("pm")}
+        for k, campo in chaves.items():
+            x = L.get(campo)
+            if isinstance(x, dict) and x.get("i") is not None:
+                reg[k] = x["i"]
+        foto["lugares"][L["nome"]] = reg
+    serie = [s for s in carregar(os.path.join(RAIZ, "data", "serie.json"), []) if s.get("t") != foto["t"]]
+    serie = (serie + [foto])[-48:]
+
     dados = {"atualizado": iso(AGORA), "inicio": inicio, "fontes": fontes, "alertas": alertas,
-             "lugares": saida_lugares, "atencao": atencao, "redes": redes, "vix": vix, "conflitos": conflitos}
+             "lugares": saida_lugares, "atencao": atencao, "redes": redes, "vix": vix, "conflitos": conflitos,
+             "mercado": merc, "serie": serie}
 
     os.makedirs(os.path.join(RAIZ, "data", "historico", AGORA.strftime("%Y-%m-%d")), exist_ok=True)
     os.makedirs(os.path.join(RAIZ, "docs"), exist_ok=True)
     texto = json.dumps(dados, ensure_ascii=False, separators=(",", ":"))
-    for caminho in (os.path.join(RAIZ, "data", "ultimo.json"),
-                    os.path.join(RAIZ, "data", "historico", AGORA.strftime("%Y-%m-%d"), AGORA.strftime("%H%M") + ".json")):
-        with open(caminho, "w", encoding="utf-8") as f:
-            f.write(texto)
+    with open(os.path.join(RAIZ, "data", "ultimo.json"), "w", encoding="utf-8") as f:
+        f.write(texto)
+    with open(os.path.join(RAIZ, "data", "historico", AGORA.strftime("%Y-%m-%d"), AGORA.strftime("%H%M") + ".json"), "w", encoding="utf-8") as f:
+        json.dump({k: v for k, v in dados.items() if k != "serie"}, f, ensure_ascii=False, separators=(",", ":"))  # a série já está em data/serie.json
+    with open(os.path.join(RAIZ, "data", "serie.json"), "w", encoding="utf-8") as f:
+        json.dump(serie, f, ensure_ascii=False, separators=(",", ":"))
     with open(os.path.join(RAIZ, "docs", "dados.js"), "w", encoding="utf-8") as f:
         f.write("window.SIRENE_DATA = " + texto + ";\n")
+    with open(os.path.join(RAIZ, "docs", "dados.json"), "w", encoding="utf-8") as f:  # para a extensão de navegador e para quem quiser os dados
+        f.write(texto)
     print(json.dumps(fontes, ensure_ascii=False, indent=1))
 
 

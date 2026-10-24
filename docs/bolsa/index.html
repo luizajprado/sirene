@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bolsa da Aflição</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Martian+Mono:wdth,wght@75..112.5,300..800&display=swap">
+<style>
+[hidden] { display: none !important; }
+/* Layout: a financial terminal turned inside out. Ticker tape on top, the board of affliction assets on the left,
+   money indices and the newswire on the right, sound and outward channels at the bottom. Single dark look by choice. */
+:root {
+  --bg: #0A0907;
+  --panel: #12100C;
+  --line: #2C261C;
+  --fg: #F2E9D8;
+  --dim: #9C9180;
+  --amber: #FFB547;
+  --worse: #FF5A4A;   /* up = worse */
+  --relief: #57D3C8;  /* down = relief */
+  --care: #F58CB8;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --disp: "Martian Mono", "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+html, body { background: var(--bg); color: var(--fg); }
+body { font-family: var(--mono); font-size: 13px; line-height: 1.5; }
+button { font: inherit; color: inherit; }
+a { color: var(--amber); }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px 28px; display: flex; flex-direction: column; gap: 12px; max-width: 1600px; margin: 0 auto; }
+.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.brand { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.brand b { font-family: var(--disp); font-stretch: 75%; font-weight: 800; font-size: clamp(22px, 3vw, 34px); color: var(--amber); letter-spacing: -0.01em; }
+.brand span { color: var(--dim); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
+.clocks { display: flex; gap: 18px; font-variant-numeric: tabular-nums; color: var(--dim); font-size: 12px; flex-wrap: wrap; }
+.clocks b { color: var(--fg); font-weight: 500; }
+.mode { padding: 2px 8px; border: 1px solid var(--amber); color: var(--amber); font-size: 11px; letter-spacing: 0.1em; }
+.tape { overflow: hidden; border-block: 1px solid var(--line); background: var(--panel); white-space: nowrap; position: relative; }
+.tape-inner { display: inline-flex; gap: 32px; padding: 7px 0; animation: tape 90s linear infinite; font-variant-numeric: tabular-nums; }
+.tape-inner span { display: inline-flex; gap: 8px; }
+@keyframes tape { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .tape-inner { animation: none; } }
+.up { color: var(--worse); } .down { color: var(--relief); } .flat { color: var(--dim); } .pos { color: var(--care); }
+.grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 980px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+.ph { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); flex-wrap: wrap; }
+.ph b { color: var(--amber); font-weight: 600; }
+.tablewrap { overflow: auto; max-height: 560px; }
+thead th { position: sticky; top: 0; background: var(--panel); z-index: 1; }
+.care { display: flex; flex-direction: column; gap: 6px; margin: 0; }
+.care div { display: flex; flex-direction: column; }
+.care dt { color: var(--dim); font-size: 11px; }
+.care dd { margin: 0; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 8px; text-align: left; white-space: nowrap; border-bottom: 1px solid #1C1912; }
+th { font-weight: 400; color: var(--dim); font-size: 11px; letter-spacing: 0.08em; cursor: pointer; user-select: none; }
+th[aria-sort] { color: var(--amber); }
+td.num, th.num { text-align: right; }
+tbody tr { cursor: pointer; }
+tbody tr:hover, tbody tr[aria-selected="true"] { background: #1D1913; }
+tbody tr:focus-visible { outline: 1px solid var(--amber); outline-offset: -1px; }
+.sym { color: var(--amber); font-weight: 600; }
+.spark { letter-spacing: -1px; }
+td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
+.flash { animation: flash 1.6s ease-out; }
+@keyframes flash { from { background: #3A2A14; } to { background: transparent; } }
+.side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.idx { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); }
+.idx div { background: var(--panel); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; font-variant-numeric: tabular-nums; }
+.idx small { color: var(--dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+.idx b { font-family: var(--disp); font-stretch: 75%; font-size: 22px; font-weight: 600; }
+.wire { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow-y: auto; }
+.wire li { padding: 8px 12px; border-bottom: 1px solid #1C1912; display: flex; flex-direction: column; gap: 2px; }
+.wire li time { color: var(--dim); font-size: 11px; }
+.wire li.new { animation: flash 2.4s ease-out; }
+.detail { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.detail h2 { margin: 0; font-family: var(--disp); font-stretch: 75%; font-size: 22px; color: var(--amber); }
+.kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 12px; margin: 0; }
+.kv dt { color: var(--dim); } .kv dd { margin: 0; overflow-wrap: anywhere; }
+.bottom { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 980px) { .bottom { grid-template-columns: minmax(0, 1fr); } }
+.box { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.box p { margin: 0; color: var(--dim); }
+.btn { background: transparent; border: 1px solid var(--amber); color: var(--amber); padding: 10px 14px; min-height: 44px; cursor: pointer; letter-spacing: 0.06em; align-self: flex-start; }
+.btn[aria-pressed="true"] { background: var(--amber); color: var(--bg); }
+.btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.voices { display: flex; flex-direction: column; gap: 4px; font-variant-numeric: tabular-nums; font-size: 12px; }
+.voices div { display: grid; grid-template-columns: 110px 70px minmax(0, 1fr); gap: 8px; align-items: center; }
+.bar { height: 5px; background: #221E16; position: relative; } .bar i { position: absolute; inset: 0 auto 0 0; background: var(--amber); }
+.post { border: 1px solid var(--line); padding: 10px; background: #0E0C09; display: flex; flex-direction: column; gap: 4px; }
+.post small { color: var(--dim); }
+.mock { border: 1px solid var(--line); padding: 10px; background: #F2EEE6; color: #1A1814; font-family: Georgia, serif; font-size: 14px; }
+.mock .q { font-family: var(--mono); font-size: 12px; background: #fff; border: 1px solid #ddd; padding: 2px 6px; display: inline-block; margin: 2px 4px 2px 0; }
+.foot { color: var(--dim); font-size: 11px; border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><b>BOLSA DA AFLIÇÃO</b><span>o sofrimento cotado como dinheiro · Sirene</span></div>
+    <div class="clocks"><span>UTC <b id="cUtc">--:--:--</b></span><span>São Paulo <b id="cSp">--:--:--</b></span><span class="mode" id="mode">DEMONSTRAÇÃO</span></div>
+  </div>
+
+  <div class="tape" aria-hidden="true"><div class="tape-inner" id="tape"></div></div>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="hBoard">
+      <div class="ph"><span id="hBoard"><b>PREGÃO</b> · ativos de aflição por lugar</span><span>↑ piora · ↓ alívio · valores de 0 a 100</span></div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr>
+            <th data-k="sym">ativo</th><th data-k="nome">o que mede</th><th data-k="lugar">lugar</th>
+            <th class="num" data-k="v">cotação</th><th class="num" data-k="d" aria-sort="descending">24 h</th><th>tendência</th>
+          </tr></thead>
+          <tbody id="board"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="side">
+      <section class="panel" aria-labelledby="hMoney">
+        <div class="ph"><span id="hMoney"><b>ÍNDICES DO DINHEIRO</b></span><span id="mDate"></span></div>
+        <div class="idx" id="money"></div>
+      </section>
+      <section class="panel" aria-labelledby="hPain">
+        <div class="ph"><span id="hPain"><b>ÍNDICES DO SOFRIMENTO</b></span><span>médias dos lugares</span></div>
+        <div class="idx" id="pain"></div>
+      </section>
+      <section class="panel" aria-labelledby="hDetail">
+        <div class="ph"><span id="hDetail"><b>ATIVO</b></span><span>clique numa linha do pregão</span></div>
+        <div class="detail" id="detail"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="hWire">
+      <div class="ph"><span id="hWire"><b>BOLETIM</b> · na língua do mercado</span><span>o robô publica estas notas nas redes</span></div>
+      <ol class="wire" id="wire" aria-live="polite"></ol>
+    </section>
+    <section class="panel" aria-labelledby="hSound">
+      <div class="ph"><span id="hSound"><b>PREGÃO SONORO</b></span><span>contínuo · só para quando você desliga</span></div>
+      <div class="box">
+        <p>Cada ativo em alta soa na frequência do mediador químico que ele mobiliza (massa molecular levada por oitavas). O índice do medo dos mercados (VIX) é o grave por baixo. Cada nova cotação é um tique.</p>
+        <button type="button" class="btn" id="snd" aria-pressed="false">ligar pregão sonoro</button>
+        <div class="voices" id="voices" hidden></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="bottom">
+    <section class="panel" aria-labelledby="hBot">
+      <div class="ph"><span id="hBot"><b>ROBÔ</b> · Bluesky</span><span>prévia</span></div>
+      <div class="box">
+        <p>Quando a bolsa mexe forte ou um ativo de aflição dispara, uma conta automática publica o boletim, cruzando o dinheiro e as pessoas no mesmo dia.</p>
+        <div class="post" id="botPost"></div>
+      </div>
+    </section>
+    <section class="panel" aria-labelledby="hExt">
+      <div class="ph"><span id="hExt"><b>EXTENSÃO</b> · navegador</span><span>prévia</span></div>
+      <div class="box">
+        <p>Instalada no navegador, troca os índices da bolsa nas páginas de notícia pelos índices de aflição do dia.</p>
+        <div class="mock" id="extMock"></div>
+      </div>
+    </section>
+    <section class="panel" aria-labelledby="hCare">
+      <div class="ph"><span id="hCare"><b>INVESTIR EM CUIDADO</b></span><span>contraponto</span></div>
+      <div class="box">
+        <p>Aqui não se compra nem se vende. Cada ativo aponta para quem trabalha para que ele caia.</p>
+        <dl class="care" id="care"></dl>
+      </div>
+    </section>
+  </div>
+
+  <div class="foot">
+    <span id="fonte">Valores de demonstração. Na versão publicada no GitHub, os ativos vêm da coleta automática da Sirene, a cada hora.</span>
+    <span>As cotações traduzem dados públicos agregados por lugar. Não medem o corpo de ninguém e não fazem diagnóstico.</span>
+    <span><a href="../">Sirene</a> · Luiza Jesus do Prado, 2026</span>
+  </div>
+</div>
+
+<script src="../dados.js"></script>
+<script>
+(() => {
+  const LIVE = window.SIRENE_DATA || null;
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const pad = n => String(n).padStart(2, "0");
+  const fmtN = (x, d = 1) => x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+
+  // ---------- chemistry shared with Sirene ----------
+  const MED = {
+    ADR: ["adrenalina", 183.20], NOR: ["noradrenalina", 169.18], COR: ["cortisol", 362.46], GLU: ["glutamato", 147.13],
+    IL6: ["interleucina-6", 21000], SER: ["serotonina", 176.22], GRE: ["grelina", 3370.9], MEL: ["melatonina", 232.28],
+    OXT: ["ocitocina", 1007.19], GABA: ["GABA", 103.12], DOP: ["dopamina", 153.18],
+  };
+  const medHz = m => { let f = MED[m][1]; while (f > 1100) f /= 2; while (f < 100) f *= 2; return f; };
+  // assets: what each one measures, its main mediator and who works to bring it down
+  const ASSETS = {
+    COR:  { curto: "cortisol do lugar", nome: "cortisol do lugar (carga total)", med: "COR", cuidado: ["Find A Helpline", "https://findahelpline.com"] },
+    FOME: { nome: "fome", med: "GRE", cuidado: ["Programa Mundial de Alimentos (WFP)", "https://www.wfp.org"] },
+    ANSI: { curto: "aflição coletiva", nome: "aflição coletiva (buscas e posts)", med: "NOR", cuidado: ["Find A Helpline", "https://findahelpline.com"] },
+    VIOL: { curto: "violência", nome: "violência e crise política", med: "GLU", cuidado: ["Médicos Sem Fronteiras", "https://www.msf.org"] },
+    GUER: { nome: "guerra", med: "GLU", cuidado: ["Médicos Sem Fronteiras", "https://www.msf.org"] },
+    DESL: { curto: "deslocamento", nome: "deslocamento forçado", med: "OXT", cuidado: ["ACNUR", "https://www.unhcr.org"] },
+    ECON: { nome: "pressão econômica", med: "COR", cuidado: ["Find A Helpline", "https://findahelpline.com"] },
+    CUID: { curto: "cuidado ✚", nome: "cuidado: ajuda e cooperação (contraponto)", med: "GABA", positivo: true, cuidado: ["ReliefWeb", "https://reliefweb.int"] },
+  };
+  const FMED = { DIS: { ADR: .45, NOR: .35, COR: .2 }, HEAT: { COR: .4, MEL: .3, SER: .3 }, AIR: { IL6: .7, GLU: .3 }, NOISE: { NOR: .4, COR: .3, MEL: .3 },
+    GUER: { NOR: .35, GLU: .3, COR: .2, ADR: .15 }, VIOL: { COR: .45, NOR: .3, GLU: .25 }, FOME: { SER: .4, GRE: .35, COR: .25 }, DESL: { OXT: .5, COR: .5 },
+    ANSI: { NOR: .4, COR: .4, MEL: .2 }, ECON: { COR: .6, NOR: .25, SER: .15 } };
+
+  // ---------- places (demo values marked as examples; replaced by the collector's data when present) ----------
+  const PLACES = [
+    ["TIB", "Planalto Tibetano, China", 32.4, 93.8, 2, 8, 45, {}], ["AUN", "Norte da Austrália", -19.5, 128.5, 36, 14, 45, {}],
+    ["OKA", "Okavango, Botsuana", -20.5, 24.8, 33, 12, 45, {}], ["SSD", "Sudão do Sul", 9.7, 26.0, 35, 30, 50, { VIOL: .55, GUER: .6, FOME: .85, DESL: .8, CUID: .45, ANSI: .3 }],
+    ["PAC", "Costa do Pacífico, México", 17.0, -100.5, 30, 15, 60, {}], ["VAN", "Vanuatu", -15.4, 167.0, 27, 6, 50, {}], ["NSC", "Nova Escócia, Canadá", 44.6, -63.6, 12, 6, 58, {}],
+    ["SAO", "São Paulo", -23.55, -46.63, 27, 22, 72, { VIOL: .35, ANSI: .4, CUID: .2, ECON: .3 }], ["DEL", "Nova Délhi", 28.61, 77.21, 31, 110, 80, { VIOL: .25, ANSI: .25 }],
+    ["LOS", "Lagos", 6.52, 3.38, 30, 58, 78, { VIOL: .45, FOME: .3, CUID: .25, ECON: .6 }], ["CAI", "Cairo", 30.04, 31.24, 29, 70, 79, { VIOL: .2, CUID: .15, ECON: .55 }],
+    ["JKT", "Jacarta", -6.21, 106.85, 32, 45, 75, {}], ["MEX", "Cidade do México", 19.43, -99.13, 24, 24, 73, { VIOL: .45, ANSI: .3 }],
+    ["MAD", "Madri", 40.42, -3.70, 17, 9, 66, { CUID: .2 }], ["DAC", "Daca", 23.81, 90.41, 30, 85, 82, { DESL: .35, FOME: .2, CUID: .3 }],
+    ["PEK", "Pequim", 39.90, 116.40, 14, 40, 70, {}], ["TOS", "Tromsø", 69.65, 18.96, 2, 5, 52, {}],
+  ].map(([code, nome, lat, lon, T, pm, db, ex]) => ({ code, nome, lat, lon, T, pm, db, ex, f: {}, notas: {} }));
+  const ALERTS = (LIVE && LIVE.alertas) || [
+    ["2026-10-22T14:33Z", "EQ", "Red", 32.38, 93.78, 7.0], ["2026-10-21T15:00Z", "TC", "Green", 10.5, -101.9, 194], ["2026-10-21T21:00Z", "TC", "Green", 40.0, -65.8, 120],
+    ["2026-10-21T00:00Z", "WF", "Green", -20.77, 136.58, 26776], ["2026-10-20T00:00Z", "WF", "Green", -20.09, 23.76, 19584], ["2026-10-20T04:20Z", "EQ", "Green", -13.99, 165.59, 6.3],
+  ].map(a => a.length === 6 ? [a[0], a[1], a[2], "", a[3], a[4], a[5]] : a);
+  const km = (a1, o1, a2, o2) => { const r = Math.PI / 180, x = Math.sin((a2 - a1) * r / 2) ** 2 + Math.cos(a1 * r) * Math.cos(a2 * r) * Math.sin((o2 - o1) * r / 2) ** 2; return 12742 * Math.asin(Math.sqrt(x)); };
+
+  function factorsFor(p, now) {
+    let dis = 0;
+    for (const a of ALERTS) {
+      const [ts, type, level, , lat, lon, v] = a, age = (now - Date.parse(ts)) / 3600e3;
+      const inten = type === "EQ" ? clamp((v - 5) / 2.5, 0, 1) : type === "WF" ? clamp(Math.sqrt(v) / 170, 0, 1) : clamp(v / 200, 0, 1);
+      const c = clamp(inten * (level === "Red" ? 1.5 : 1), 0, 1) * Math.exp(-((km(p.lat, p.lon, lat, lon) / 700) ** 2)) * Math.exp(-Math.max(0, age) / 72);
+      dis = 1 - (1 - dis) * (1 - c);
+    }
+    const solar = (new Date(now).getUTCHours() + p.lon / 15 + 24) % 24, diurnal = 0.5 + 0.5 * Math.cos(2 * Math.PI * (solar - 15) / 24);
+    const f = { DIS: clamp(dis * 2.2, 0, 1), HEAT: clamp((p.T - 18) / 22, 0, 1) * (0.6 + 0.4 * diurnal), AIR: clamp(p.pm / 90, 0, 1), NOISE: clamp((p.db - 45) / 40, 0, 1) };
+    for (const k of ["VIOL", "GUER", "FOME", "DESL", "ANSI", "ECON", "CUID"]) f[k] = p.f[k] != null ? p.f[k] : (p.ex[k] || 0);
+    let cor = 0; for (const [k, w] of Object.entries(FMED)) cor += (f[k] || 0) * (w.COR || 0);
+    f.COR = clamp(cor / 1.2, 0, 1);
+    return f;
+  }
+
+  // live data from the collector, when the page is served next to dados.js
+  if (LIVE && LIVE.lugares) {
+    const map = { VIOL: "violencia", GUER: "guerra", FOME: "fome", DESL: "deslocamento", ANSI: "aflicao_coletiva", ECON: "economia", CUID: "cuidado" };
+    for (const p of PLACES) {
+      const r = LIVE.lugares.find(x => x.nome === p.nome); if (!r) continue;
+      if (r.T != null) p.T = r.T; if (r.pm != null) p.pm = r.pm;
+      p.ex = {};
+      for (const [k, fld] of Object.entries(map)) if (r[fld] && r[fld].i != null) { p.f[k] = r[fld].i; p.notas[k] = r[fld].nota; }
+    }
+  }
+
+  // ---------- quotes: value now, value 24 h ago, 24 points of history ----------
+  function seeded(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; }
+  const DAY = new Date().toISOString().slice(0, 10);
+  function buildQuotes() {
+    const now = Date.now(), out = [];
+    const serie = LIVE && LIVE.serie;
+    for (const p of PLACES) {
+      const fNow = factorsFor(p, now);
+      for (const [k, a] of Object.entries(ASSETS)) {
+        const v = fNow[k] * 100; if (v < 3) continue;
+        let hist;
+        let real = false;
+        if (serie && serie.length > 2) {
+          hist = serie.slice(-25).map(s => {
+            const x = s.lugares && s.lugares[p.nome]; if (!x) return null;
+            const q = { ...p, T: x.T != null ? x.T : p.T, pm: x.pm != null ? x.pm : p.pm, f: x, ex: {} };
+            return factorsFor(q, Date.parse(s.t))[k] * 100;
+          }).filter(x => x != null);
+          real = hist.length >= 3;
+        }
+        if (!real) { // demo: a plausible day behind the current value, marked as demonstration
+          const r = seeded(p.code + k + DAY); hist = []; let x = v * (0.9 + 0.2 * r());
+          for (let i = 0; i < 23; i++) { hist.push(clamp(x, 0, 100)); x += (v - x) * 0.12 + (r() - 0.5) * v * 0.05; }
+          hist.push(v);
+        }
+        const prev = hist[0], d = prev > 0 ? (v - prev) / prev * 100 : 0;
+        out.push({ real, sym: `${k}.${p.code}`, k, nome: a.nome, curto: a.curto || a.nome, lugar: p.nome, v, d, hist, positivo: !!a.positivo, med: a.med, nota: p.notas[k] || null, place: p });
+      }
+    }
+    return out;
+  }
+  let Q = buildQuotes();
+
+  // ---------- money indices ----------
+  const MONEY = (LIVE && LIVE.mercado) || { SP500: [5730.4, 5712.1, "demonstração"], IBOV: [129840, 130420, "demonstração"], VIX: [18.6, 17.9, "demonstração"] };
+  const moneyChange = k => { const m = MONEY[k]; return m && m[1] ? (m[0] - m[1]) / m[1] * 100 : 0; };
+
+  // ---------- rendering ----------
+  const SPARK = "▁▂▃▄▅▆▇█";
+  const spark = h => { const mn = Math.min(...h), mx = Math.max(...h), r = mx - mn || 1; return h.map(x => SPARK[Math.min(7, Math.floor((x - mn) / r * 7.99))]).join(""); };
+  const cls = q => q.positivo ? (q.d > 0.3 ? "pos" : q.d < -0.3 ? "up" : "flat") : (q.d > 0.3 ? "up" : q.d < -0.3 ? "down" : "flat");
+  const arrow = d => d > 0.3 ? "▲" : d < -0.3 ? "▼" : "■";
+  let sortK = "d", sortDir = -1, selected = null;
+  const board = document.getElementById("board");
+  function renderBoard(flashSym) {
+    const rows = Q.slice().sort((a, b) => { const x = a[sortK], y = b[sortK]; return (typeof x === "string" ? x.localeCompare(y) : x - y) * sortDir; });
+    board.innerHTML = rows.map(q => `<tr tabindex="0" data-sym="${q.sym}" aria-selected="${q.sym === selected}" class="${q.sym === flashSym ? "flash" : ""}">
+      <td class="sym">${q.sym}</td><td>${q.curto}</td><td class="lug" title="${q.lugar}">${q.lugar}</td><td class="num">${fmtN(q.v)}</td>
+      <td class="num ${cls(q)}">${arrow(q.d)} ${q.d >= 0 ? "+" : ""}${fmtN(q.d)}%</td><td class="spark ${cls(q)}">${spark(q.hist.slice(-12))}</td></tr>`).join("");
+  }
+  board.addEventListener("click", e => { const tr = e.target.closest("tr"); if (tr) select(tr.dataset.sym); });
+  board.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { const tr = e.target.closest("tr"); if (tr) { e.preventDefault(); select(tr.dataset.sym); } } });
+  document.querySelectorAll("th[data-k]").forEach(th => th.addEventListener("click", () => {
+    const k = th.dataset.k; if (sortK === k) sortDir *= -1; else { sortK = k; sortDir = k === "d" || k === "v" ? -1 : 1; }
+    document.querySelectorAll("th").forEach(t => t.removeAttribute("aria-sort")); th.setAttribute("aria-sort", sortDir < 0 ? "descending" : "ascending"); renderBoard();
+  }));
+  function select(sym) {
+    selected = sym; const q = Q.find(x => x.sym === sym); if (!q) return; renderBoard();
+    const a = ASSETS[q.k], m = MED[q.med];
+    document.getElementById("detail").innerHTML = `<h2>${q.sym}</h2>
+      <dl class="kv"><dt>mede</dt><dd>${q.nome}</dd><dt>lugar</dt><dd>${q.lugar}</dd><dt>cotação</dt><dd>${fmtN(q.v)} <span class="${cls(q)}">${arrow(q.d)} ${q.d >= 0 ? "+" : ""}${fmtN(q.d)}% em 24 h</span></dd>
+      <dt>mediador</dt><dd>${m[0]} · ${fmtN(medHz(q.med), 1)} Hz</dd><dt>origem</dt><dd>${q.nota || (LIVE ? "dados da coleta automática" : "valor de demonstração")}${LIVE && !q.real ? " · tendência ilustrativa até juntar algumas horas de coleta" : ""}</dd>
+      <dt>${q.positivo ? "fortalecer" : "fazer cair"}</dt><dd><a href="${a.cuidado[1]}" target="_blank" rel="noopener">${a.cuidado[0]}</a></dd></dl>`;
+  }
+  function renderIdx() {
+    const m = document.getElementById("money");
+    m.innerHTML = [["S&P 500", "SP500", 1], ["IBOVESPA", "IBOV", 0], ["VIX · medo", "VIX", 1]].map(([n, k, d]) => {
+      const c = moneyChange(k); return `<div><small>${n}</small><b>${MONEY[k] ? fmtN(MONEY[k][0], d) : "–"}</b><span class="${k === "VIX" ? (c > 0.3 ? "up" : "down") : (c < -0.3 ? "up" : "down")}">${arrow(c)} ${c >= 0 ? "+" : ""}${fmtN(c, 2)}%</span></div>`;
+    }).join("");
+    document.getElementById("mDate").textContent = MONEY.SP500 ? `fechamento ${MONEY.SP500[2]}` : "";
+    const avg = k => { const xs = Q.filter(q => q.k === k); return xs.length ? [xs.reduce((a, q) => a + q.v, 0) / xs.length, xs.reduce((a, q) => a + q.d, 0) / xs.length] : [0, 0]; };
+    document.getElementById("pain").innerHTML = [["CORTISOL GLOBAL", "COR"], ["FOME", "FOME"], ["CUIDADO", "CUID"]].map(([n, k]) => {
+      const [v, d] = avg(k), pos = k === "CUID"; return `<div><small>${n}</small><b>${fmtN(v)}</b><span class="${pos ? (d > 0 ? "pos" : "up") : (d > 0.3 ? "up" : "down")}">${arrow(d)} ${d >= 0 ? "+" : ""}${fmtN(d)}%</span></div>`;
+    }).join("");
+  }
+  function renderTape() {
+    const items = Q.slice().sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 24)
+      .map(q => `<span><b class="sym">${q.sym}</b> ${fmtN(q.v)} <i class="${cls(q)}" style="font-style:normal">${arrow(q.d)}${fmtN(Math.abs(q.d))}%</i></span>`);
+    const money = ["SP500", "IBOV", "VIX"].filter(k => MONEY[k]).map(k => { const c = moneyChange(k); return `<span><b>${k}</b> ${fmtN(MONEY[k][0], k === "IBOV" ? 0 : 1)} <i style="font-style:normal" class="flat">${arrow(c)}${fmtN(Math.abs(c), 2)}%</i></span>`; });
+    const all = [...money, ...items].join("");
+    document.getElementById("tape").innerHTML = all + all;
+  }
+
+  // ---------- newswire in market language ----------
+  const VERB_UP = ["avança", "dispara", "sobe", "renova máxima"], VERB_DN = ["recua", "cede", "cai", "devolve ganhos"];
+  function bulletin() {
+    const r = Math.random(), movers = Q.filter(q => Math.abs(q.d) > 0.5);
+    if (!movers.length) return null;
+    const q = movers[Math.floor(Math.random() * movers.length)], up = q.d > 0;
+    const verb = (up ? VERB_UP : VERB_DN)[Math.floor(Math.random() * 4)];
+    const sp = moneyChange("SP500"), vix = MONEY.VIX ? MONEY.VIX[0] : null;
+    if (r < 0.35) return `${q.sym} ${verb} ${fmtN(Math.abs(q.d))}% e fecha a ${fmtN(q.v)}. ${q.positivo ? "Analistas apontam ajuda e cooperação relatadas na região." : `Pressão vem de ${q.nome}${q.nota ? ": " + q.nota : ""}.`}`;
+    if (r < 0.65) return `S&P 500 ${sp >= 0 ? "fecha em alta" : "fecha em baixa"} de ${fmtN(Math.abs(sp), 2)}%. No mesmo pregão, ${q.sym} (${q.lugar}) ${verb} ${fmtN(Math.abs(q.d))}%.`;
+    if (r < 0.85 && vix) return `Índice do medo dos mercados em ${fmtN(vix)}. Índice de aflição de ${q.lugar}: ${fmtN(q.v)}. Só um deles terá injeção de liquidez.`;
+    const c = Q.filter(x => x.k === "CUID").sort((a, b) => b.v - a.v)[0];
+    return c ? `Contraponto: ${c.sym} cotado a ${fmtN(c.v)} em ${c.lugar}. Cooperação também é notícia, só circula menos.` : null;
+  }
+  const wire = document.getElementById("wire");
+  function pushWire(text) {
+    if (!text) return; const d = new Date(), li = document.createElement("li"); li.className = "new";
+    li.innerHTML = `<time>${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}</time><span>${text}</span>`;
+    wire.prepend(li); while (wire.children.length > 40) wire.lastChild.remove();
+    document.getElementById("botPost").innerHTML = `<b>@bolsadaaflicao</b><span>${text}</span><small>${text.length} de 300 caracteres · publicaria automaticamente</small>`;
+    tick();
+  }
+  function renderExt() {
+    const pick = k => Q.filter(q => q.k === k && q.place.code === "SAO")[0] || Q.filter(q => q.k === k)[0];
+    const c = pick("COR"), a = pick("ANSI");
+    document.getElementById("extMock").innerHTML = `<div style="font-weight:bold;margin-bottom:6px">Mercados hoje</div>
+      <span class="q">Cortisol ${c ? c.lugar : ""} ${c ? fmtN(c.v) : ""} ${c ? arrow(c.d) + fmtN(Math.abs(c.d)) + "%" : ""}</span>
+      <span class="q">Aflição ${a ? a.lugar : ""} ${a ? fmtN(a.v) : ""} ${a ? arrow(a.d) + fmtN(Math.abs(a.d)) + "%" : ""}</span>
+      <div style="font-size:12px;color:#666;margin-top:6px">onde a página dizia "Ibovespa" e "S&P 500"</div>`;
+  }
+  function renderCare() {
+    const seen = new Set(); document.getElementById("care").innerHTML = Object.values(ASSETS).filter(a => !seen.has(a.cuidado[0]) && seen.add(a.cuidado[0]))
+      .map(a => `<div><dt>${a.nome}</dt><dd><a href="${a.cuidado[1]}" target="_blank" rel="noopener">${a.cuidado[0]}</a></dd></div>`).join("");
+  }
+
+  // ---------- continuous trading-floor sound ----------
+  let ac = null, master = null, voices = [], drone = null;
+  function startSound() {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 6;
+    master = ac.createGain(); master.gain.value = 0; master.connect(comp); comp.connect(ac.destination); master.gain.setTargetAtTime(0.2, ac.currentTime, 1);
+    drone = ac.createOscillator(); drone.type = "sine"; drone.frequency.value = 41.2; const dg = ac.createGain(); dg.gain.value = 0.35; drone.connect(dg); dg.connect(master); drone.start();
+    voices = [0, 1, 2, 3].map(() => { const o = ac.createOscillator(), g = ac.createGain(); g.gain.value = 0; o.connect(g); g.connect(master); o.start(); return { o, g, q: null }; });
+    updateSound();
+  }
+  function updateSound() {
+    if (!ac) return; const t = ac.currentTime;
+    const vix = MONEY.VIX ? MONEY.VIX[0] : 18, droneHz = 41.2 * (1 + clamp((vix - 12) / 40, 0, 1) * 0.5); drone.frequency.setTargetAtTime(droneHz, t, 2);
+    const top = Q.filter(q => !q.positivo).sort((a, b) => b.d - a.d).slice(0, 3).concat(Q.filter(q => q.positivo).sort((a, b) => b.v - a.v).slice(0, 1));
+    voices.forEach((v, i) => { const q = top[i]; v.q = q || null; if (!q) { v.g.gain.setTargetAtTime(0, t, 1.5); return; }
+      v.o.type = q.positivo ? "sine" : "triangle"; v.o.frequency.setTargetAtTime(medHz(q.med) * (1 + clamp(q.d, -10, 10) / 400), t, 1.5);
+      v.g.gain.setTargetAtTime((0.05 + 0.2 * q.v / 100) * (q.positivo ? 1.2 : 1), t, 1.5); });
+    const el = document.getElementById("voices"); el.hidden = false;
+    el.innerHTML = `<div><span style="color:var(--dim)">VIX (grave)</span><span>${fmtN(droneHz, 1)} Hz</span><span class="bar"><i style="width:${Math.round(clamp((vix - 10) / 30, 0, 1) * 100)}%"></i></span></div>` +
+      voices.filter(v => v.q).map(v => `<div><span class="sym">${v.q.sym}</span><span>${Math.round(medHz(v.q.med))} Hz</span><span class="bar"><i style="width:${Math.round(v.q.v)}%;background:${v.q.positivo ? "var(--care)" : "var(--amber)"}"></i></span></div>`).join("");
+  }
+  function tick() {
+    if (!ac) return; const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.value = 1760; o.connect(g); g.connect(master); g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); o.start(t); o.stop(t + 0.06);
+  }
+  document.getElementById("snd").addEventListener("click", e => {
+    const b = e.currentTarget;
+    if (!ac) startSound(); else if (ac.state === "running") ac.suspend(); else ac.resume();
+    setTimeout(() => { const on = ac && ac.state === "running"; b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "pregão sonoro ligado · desligar" : "ligar pregão sonoro"; document.getElementById("voices").hidden = !on; }, 60);
+  });
+
+  // ---------- live loop ----------
+  if (LIVE) {
+    document.getElementById("mode").textContent = "AO VIVO";
+    document.getElementById("fonte").textContent = `Coleta automática a cada hora. Última: ${LIVE.atualizado.replace("T", " ").replace("Z", " UTC")}.`;
+  }
+  function clocks() {
+    const d = new Date();
+    document.getElementById("cUtc").textContent = `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
+    document.getElementById("cSp").textContent = d.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour12: false });
+  }
+  function requote() {
+    // demo only: a small re-quote of one asset, so the floor is never still; with live data, quotes change with each hourly collection
+    if (!LIVE && Q.length) {
+      const q = Q[Math.floor(Math.random() * Q.length)], step = (Math.random() - 0.5) * q.v * 0.012;
+      q.v = clamp(q.v + step, 0, 100); q.hist = q.hist.slice(1).concat(q.v); q.d = q.hist[0] > 0 ? (q.v - q.hist[0]) / q.hist[0] * 100 : 0;
+      renderBoard(q.sym); if (selected === q.sym) select(q.sym); tick();
+    } else if (LIVE) { Q = buildQuotes(); renderBoard(); }
+    renderIdx(); updateSound();
+  }
+  renderBoard(); renderIdx(); renderTape(); renderExt(); renderCare(); clocks();
+  select(Q.slice().sort((a, b) => b.d - a.d)[0].sym);
+  for (let i = 0; i < 6; i++) pushWire(bulletin());
+  setInterval(clocks, 1000);
+  setInterval(requote, 4000);
+  setInterval(() => pushWire(bulletin()), 14000);
+  setInterval(renderTape, 60000);
+})();
+</script>

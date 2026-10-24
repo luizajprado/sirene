@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<style>
+  body { margin: 0; width: 300px; background: #0A0907; color: #F2E9D8; font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+  main { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  h1 { margin: 0; font-size: 16px; color: #FFB547; letter-spacing: .02em; }
+  ul { list-style: none; margin: 0; padding: 0; } li { padding: 4px 0; border-bottom: 1px solid #2C261C; }
+  p { margin: 0; color: #9C9180; } a { color: #FFB547; }
+  label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+</style>
+<main>
+  <h1>BOLSA DA AFLIÇÃO</h1>
+  <ul id="lista"><li>carregando…</li></ul>
+  <label><input type="checkbox" id="ligada"> trocar os índices nas páginas</label>
+  <p>Índices de 0 a 100, variação em 24 h. Dados públicos agregados por lugar, coletados a cada hora pela <a href="https://luizajprado.github.io/sirene/bolsa/" target="_blank">Sirene</a>.</p>
+</main>
+<script src="indices.js"></script>
+<script src="popup.js"></script>
+</html>

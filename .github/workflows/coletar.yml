@@ -29,10 +29,15 @@ jobs:
           UCDP_TOKEN: ${{ secrets.UCDP_TOKEN }}
           HAPI_EMAIL: ${{ secrets.HAPI_EMAIL }}
           HAPI_APP_IDENTIFIER: ${{ secrets.HAPI_APP_IDENTIFIER }}
+      - name: robô da Bolsa da Aflição (só publica se houver BSKY_HANDLE e BSKY_APP_PASSWORD)
+        run: python coletor/robo.py
+        env:
+          BSKY_HANDLE: ${{ secrets.BSKY_HANDLE }}
+          BSKY_APP_PASSWORD: ${{ secrets.BSKY_APP_PASSWORD }}
       - name: salvar
         run: |
           git config user.name "sirene-coletor"
           git config user.email "sirene-coletor@users.noreply.github.com"
-          git add data docs/dados.js
+          git add data docs/dados.js docs/dados.json
           git diff --cached --quiet || git commit -m "coleta $(date -u +%Y-%m-%dT%H:%MZ)"
           git push
