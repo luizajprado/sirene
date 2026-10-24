@@ -16,14 +16,20 @@ As correspondências entre fatores e mediadores simplificam a literatura de psic
 2. **Site.** A pasta `docs/` é publicada pelo GitHub Pages. As imagens e os sons são gerados no navegador de cada pessoa, a partir do arquivo de dados mais recente.
 3. **Falhas.** Se uma fonte não responder, o coletor mantém o último valor bom e registra a falha. O site mostra o estado de cada fonte.
 
-## Bolsa da Aflição
+## Observatório
 
-Obra paralela, em `docs/bolsa/`: um terminal de mercado em que cada fator de cada lugar vira um ativo cotado de 0 a 100 (`VIOL.SAO`, `FOME.SSD`, `CUID.DAC`…), com variação em 24 horas, tendência, boletim na língua do mercado e pregão sonoro contínuo. Ao lado, os índices do dinheiro: S&P 500, Ibovespa e VIX. Fica em `https://luizajprado.github.io/sirene/bolsa/`.
+Obra paralela, em `docs/observatorio/`: saúde mental, ciência e dinheiro lidos no mesmo dia. Fica em `https://luizajprado.github.io/sirene/observatorio/`.
 
-Ela sai do site de duas formas:
+- **Onde pesa mais:** os lugares da Sirene, do maior peso para o menor, com os mediadores, a resposta que ajuda e quem trabalha nisso. Os países de maior risco humanitário entram sozinhos, pelo índice INFORM (precisa do secret `HAPI_EMAIL`).
+- **Bancos de pesquisa ao vivo** (`coletor/pesquisa.py`): artigos da semana por tema (Europe PMC), ensaios clínicos em saúde mental recrutando e quem os financia (ClinicalTrials.gov), notificações de efeitos adversos de remédios psiquiátricos (openFDA, uma vez por dia) e dados químicos das moléculas (PubChem).
+- **O que pouco chega ao público:** achados com fonte, como ISRS e fraturas, sintomas ao parar antidepressivos, disfunção sexual persistente, benzodiazepínicos e dependência. Sempre com o aviso de não mudar remédio sem quem prescreveu.
+- **Bolsa da Aflição:** S&P 500, Ibovespa e VIX ao lado de quem lucrou nas crises que pesam na saúde mental.
+- **Zona de simulação** e **som contínuo**.
 
-- **Robô no Bluesky** (`coletor/robo.py`): depois de cada coleta, se um ativo se moveu 20% ou mais em 24 horas, publica um boletim curto com o link de quem trabalha para que ele caia. No máximo 4 por dia. Para ligar, crie uma conta para o robô, gere uma senha de app (Configurações → Privacidade e segurança → Senhas de app) e cadastre os secrets `BSKY_HANDLE` e `BSKY_APP_PASSWORD`. Sem eles, o robô só escreve no log o que publicaria.
-- **Extensão de navegador** (`extensao/`): troca, nas páginas de notícia, "Ibovespa", "S&P 500", "Dow Jones" e outros pelos índices de aflição do dia. Instruções em `extensao/LEIAME.md`.
+Sai do site de duas formas:
+
+- **Robô no Bluesky** (`coletor/robo.py`): se um índice de um lugar se move 20% ou mais em 24 horas, publica uma nota curta com a resposta que ajuda. No máximo 4 por dia. Para ligar, crie uma conta para o robô, gere uma senha de app (Configurações → Privacidade e segurança → Senhas de app) e cadastre os secrets `BSKY_HANDLE` e `BSKY_APP_PASSWORD`.
+- **Extensão de navegador** (`extensao/`): troca, nas páginas de notícia, "Ibovespa", "S&P 500" e outros pelos índices do dia. Instruções em `extensao/LEIAME.md`.
 
 ## Fontes
 
@@ -39,7 +45,12 @@ Ela sai do site de duas formas:
 | Contraponto: ajuda humanitária, acordos, cooperação | GDELT | real, automático |
 | Pressão econômica (inflação, desemprego, por país) | Banco Mundial | real, automático (anual) |
 | Medo dos mercados (VIX) | FRED, Federal Reserve de St. Louis | real, automático (diário); camada mundial pequena |
-| S&P 500 e Ibovespa (só na Bolsa da Aflição) | FRED e Stooq | real, automático (diário) |
+| S&P 500 e Ibovespa (Observatório) | FRED e Stooq | real, automático (diário) |
+| Lugares de maior risco humanitário | INFORM Risk via HDX HAPI · capitais pelo Banco Mundial | precisa do secret `HAPI_EMAIL` |
+| Artigos científicos da semana | Europe PMC (inclui PubMed) | real, automático |
+| Ensaios clínicos recrutando | ClinicalTrials.gov | real, automático |
+| Notificações de efeitos adversos | openFDA (FAERS) · notificação não prova causa | real, automático (diário) |
+| Dados químicos das moléculas | PubChem | real, automático |
 | Ruído | estimativa por lugar | estimado; mapas de ruído oficiais existem só para algumas regiões |
 | Violência e crise política (protestos, repressão, agressões, combates) | GDELT · aberto, a cada 15 min | real, automático; mede o que a imprensa relata |
 | Guerra (mortes em conflitos, por país) | HDX HAPI (OCHA/ONU), dados ACLED | precisa do secret `HAPI_EMAIL` |

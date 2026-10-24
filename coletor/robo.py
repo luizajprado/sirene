@@ -19,7 +19,7 @@ from datetime import datetime, timedelta, timezone
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 AGORA = datetime.now(timezone.utc)
-SITE = "https://luizajprado.github.io/sirene/bolsa/"
+SITE = "https://luizajprado.github.io/sirene/observatorio/"
 
 ATIVOS = {
     "VIOL": ("violência e crise política", "msf.org"),

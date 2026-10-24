@@ -104,6 +104,11 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
   .navnote { display: none; }
   .strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+[hidden] { display: none !important; }
+.search { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.search input { background: var(--bg); color: var(--fg); border: 1px solid var(--line); font: inherit; padding: 10px 12px; min-height: 44px; flex: 1 1 260px; min-width: 0; }
+.search ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+.risk { color: #FF5A4A; font-size: 10px; letter-spacing: .06em; }
 </style>
 
 </head>
@@ -115,12 +120,10 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       <button type="button" data-v="agora"><span>agora</span><kbd>1</kbd></button>
       <button type="button" data-v="figuras"><span>figuras</span><kbd>2</kbd></button>
       <button type="button" data-v="mapa"><span>reprise 72 h</span><kbd>3</kbd></button>
-      <button type="button" data-v="retratos"><span>retratos</span><kbd>4</kbd></button>
-      <button type="button" data-v="som"><span>imagem → som</span><kbd>5</kbd></button>
-      <button type="button" data-v="metodo"><span>método</span><kbd>6</kbd></button>
-      <button type="button" data-v="mandala"><span>mandala</span><kbd>7</kbd></button>
+      <button type="button" data-v="som"><span>retrato e som</span><kbd>4</kbd></button>
+      <button type="button" data-v="metodo"><span>método</span><kbd>5</kbd></button>
     </div>
-    <div class="navnote">Tudo aqui é calculado ao vivo no seu navegador, a partir de 26 alertas reais do GDACS (20 a 22/10/2026). Teclas 1 a 7 trocam de seção. Espaço liga e desliga o som.</div>
+    <div class="navnote">Tudo aqui é calculado ao vivo no seu navegador, a partir de 26 alertas reais do GDACS (20 a 22/10/2026). Teclas 1 a 5 trocam de seção. Espaço liga e desliga o som.</div>
   </nav>
 
   <main>
@@ -184,6 +187,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
         </div>
       </div>
       <div class="psndMon panel" hidden style="display:flex;flex-direction:column;gap:6px"></div>
+      <div class="search" data-search="figuras"></div>
       <div class="grid2">
         <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
           <div class="square"><canvas id="gCv" width="720" height="720" aria-label="Figura gerada continuamente a partir dos dados" hidden></canvas><canvas id="gGl" aria-label="Nebulosa gerada continuamente a partir dos dados"></canvas></div>
@@ -287,13 +291,15 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     <!-- SOM -->
     <section class="view" data-view="som" hidden>
       <div class="vhead">
-        <div><h2>Imagem → som</h2><p>Dois caminhos: cada tipo de alerta tem um som sintetizado, e cada retrato pode ser lido como uma partitura. Uma linha percorre a imagem; cada faixa de altura vira uma frequência, e a quantidade de organismo vira volume.</p></div>
+        <div><h2>Retrato e som</h2><p>Cada lugar como tinta na água e como som. Os fatores que mais pesam ali soltam cor, que se espalha e vai se dissipando; as mesmas frequências desenham a cimática ao lado e tocam sem parar. O retrato também pode ser lido como partitura: uma linha percorre a imagem e cada faixa de altura vira uma frequência.</p></div>
+        <button type="button" class="btn" id="sAuto" aria-pressed="true">automático: ligado</button>
       </div>
+      <div class="search" data-search="som"></div>
       <div class="chips" id="sChips" role="group" aria-label="Eventos"></div>
       <div class="grid2">
         <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
           <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
-            <div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div class="square"><canvas id="sCv" width="720" height="720" aria-label="Retrato com a linha de leitura sonora"></canvas></div><span class="dim">retrato lido como partitura</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div class="square"><canvas id="sCv" width="720" height="720" aria-label="Retrato com a linha de leitura sonora"></canvas></div><span class="dim">retrato · tinta na água</span></div>
             <div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div class="square"><canvas id="sCym" aria-label="Figura de Chladni gerada pelas frequências do lugar"></canvas></div><span class="dim">cimática · figuras de Chladni das frequências</span></div>
           </div>
           <canvas class="scope" id="sScope" width="480" height="84" style="height:auto;aspect-ratio:480/84;max-width:340px;border:0" aria-label="Partitura do lugar: uma onda por fator, com sua frequência e seu peso"></canvas>
@@ -329,46 +335,6 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
             <ol class="chain" id="sChain"></ol>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- MANDALA -->
-    <section class="view" data-view="mandala" hidden>
-      <div class="vhead">
-        <div><h2>Mandala</h2><p>Retrato e som numa só figura. Cada mediador do lugar vira um anel: a cor é a da molécula, o número de pétalas e as linhas finas vêm da sua frequência, como numa placa redonda que vibra. O cuidado floresce no centro, o que pesa fica nas bordas. Um acontecimento novo entra como uma onda que sai do centro e se dissolve devagar.</p></div>
-        <div class="row">
-          <button type="button" class="btn" id="mdAuto" aria-pressed="true">automático: ligado</button>
-          <button type="button" class="btn psndBtn" aria-pressed="false">som do lugar: desligado</button>
-        </div>
-      </div>
-      <div class="psndMon panel" hidden style="display:flex;flex-direction:column;gap:6px"></div>
-      <div class="grid2">
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
-          <div class="square"><canvas id="mdGl" aria-label="Mandala gerada continuamente a partir dos dados do lugar"></canvas></div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
-          <div class="panel">
-            <h3>fonte agora</h3>
-            <div style="font-weight:800;font-stretch:75%;font-size:22px;line-height:1.1" id="mdSrc">—</div>
-            <div class="dim" id="mdNext">—</div>
-          </div>
-          <div class="panel">
-            <h3>anéis · do centro para fora</h3>
-            <dl class="kv" id="mdRings"></dl>
-          </div>
-          <div class="panel">
-            <h3>o que pesa neste lugar</h3>
-            <dl class="kv" id="mdParams"></dl>
-          </div>
-          <div class="panel">
-            <h3>lugares</h3>
-            <div class="chips" id="mdChips" role="group" aria-label="Lugares"></div>
-          </div>
-        </div>
-      </div>
-      <div class="panel">
-        <h3>arquivo · uma mandala a cada 30 s · <span id="mdCount">0</span></h3>
-        <div class="gallery" id="mdArchive"><div class="dim" id="mdArchEmpty">As mandalas aparecem aqui enquanto o lugar muda.</div></div>
       </div>
     </section>
 
@@ -867,7 +833,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       if (P.n >= P.target) { P.done = true; P.doneAt = performance.now(); }
     } else {
       if (!P.saved) { saveToGallery(); P.saved = true; }
-      if (P.auto && view === "retratos" && performance.now() - P.doneAt > 6000) { pStart(portraitFromPlace(PSRC[P.qi % PSRC.length])); P.qi++; }
+      if (P.auto && (view === "retratos" || view === "som") && performance.now() - P.doneAt > 6000) { pStart(portraitFromPlace(PSRC[P.qi % PSRC.length])); P.qi++; }
     }
     if (frame % 15 === 0) {
       let cov = 0;
@@ -891,7 +857,8 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       b.addEventListener("click", () => { setAuto(false); pStart(s); }); el.append(b);
     });
   }
-  function setAuto(on) { P.auto = on; const b = document.getElementById("pAuto"); b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "automático: ligado" : "automático: desligado"; }
+  function setAuto(on) { P.auto = on; for (const id of ["pAuto", "sAuto"]) { const b = document.getElementById(id); b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "automático: ligado" : "automático: desligado"; } }
+  document.getElementById("sAuto").addEventListener("click", () => { setAuto(!P.auto); if (P.auto && P.done) P.doneAt = 0; });
   document.getElementById("pAuto").addEventListener("click", () => { setAuto(!P.auto); if (P.auto && P.done) P.doneAt = 0; });
   document.getElementById("pAgain").addEventListener("click", () => pStart(P.src));
   document.getElementById("pToSound").addEventListener("click", () => { setAuto(false); show("som"); sStart(); });
@@ -1234,11 +1201,15 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     { name: "Nova Escócia, Canadá", lat: 44.6, lon: -63.6, T: 12, pm: 6, db: 58 },
     ...CITIES.map(c => ({ name: c.name, lat: c.lat, lon: CITY_LON[c.name], T: c.T, pm: c.pm, db: c.db, ex: ({ "São Paulo": { VIOL: 0.35, ATN: 0.4, CUID: 0.2, ESP: 0.25, ECON: 0.3 }, "Lagos": { VIOL: 0.45, FOME: 0.3, CUID: 0.25, ECON: 0.6 }, "Cidade do México": { VIOL: 0.45, ATN: 0.3, ESP: 0.2 }, "Daca": { DESL: 0.35, FOME: 0.2, CUID: 0.3 }, "Cairo": { VIOL: 0.2, CUID: 0.15, ECON: 0.55 }, "Nova Délhi": { VIOL: 0.25, ATN: 0.25 }, "Madri": { ESP: 0.3, CUID: 0.2 }, "Tromsø": { ESP: 0.2 } })[c.name] || {} })),
   ];
+  const ISO2 = { "Planalto Tibetano, China": "CN", "Norte da Austrália": "AU", "Okavango, Botsuana": "BW", "Sudão do Sul": "SS", "Costa do Pacífico, México": "MX", "Vanuatu": "VU", "Nova Escócia, Canadá": "CA", "São Paulo": "BR", "Nova Délhi": "IN", "Lagos": "NG", "Cairo": "EG", "Jacarta": "ID", "Cidade do México": "MX", "Madri": "ES", "Daca": "BD", "Pequim": "CN", "Tromsø": "NO" };
+  for (const p of PLACES) p.iso2 = ISO2[p.name];
+  // places of highest humanitarian risk enter from the collector (INFORM Risk), not from a hand-picked list
+  if (LIVE && LIVE.lugares) for (const r of LIVE.lugares) if (!PLACES.find(p => p.name === r.nome)) PLACES.push({ name: r.nome, lat: r.lat, lon: r.lon, T: r.T ?? 25, pm: r.pm ?? 20, db: r.db || 60, ex: {} });
   if (LIVE && LIVE.lugares) for (const p of PLACES) {
     const r = LIVE.lugares.find(x => x.nome === p.name); if (!r) continue;
     if (r.T != null) { p.T = Math.round(r.T); p.realT = true; }
     if (r.pm != null) { p.pm = Math.round(r.pm); p.realPM = true; }
-    p.ex = {}; p.live = {};
+    p.ex = {}; p.live = {}; if (r.iso2) p.iso2 = r.iso2; if (r.risco) p.risco = r.risco;
     for (const [k, f] of [["VIOL", "violencia"], ["WAR", "guerra"], ["FOME", "fome"], ["DESL", "deslocamento"], ["ATN", "aflicao_coletiva"], ["CUID", "cuidado"], ["ESP", "esperanca"], ["ECON", "economia"]]) if (r[f] && r[f].i != null) p.live[k] = r[f];
   }
   function liveFac(pl, k, fonte) {
@@ -1292,7 +1263,11 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     return { id: "world", kind: "lugar", pl: WORLD_PL, factors, light: all.reduce((a, s) => a + s.light, 0) / all.length, label: "Mundo todo", lat: 0, lon: 0 };
   }
   const freshSrc = ps => (ps.pl && ps.pl.world) || ps.world ? srcWorld() : srcFromPlace(ps.pl || ps);
+  // order: the whole world first, then from the heaviest place to the lightest, right now
+  function placeLoad(src) { const v = src.factors.filter(f => !f.positivo && f.key !== "LIGHT").map(f => f.i || 0).sort((x, y) => y - x); return [0.4, 0.3, 0.2, 0.1].reduce((s, w, k) => s + w * (v[k] || 0), 0); }
+  PSRC.sort((a, b) => placeLoad(b) - placeLoad(a));
   PSRC.unshift(srcWorld());
+  const chipLabel = s => s.pl && s.pl.world ? s.label : `${s.label} <span class="risk">${s.pl.risco ? "INFORM " + s.pl.risco.inform.toFixed(1) + " · " : ""}carga ${placeLoad(s).toFixed(2).replace(".", ",")}</span>`;
 
   // retratos built from places: the three heaviest factors of a place, each with its own color and reaction-diffusion regime
   // regimes chosen to avoid isolated round dots: filaments, branching coral and wandering lines read as living tissue
@@ -1312,10 +1287,10 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       parRows: layers.map(l => [`<span style="color:${hex(COL[l.key])}">${COLNAME[l.key]}</span>`, `${MED[l.key] ? `${MED[l.key].massa.toLocaleString("pt-BR")} g/mol → ${Math.round(medHz(l.key))} Hz · ` : ""}${RDNAME[l.key] || ""}`]).concat([["passos", Math.round(2400 + 2000 * mx)]]) };
   }
   function buildPlaceChips(el) {
-    const d = document.createElement("div"); d.className = "chiphead"; d.textContent = "lugares · tudo o que pesa ali"; el.append(d);
+    const d = document.createElement("div"); d.className = "chiphead"; d.textContent = "lugares · do maior peso para o menor, agora"; el.append(d);
     PSRC.forEach(ps => {
       const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.id = ps.pl.world ? "rpw" : "rp" + PLACES.indexOf(ps.pl);
-      b.innerHTML = speciesFor(ps).map(x => `<i style="color:${hex(COL[x[0]])}">●</i>`).join("") + " " + ps.label;
+      b.innerHTML = speciesFor(ps).map(x => `<i style="color:${hex(COL[x[0]])}">●</i>`).join("") + " " + chipLabel(ps);
       b.addEventListener("click", () => { setAuto(false); pStart(portraitFromPlace(ps)); }); el.append(b);
     });
   }
@@ -1576,10 +1551,10 @@ void main(){
   (function gChips() {
     const el = document.getElementById("gChips");
     const head = t => { const d = document.createElement("div"); d.className = "chiphead"; d.textContent = t; el.append(d); };
-    head("lugares · tudo o que pesa ali");
+    head("lugares · do maior peso para o menor, agora");
     PSRC.forEach((s) => {
       const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.id = s.id;
-      b.innerHTML = speciesFor(s).map(x => `<i style="color:${hex(COL[x[0]])}">●</i>`).join("") + " " + s.label;
+      b.innerHTML = speciesFor(s).map(x => `<i style="color:${hex(COL[x[0]])}">●</i>`).join("") + " " + chipLabel(s);
       b.addEventListener("click", () => { gAuto(false); gSet(freshSrc(s)); }); el.append(b);
     });
   })();
@@ -1743,141 +1718,48 @@ void main(){
 
 
 
-  // ================= mandala: portrait and sound in one radial figure =================
-  // each mediator of the place is a ring; colour = molecule, petals and fine nodal lines = its frequency
-  // (modes of a round vibrating plate), care blooms in the centre, the load sits at the edge.
-  const CALM = new Set(["OXT", "GABA", "SER", "DOP", "MEL"]);
-  const MD = { cv: document.getElementById("mdGl"), ok: false, t0: performance.now(), auto: true, hold: 75000, qi: 0, lastSwitch: -1e9, lastSnap: 0, count: 0, pulse: 9 };
-  (function mdInit() {
-    const gl = MD.cv.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
-    if (!gl) return;
-    const vs = "attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}";
-    const fs = `precision highp float;
-uniform vec2 uRes;uniform float uT,uN,uLoad,uCare,uPulse;
-uniform vec3 uC[5];uniform float uW[5],uM[5],uK[5],uR[5];
-float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*f*(f*(f*6.-15.)+10.);return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),f.x),f.y);}
-float fbm(vec2 p){float v=0.,a=.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<6;i++){v+=a*n(p);p=m*p;a*=.5;}return v;}
-void main(){
- vec2 uv=(gl_FragCoord.xy-.5*uRes)/min(uRes.x,uRes.y);
- float r=length(uv),a=atan(uv.y,uv.x),t=uT;
- float seg=6.2831853/uN;float af=abs(mod(a+t*.004,seg)-seg*.5);
- vec2 p=r*vec2(cos(af),sin(af));
- vec2 q=vec2(fbm(p*3.+vec2(0.,t*.02)),fbm(p*3.+vec2(4.1,1.7)-t*.017));
- float warp=.05+.10*uLoad;
- float rw=r+(q.x-.5)*warp*(.4+r);
- vec3 col=vec3(.012,.010,.016);
- float glow=0.;
- for(int i=0;i<5;i++){
-  if(uW[i]<.01) continue;
-  float R=uR[i],w=.028+.035*uW[i];
-  float band=exp(-pow((rw-R)/w,2.));
-  float pet=.55+.45*cos(uM[i]*af*2.+uK[i]*rw*.35-t*.03*(1.+float(i)*.4));
-  float ink=smoothstep(.42,.78,fbm(vec2(af*uM[i]*.3,rw*9.)+q*3.+float(i)*3.7+t*.01));
-  float dens=band*(.2+.8*pet)*(.15+.85*ink)*uW[i]*.75;
-  float nod=cos(uK[i]*rw)*cos(uM[i]*af);
-  float line=pow(1.-clamp(abs(nod),0.,1.),48.)*band*uW[i]*.22*(.4+.6*ink);
-  vec3 c=uC[i];
-  col+=c*dens*1.25+mix(c,vec3(1.),.35)*line;
-  glow+=dens;
- }
- float bloom=exp(-pow(r/(.035+.07*uCare),2.))*(.15+.45*uCare);
- col+=mix(vec3(.96,.62,.76),vec3(.55,.75,1.),.5+.5*sin(t*.05))*bloom*(.6+.4*q.y);
- float wave=exp(-pow((r-uPulse)/.05,2.))*exp(-uPulse*1.4);
- col+=vec3(1.,.93,.86)*wave*.35*(.6+.4*q.x);
- col+=col*glow*.1;
- col=(col*(2.51*col+.03))/(col*(2.43*col+.59)+.14);
- col*=1.-.85*smoothstep(.40,.60,r);
- col+=(h(gl_FragCoord.xy+fract(uT))-.5)*.025;
- gl_FragColor=vec4(clamp(col,0.,1.),1.);
-}`;
-    const mk = (type, src) => { const sh = gl.createShader(type); gl.shaderSource(sh, src); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) { console.warn(gl.getShaderInfoLog(sh)); return null; } return sh; };
-    const v = mk(gl.VERTEX_SHADER, vs), f = mk(gl.FRAGMENT_SHADER, fs); if (!v || !f) return;
-    const pr = gl.createProgram(); gl.attachShader(pr, v); gl.attachShader(pr, f); gl.linkProgram(pr); if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return;
-    gl.useProgram(pr);
-    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    const loc = gl.getAttribLocation(pr, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    MD.gl = gl; MD.u = {}; for (const k of ["uRes", "uT", "uN", "uLoad", "uCare", "uPulse", "uC", "uW", "uM", "uK", "uR"]) MD.u[k] = gl.getUniformLocation(pr, k);
-    MD.ok = true;
-  })();
-  // current and target state; colours and weights glide (fast up, slow down: quick reaction, slow recovery)
-  MD.cur = { n: 8, load: 0.4, care: 0.2, rings: Array.from({ length: 5 }, () => ({ c: [0, 0, 0], w: 0, m: 8, k: 20, R: 0.2 })) };
-  MD.tgt = JSON.parse(JSON.stringify(MD.cur));
-  function mdTarget(src) {
-    const prof = (src.kind === "lugar" ? chemProfile(src.factors) : speciesFor(src).filter(x => MED[x[0]])).filter(x => x[1] > 0.02).slice(0, 5);
-    if (!prof.length) prof.push(["GABA", 0.2]);
-    const calm = prof.filter(x => CALM.has(x[0])), hard = prof.filter(x => !CALM.has(x[0]));
-    const ordered = [...calm, ...hard];   // care inside, weight outside
-    const top = hard[0] || prof[0], nBase = [6, 8, 10, 12][Math.round(medHz(top[0]) / 150) % 4];
-    const load = clamp(hard.reduce((s, x) => s + x[1], 0) / 1.6, 0, 1), care = clamp(calm.reduce((s, x) => s + x[1], 0) / 1.2, 0, 1);
-    MD.tgt.n = nBase; MD.tgt.load = load; MD.tgt.care = care;
-    MD.tgt.rings = Array.from({ length: 5 }, (_, i) => {
-      const x = ordered[i]; if (!x) return { c: MD.cur.rings[i].c.slice(), w: 0, m: nBase, k: 20, R: 0.12 + 0.085 * i };
-      const hz = medHz(x[0]);
-      return { key: x[0], c: COL[x[0]].map(v => v / 255), w: clamp(0.25 + x[1] * 0.9, 0, 1), m: nBase * (1 + Math.round(hz / 220) % 3) / 2, k: 18 + hz / 25, R: 0.08 + 0.075 * i, hz };
-    });
-    document.getElementById("mdRings").innerHTML = MD.tgt.rings.filter(r => r.key).map((r, i) => `<dt style="color:${hex(COL[r.key])}">${COLNAME[r.key]}</dt><dd>anel ${i + 1} · ${Math.round(r.hz)} Hz · ${Math.round(r.m * 2)} pétalas · peso ${r.w.toFixed(2)}</dd>`).join("")
-      + `<dt>simetria</dt><dd>${nBase} eixos (frequência de ${COLNAME[top[0]]})</dd><dt>peso × cuidado</dt><dd>${load.toFixed(2)} × ${care.toFixed(2)}</dd>`;
+  // ================= search: any place in the world =================
+  // Open-Meteo geocoding, weather and air quality, live in the browser; country-level factors come from the collector
+  async function searchPlaces(q) {
+    const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=pt&format=json`);
+    return ((await r.json()).results || []);
   }
-  function mdSet(src) {
-    MD.src = src; MD.lastSwitch = performance.now(); MD.pulse = 0; MD.refreshAt = performance.now();
-    mdTarget(src);
-    document.getElementById("mdSrc").textContent = src.label;
-    document.getElementById("mdParams").innerHTML = src.kind === "lugar" ? placeRows(src) : "";
-    document.querySelectorAll("#mdChips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === src.id)));
-    if (PSND.on) psndUpdate(src);
+  async function placeFromResult(g) {
+    const pl = { name: [g.name, g.admin1, g.country].filter(Boolean).filter((x, i, a) => a.indexOf(x) === i).join(", "), lat: g.latitude, lon: g.longitude, T: 22, pm: 15,
+      db: g.population > 1e6 ? 70 : g.population > 1e5 ? 62 : 50, iso2: g.country_code, ex: {}, live: {}, searched: true };
+    try {
+      const [w, a] = await Promise.all([
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${g.latitude}&longitude=${g.longitude}&current=temperature_2m`).then(r => r.json()),
+        fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${g.latitude}&longitude=${g.longitude}&current=pm2_5`).then(r => r.json())]);
+      if (w.current && w.current.temperature_2m != null) { pl.T = Math.round(w.current.temperature_2m); pl.realT = true; }
+      if (a.current && a.current.pm2_5 != null) { pl.pm = Math.round(a.current.pm2_5); pl.realPM = true; }
+    } catch (e) {}
+    // same country as a collected place: reuse its country-level data (war, hunger, displacement, economy)
+    const twin = PLACES.find(p => p.iso2 && p.iso2 === g.country_code && p.live);
+    if (twin) for (const k of ["WAR", "FOME", "DESL", "ECON", "VIOL", "CUID"]) if (twin.live[k]) pl.live[k] = { ...twin.live[k], nota: `${twin.live[k].nota || ""} (dado do país)` };
+    const src = srcFromPlace(pl); src.id = "busca"; return src;
   }
-  function mdResize() {
-    const r = MD.cv.getBoundingClientRect(), dpr = Math.min(1.5, window.devicePixelRatio || 1);
-    MD.cv.width = Math.max(2, Math.round(r.width * dpr)); MD.cv.height = Math.max(2, Math.round(r.height * dpr));
+  function buildSearch(box, onPick) {
+    box.innerHTML = `<input type="search" placeholder="buscar qualquer lugar do mundo · cidade, região, país" aria-label="Buscar lugar"><button type="button" class="btn">buscar</button><ul></ul>`;
+    const inp = box.querySelector("input"), btn = box.querySelector("button"), ul = box.querySelector("ul");
+    const go = async () => {
+      const q = inp.value.trim(); if (!q) return; ul.innerHTML = `<li class="dim">buscando…</li>`;
+      let res = [];
+      try { res = await searchPlaces(q); } catch (e) { ul.innerHTML = `<li class="dim">A busca precisa de acesso à internet; nesta prévia ela pode estar bloqueada. No site publicado no GitHub ela funciona.</li>`; return; }
+      if (!res.length) { ul.innerHTML = `<li class="dim">nenhum lugar encontrado</li>`; return; }
+      ul.innerHTML = ""; for (const g of res) {
+        const li = document.createElement("li"), b = document.createElement("button"); b.type = "button"; b.className = "chip";
+        b.textContent = [g.name, g.admin1, g.country].filter(Boolean).join(", ");
+        b.addEventListener("click", async () => { b.textContent += " · lendo dados…"; onPick(await placeFromResult(g)); ul.innerHTML = ""; inp.value = ""; });
+        li.append(b); ul.append(li);
+      }
+    };
+    btn.addEventListener("click", go); inp.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
   }
-  function mdSnap() {
-    const g = document.getElementById("mdArchive"), empty = document.getElementById("mdArchEmpty"); if (empty) empty.remove();
-    const fig = document.createElement("figure"), c = document.createElement("canvas"), cap = document.createElement("figcaption");
-    c.width = 240; c.height = 240; c.getContext("2d").drawImage(MD.cv, 0, 0, 240, 240);
-    const d = new Date(); cap.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} · ${MD.src.label}`;
-    fig.append(c, cap); g.prepend(fig); while (g.children.length > 36) g.lastChild.remove();
-    MD.count++; document.getElementById("mdCount").textContent = MD.count;
-  }
-  function mdTick(dt) {
-    const now = performance.now();
-    if (MD.auto && now - MD.lastSwitch > MD.hold) { mdSet(freshSrc(PSRC[MD.qi % PSRC.length])); MD.qi++; }
-    if (MD.src && MD.src.kind === "lugar" && now - MD.refreshAt > 60000) { MD.src = freshSrc(MD.src); mdTarget(MD.src); MD.refreshAt = now; }
-    if (!MD.ok) return;
-    const since = (now - MD.lastSwitch) / 1000, fast = Math.min(1, dt * (0.6 + 2.4 * Math.exp(-since / 2))), slow = Math.min(1, dt * 0.05);
-    const c = MD.cur, t = MD.tgt;
-    c.n = t.n; c.load += (t.load - c.load) * (t.load > c.load ? fast : slow); c.care += (t.care - c.care) * (t.care > c.care ? fast : slow);
-    for (let i = 0; i < 5; i++) {
-      const a = c.rings[i], b = t.rings[i];
-      a.w += (b.w - a.w) * (b.w > a.w ? fast : slow * 4);
-      for (let j = 0; j < 3; j++) a.c[j] += (b.c[j] - a.c[j]) * fast * 0.5;
-      a.m = b.m; a.k += (b.k - a.k) * fast * 0.5; a.R += (b.R - a.R) * fast * 0.5;
-    }
-    MD.pulse += dt * 0.06;
-    const gl = MD.gl, u = MD.u; if (MD.cv.width < 3) mdResize();
-    gl.viewport(0, 0, MD.cv.width, MD.cv.height);
-    gl.uniform2f(u.uRes, MD.cv.width, MD.cv.height); gl.uniform1f(u.uT, (now - MD.t0) / 1000);
-    gl.uniform1f(u.uN, c.n); gl.uniform1f(u.uLoad, c.load); gl.uniform1f(u.uCare, c.care); gl.uniform1f(u.uPulse, MD.pulse);
-    gl.uniform3fv(u.uC, c.rings.flatMap(r => r.c)); gl.uniform1fv(u.uW, c.rings.map(r => r.w));
-    gl.uniform1fv(u.uM, c.rings.map(r => r.m)); gl.uniform1fv(u.uK, c.rings.map(r => r.k)); gl.uniform1fv(u.uR, c.rings.map(r => r.R));
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-    if (now - MD.lastSnap > 30000 && since > 12) { mdSnap(); MD.lastSnap = now; }
-    if (frame % 10 === 0) document.getElementById("mdNext").textContent = MD.auto ? `próximo lugar em ${Math.ceil(Math.max(0, MD.hold - (now - MD.lastSwitch)) / 1000)} s` : "parado neste lugar";
-  }
-  (function mdChips() {
-    const el = document.getElementById("mdChips");
-    PSRC.forEach((s) => {
-      const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.id = s.id;
-      b.innerHTML = speciesFor(s).map(x => `<i style="color:${hex(COL[x[0]])}">●</i>`).join("") + " " + s.label;
-      b.addEventListener("click", () => { mdAuto(false); mdSet(freshSrc(s)); }); el.append(b);
-    });
-  })();
-  function mdAuto(on) { MD.auto = on; const b = document.getElementById("mdAuto"); b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "automático: ligado" : "automático: desligado"; if (on) MD.lastSwitch = performance.now() - MD.hold; }
-  document.getElementById("mdAuto").addEventListener("click", () => mdAuto(!MD.auto));
 
   // ================= continuous sound of the place: never stops unless the person stops it =================
   const PSND = { on: false, slots: [] };
-  function currentPlace() { return view === "figuras" && G.src ? G.src : view === "mandala" && MD.src ? MD.src : P.src; }
+  function currentPlace() { return view === "figuras" && G.src ? G.src : P.src; }
   function psndButtons() { document.querySelectorAll(".psndBtn").forEach(b => { b.setAttribute("aria-pressed", String(PSND.on)); b.textContent = PSND.on ? "som do lugar: ligado" : "som do lugar: desligado"; }); }
   function psndStart() {
     if (!audio() || PSND.on) return;
@@ -1946,23 +1828,24 @@ void main(){
   }
   document.addEventListener("click", (ev) => { const b = ev.target.closest && ev.target.closest(".psndBtn"); if (!b) return; PSND.on ? psndStop() : psndStart(); });
   // ================= navigation =================
-  const VIEWS = ["agora", "figuras", "mapa", "retratos", "som", "metodo", "mandala"];
+  const VIEWS = ["agora", "figuras", "mapa", "som", "metodo"];
+  const OLD_VIEWS = ["retratos", "mandala"];   // portrait and sound now live on one page
   let view = "agora";
   function show(v) {
+    if (OLD_VIEWS.includes(v)) v = "som";
     if (!VIEWS.includes(v)) v = "agora"; view = v;
     document.querySelectorAll(".view").forEach(s => s.hidden = s.dataset.view !== v);
     document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-current", b.dataset.v === v ? "page" : "false"));
-    document.getElementById("stView").textContent = v === "som" ? "imagem → som" : v === "mapa" ? "reprise 72 h" : v;
+    document.getElementById("stView").textContent = v === "som" ? "retrato e som" : v === "mapa" ? "reprise 72 h" : v;
     if (v === "mapa") requestAnimationFrame(mResize);
     if (v === "agora") requestAnimationFrame(aResize);
     if (v === "figuras" && NB.mode === "neb") requestAnimationFrame(nbResize);
-    if (v === "mandala") requestAnimationFrame(mdResize);
     try { history.replaceState(null, "", "#" + v); } catch (err) {}
   }
   document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.v)));
   document.addEventListener("keydown", (ev) => {
     if (ev.target.closest && ev.target.closest("input, textarea")) return;
-    if (["1", "2", "3", "4", "5", "6", "7"].includes(ev.key)) show(VIEWS[+ev.key - 1]);
+    if (["1", "2", "3", "4", "5"].includes(ev.key)) show(VIEWS[+ev.key - 1]);
     if (ev.key === " " && ev.target === document.body) { ev.preventDefault(); toggleSound(); }
   });
   function toggleSound() {
@@ -1978,7 +1861,6 @@ void main(){
     aTick(dt, view === "agora");
     psndTick();
     if (view === "figuras") gTick(dt);
-    if (view === "mandala") mdTick(dt);
     if (view === "mapa") mTick(dt);
     else if (view === "retratos") { pTick(); pRender(P.ctx, P.cv.width, P.cv.height); }
     else if (view === "som") sTick();
@@ -1986,9 +1868,11 @@ void main(){
     requestAnimationFrame(tick);
   }
   buildPlaceChips(document.getElementById("pChips")); buildPlaceChips(document.getElementById("sChips"));
+  buildSearch(document.querySelector('[data-search="figuras"]'), src => { gAuto(false); gSet(src); });
+  buildSearch(document.querySelector('[data-search="som"]'), src => { setAuto(false); pStart(portraitFromPlace(src)); });
   mReset(); P.qi = 1; pStart(portraitFromPlace(PSRC[0])); gMode("neb");
   const start = (location.hash || "").slice(1);
-  show(VIEWS.includes(start) ? start : "agora");
+  show(VIEWS.includes(start) || OLD_VIEWS.includes(start) ? start : "agora");
   if (LIVE) { const el = document.getElementById("fonteData"); if (el) el.textContent = `Coleta automática a cada hora. Última: ${LIVE.atualizado.replace("T", " ").replace("Z", " UTC")}. ${Object.entries(LIVE.fontes || {}).map(([k, v]) => `${k}: ${v}`).join(" · ")}.`; }
   mResize(); aResize(); new ResizeObserver(() => { if (view === "mapa") mResize(); }).observe(M.cv); new ResizeObserver(() => { if (view === "agora") aResize(); }).observe(A.cv); new ResizeObserver(() => { if (view === "figuras" && NB.mode === "neb") nbResize(); }).observe(NB.cv);
   requestAnimationFrame(tick);

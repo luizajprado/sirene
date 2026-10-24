@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Observatório</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* A research observatory, not a trading floor: a quiet notebook where mental health, science and money
+   are read on the same day. Dark by choice, to sit beside Sirene. */
+:root {
+  --bg: #0E0D0B; --panel: #15130F; --line: #2A2620; --fg: #EDE6D8; --dim: #9A9083;
+  --gold: #E8B86A; --heavy: #D9735B; --relief: #7FC4B8; --care: #E8A3C0;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif; --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { background: var(--bg); color: var(--fg); margin: 0; }
+body { font-family: var(--serif); font-size: 18px; line-height: 1.5; }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--gold); text-underline-offset: 3px; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 28px max(16px, env(safe-area-inset-right, 0px)) 64px max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 56px; }
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 12px 32px; border-bottom: 1px solid var(--line); padding-bottom: 18px; }
+h1 { font-weight: 400; font-size: clamp(40px, 7vw, 76px); line-height: 1; margin: 0; letter-spacing: -0.01em; }
+h1 i { color: var(--gold); }
+.sub { color: var(--dim); max-width: 640px; margin: 10px 0 0; }
+.meta { font-family: var(--mono); font-size: 12px; color: var(--dim); display: flex; flex-direction: column; gap: 4px; align-items: flex-end; font-variant-numeric: tabular-nums; }
+.meta b { color: var(--fg); font-weight: 500; }
+.mode { border: 1px solid var(--gold); color: var(--gold); padding: 2px 8px; letter-spacing: .08em; }
+section { display: flex; flex-direction: column; gap: 18px; }
+h2 { font-weight: 400; font-size: clamp(28px, 4vw, 40px); line-height: 1.1; margin: 0; }
+h2 small { display: block; font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.lede { color: var(--dim); margin: 0; max-width: 760px; }
+.note { font-family: var(--mono); font-size: 12px; color: var(--dim); line-height: 1.5; }
+.warn { border-left: 2px solid var(--gold); padding: 10px 14px; background: #1A1712; font-size: 16px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 900px) { .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--panel); border: 1px solid var(--line); padding: 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card h3 { margin: 0; font-weight: 500; font-size: 20px; line-height: 1.25; }
+.card p { margin: 0; }
+.tag { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+.src { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+/* places */
+.places { display: flex; flex-direction: column; }
+.place { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr) 64px; gap: 16px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--line); cursor: pointer; background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; min-height: 44px; }
+.place:hover, .place[aria-pressed="true"] { background: #1A1712; }
+.place:focus-visible { outline: 1px solid var(--gold); outline-offset: -1px; }
+.place .nm { font-size: 18px; } .place .nm small { display: block; font-family: var(--mono); font-size: 11px; color: var(--dim); }
+.load { height: 6px; background: #221F19; position: relative; } .load i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--gold), var(--heavy)); }
+.place .num { font-family: var(--mono); font-size: 14px; text-align: right; font-variant-numeric: tabular-nums; }
+.kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; margin: 0; font-size: 16px; }
+.kv dt { color: var(--dim); font-family: var(--mono); font-size: 12px; padding-top: 3px; } .kv dd { margin: 0; overflow-wrap: anywhere; }
+/* tabs */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tabs button { background: none; border: 1px solid var(--line); padding: 8px 12px; min-height: 40px; cursor: pointer; font-family: var(--mono); font-size: 12px; color: var(--dim); }
+.tabs button[aria-pressed="true"] { border-color: var(--gold); color: var(--fg); }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.list li { padding: 12px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 2px; }
+.bars { display: flex; flex-direction: column; gap: 6px; font-family: var(--mono); font-size: 12px; }
+.bars div { display: grid; grid-template-columns: 170px minmax(0, 1fr) 70px; gap: 10px; align-items: center; }
+.bars span.b { height: 6px; background: #221F19; position: relative; } .bars span.b i { position: absolute; inset: 0 auto 0 0; background: var(--relief); }
+.bars .n { text-align: right; font-variant-numeric: tabular-nums; }
+table { border-collapse: collapse; width: 100%; font-size: 16px; }
+th, td { text-align: left; padding: 10px 10px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); font-weight: 400; }
+.tablewrap { overflow-x: auto; }
+.btn { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 14px; min-height: 44px; cursor: pointer; align-self: flex-start; font-family: var(--mono); font-size: 13px; }
+.btn[aria-pressed="true"] { background: var(--gold); color: var(--bg); }
+.btn:focus-visible, .tabs button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+select { background: var(--bg); border: 1px solid var(--line); padding: 8px; min-height: 44px; }
+.slider { display: grid; grid-template-columns: minmax(0, 1fr) 48px; gap: 2px 10px; align-items: center; }
+.slider label { font-size: 16px; } .slider small { grid-column: 1 / -1; color: var(--dim); font-family: var(--mono); font-size: 11px; }
+.slider output { text-align: right; font-family: var(--mono); color: var(--relief); }
+.slider input { grid-column: 1 / -1; width: 100%; accent-color: var(--relief); }
+.simrow { display: grid; grid-template-columns: 150px minmax(0, 1fr) 120px; gap: 10px; align-items: center; font-family: var(--mono); font-size: 12px; }
+.simbar { height: 8px; background: #221F19; position: relative; } .simbar i { position: absolute; inset: 0 auto 0 0; }
+.simbar i.a { background: var(--heavy); opacity: .4; } .simbar i.b { background: var(--relief); } .simbar.pos i.b { background: var(--care); }
+.big { font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
+.money { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.money div { background: var(--panel); padding: 12px; font-family: var(--mono); font-size: 12px; color: var(--dim); display: flex; flex-direction: column; gap: 2px; }
+.money b { font-family: var(--serif); font-weight: 400; font-size: 26px; color: var(--fg); }
+.voices { display: flex; flex-direction: column; gap: 4px; font-family: var(--mono); font-size: 12px; }
+.voices div { display: grid; grid-template-columns: 150px 70px minmax(0, 1fr); gap: 8px; align-items: center; }
+.vbar { height: 5px; background: #221F19; position: relative; } .vbar i { position: absolute; inset: 0 auto 0 0; background: var(--gold); }
+footer { border-top: 1px solid var(--line); padding-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--dim); display: flex; flex-wrap: wrap; gap: 6px 20px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Observatório</h1>
+      <p class="sub">Saúde mental, ciência e dinheiro lidos no mesmo dia. Os lugares vêm da Sirene, a pesquisa vem dos bancos científicos abertos, e o dinheiro, das bolsas.</p>
+    </div>
+    <div class="meta"><span class="mode" id="mode">DEMONSTRAÇÃO</span><span>São Paulo <b id="clock">--:--</b></span><span id="upd"></span></div>
+  </header>
+
+  <!-- 1 places -->
+  <section aria-labelledby="hPlaces">
+    <h2 id="hPlaces"><small>agora no mundo</small>Onde pesa mais</h2>
+    <p class="lede">Cada lugar com sua carga, do maior peso para o menor, e o que mais pesa ali. Os de maior risco humanitário entram pela coleta (índice INFORM), não por escolha nossa.</p>
+    <div class="grid2">
+      <div class="places" id="places"></div>
+      <div class="card" id="placeCard" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 2 research -->
+  <section aria-labelledby="hResearch">
+    <h2 id="hResearch"><small>bancos de pesquisa · ao vivo</small>O que a ciência publicou esta semana</h2>
+    <p class="lede">Artigos novos indexados no Europe PMC (que inclui o PubMed), por tema, e os ensaios clínicos em saúde mental recrutando agora no ClinicalTrials.gov, com quem os financia.</p>
+    <div class="tabs" id="topicTabs" role="group" aria-label="Temas"></div>
+    <div class="grid2">
+      <ul class="list" id="papers"></ul>
+      <div class="card">
+        <span class="tag">artigos da semana por tema</span>
+        <div class="bars" id="topicBars"></div>
+        <span class="tag" style="margin-top:10px">ensaios clínicos recrutando</span>
+        <div id="trials"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 hidden findings -->
+  <section aria-labelledby="hHidden">
+    <h2 id="hHidden"><small>acervo · com fonte</small>O que pouco chega ao público</h2>
+    <p class="warn">Isto é informação, não orientação médica. Não pare nem mude um remédio por conta própria: parar de repente pode ser perigoso. Leve a dúvida a quem prescreveu.</p>
+    <div class="grid3" id="hidden"></div>
+  </section>
+
+  <!-- 4 pharmacovigilance and molecules -->
+  <section aria-labelledby="hPharma">
+    <h2 id="hPharma"><small>farmacovigilância e química</small>Remédios, moléculas e notificações</h2>
+    <p class="lede">Notificações de efeitos adversos enviadas à FDA (sistema FAERS, via openFDA) para remédios psiquiátricos comuns, ao lado da molécula de cada um (PubChem). A massa da molécula vira som, como na Sirene.</p>
+    <p class="note">Uma notificação não prova que o remédio causou o efeito: qualquer pessoa pode notificar, a maioria dos casos nunca é notificada, e remédios muito usados acumulam mais notificações. Servem para levantar perguntas, não para comparar riscos.</p>
+    <div class="tabs" id="drugTabs" role="group" aria-label="Remédios"></div>
+    <div class="grid2">
+      <div class="card" id="drugCard"></div>
+      <div class="card"><span class="tag">efeitos mais notificados</span><div class="bars" id="drugBars"></div></div>
+    </div>
+  </section>
+
+  <!-- 5 money -->
+  <section aria-labelledby="hMoney">
+    <h2 id="hMoney"><small>bolsa da aflição</small>Quem recolhe quando a mente paga</h2>
+    <div class="money" id="money"></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>crise</th><th>o que faz às mentes</th><th>quem recolheu</th></tr></thead>
+      <tbody>
+        <tr><td>Guerra</td><td>Cerca de 1 em cada 5 pessoas em zonas de conflito vive com um transtorno mental <span class="src">(Charlson et al., Lancet 2019)</span></td><td>As 100 maiores fabricantes de armas: receita recorde de US$ 679 bi em 2024, alta de 5,9% <span class="src">(SIPRI 2025)</span></td></tr>
+        <tr><td>Energia, 2022</td><td>59% dos adultos no Reino Unido disseram que a alta de preços piorou sua saúde mental <span class="src">(Money and Mental Health 2022)</span></td><td>Petróleo e gás: cerca de US$ 4 tri em 2022, contra média de US$ 1,5 tri <span class="src">(IEA via Reuters 2023)</span></td></tr>
+        <tr><td>Fome, 2022</td><td>Insegurança alimentar: chance 40% maior de depressão <span class="src">(Pourmotabbed et al. 2020)</span>; 345 milhões em fome aguda <span class="src">(WFP)</span></td><td>Cargill: receita recorde de US$ 165 bi; bilionários de alimentos e energia +US$ 453 bi em dois anos <span class="src">(Guardian 2022; Oxfam 2022)</span></td></tr>
+        <tr><td>Pandemia</td><td>Ansiedade e depressão +25% no mundo no primeiro ano <span class="src">(OMS 2022)</span></td><td>40 novos bilionários farmacêuticos <span class="src">(Oxfam 2022)</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Mesmas crises, mesmos anos: é uma justaposição, não prova de que uma empresa causou o dano.</p>
+  </section>
+
+  <!-- 6 simulation -->
+  <section aria-labelledby="hSim">
+    <h2 id="hSim"><small>contraponto · zona de simulação</small>E se houvesse resposta?</h2>
+    <p class="lede">Escolha um lugar e mova as respostas. Cada uma tem evidência de que ajuda; os pesos aqui são ilustrativos e seguem só a direção das evidências. É especulação, não previsão.</p>
+    <div class="grid2">
+      <div class="card">
+        <label for="simPlace" class="tag">lugar</label><select id="simPlace"></select>
+        <div id="sliders" style="display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:28px;flex-wrap:wrap" id="simBig"></div>
+        <div id="simRows" style="display:flex;flex-direction:column;gap:8px"></div>
+        <p class="note">Barra clara: hoje. Barra verde: com as respostas escolhidas.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 sound and outward -->
+  <section aria-labelledby="hSound">
+    <h2 id="hSound"><small>som contínuo</small>Ouvir o observatório</h2>
+    <div class="grid2">
+      <div class="card">
+        <p>Os três lugares de maior peso soam nas frequências dos seus mediadores; o remédio aberto acima soa pela massa da sua molécula; o índice do medo das bolsas (VIX) é o grave. Só para quando você desliga.</p>
+        <button type="button" class="btn" id="snd" aria-pressed="false">ligar som</button>
+        <div class="voices" id="voices" hidden></div>
+      </div>
+      <div class="card">
+        <span class="tag">fora do site</span>
+        <p><b>Robô no Bluesky:</b> quando um lugar sobe forte, publica uma nota curta com a resposta que ajuda e o link de quem trabalha nisso.</p>
+        <p><b>Extensão de navegador:</b> nas páginas de notícia, troca "Ibovespa" e "S&amp;P 500" pelos índices do dia.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span id="fonte">Modo demonstração: lugares com valores de exemplo; a pesquisa ao vivo aparece depois da primeira coleta no GitHub.</span>
+    <span>Dados públicos agregados por lugar. Não mede ninguém e não faz diagnóstico.</span>
+    <span><a href="../">Sirene</a> · Luiza Jesus do Prado, 2026</span>
+  </footer>
+</div>
+
+<script src="../dados.js"></script>
+<script>
+(() => {
+  const LIVE = window.SIRENE_DATA || null;
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const fmt = (x, d = 1) => Number(x).toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+  // ---------- chemistry shared with Sirene ----------
+  const MED = { ADR: ["adrenalina", 183.20], NOR: ["noradrenalina", 169.18], COR: ["cortisol", 362.46], GLU: ["glutamato", 147.13], IL6: ["interleucina-6", 21000],
+    SER: ["serotonina", 176.22], GRE: ["grelina", 3370.9], MEL: ["melatonina", 232.28], OXT: ["ocitocina", 1007.19], GABA: ["GABA", 103.12], DOP: ["dopamina", 153.18] };
+  const fold = m => { let f = m; while (f > 1100) f /= 2; while (f < 100) f *= 2; return f; };
+  const FMED = { DIS: { ADR: .45, NOR: .35, COR: .2 }, HEAT: { COR: .4, MEL: .3, SER: .3 }, AIR: { IL6: .7, GLU: .3 }, NOISE: { NOR: .4, COR: .3, MEL: .3 },
+    GUER: { NOR: .35, GLU: .3, COR: .2, ADR: .15 }, VIOL: { COR: .45, NOR: .3, GLU: .25 }, FOME: { SER: .4, GRE: .35, COR: .25 }, DESL: { OXT: .5, COR: .5 },
+    ANSI: { NOR: .4, COR: .4, MEL: .2 }, ECON: { COR: .6, NOR: .25, SER: .15 } };
+  const FNAME = { DIS: "desastre", HEAT: "calor", AIR: "ar poluído", NOISE: "ruído", GUER: "guerra", VIOL: "violência e crise política", FOME: "fome", DESL: "deslocamento forçado", ANSI: "aflição coletiva", ECON: "pressão econômica", CUID: "cuidado e cooperação" };
+  const RESP = {
+    FOME: ["transferência de renda e assistência alimentar", "Ridley et al., Science 2020", ["Programa Mundial de Alimentos", "https://www.wfp.org"]],
+    ECON: ["transferência de renda: dinheiro reduz depressão e ansiedade", "Ridley et al., Science 2020", ["Find A Helpline", "https://findahelpline.com"]],
+    ANSI: ["bancos de escuta comunitários: depressão caiu de 50% para 14% em seis meses", "Chibanda et al., JAMA 2016", ["Find A Helpline", "https://findahelpline.com"]],
+    VIOL: ["mediação comunitária e apoio psicológico breve (PM+, OMS)", "Rahman et al., JAMA 2016", ["Médicos Sem Fronteiras", "https://www.msf.org"]],
+    GUER: ["cessar-fogo e apoio psicológico breve (PM+, OMS)", "Rahman et al., JAMA 2016", ["Médicos Sem Fronteiras", "https://www.msf.org"]],
+    DESL: ["autocuidado guiado para refugiados (Self-Help Plus, OMS)", "Tol et al., Lancet Global Health 2020", ["ACNUR", "https://www.unhcr.org"]],
+    AIR: ["ar limpo, áreas verdes", "Braithwaite et al., EHP 2019; OMS 2016", ["OMS · qualidade do ar", "https://www.who.int/health-topics/air-pollution"]],
+    HEAT: ["sombra, áreas verdes, abrigos de resfriamento", "OMS, Urban green spaces and health, 2016", ["OMS · calor e saúde", "https://www.who.int/news-room/fact-sheets/detail/climate-change-heat-and-health"]],
+    NOISE: ["áreas verdes e menos ruído urbano", "OMS, Urban green spaces and health, 2016", ["Find A Helpline", "https://findahelpline.com"]],
+    DIS: ["apoio psicossocial após desastres", "OMS, primeiros cuidados psicológicos", ["ReliefWeb", "https://reliefweb.int"]],
+  };
+
+  // ---------- places (demo values marked as examples; the collector replaces them) ----------
+  let PLACES = [
+    ["Planalto Tibetano, China", 32.4, 93.8, 2, 8, 45, {}], ["Norte da Austrália", -19.5, 128.5, 36, 14, 45, {}], ["Okavango, Botsuana", -20.5, 24.8, 33, 12, 45, {}],
+    ["Sudão do Sul", 9.7, 26.0, 35, 30, 50, { VIOL: .55, GUER: .6, FOME: .85, DESL: .8, CUID: .45, ANSI: .3 }], ["Costa do Pacífico, México", 17.0, -100.5, 30, 15, 60, {}],
+    ["Vanuatu", -15.4, 167.0, 27, 6, 50, {}], ["Nova Escócia, Canadá", 44.6, -63.6, 12, 6, 58, {}], ["São Paulo", -23.55, -46.63, 27, 22, 72, { VIOL: .35, ANSI: .4, CUID: .2, ECON: .3 }],
+    ["Nova Délhi", 28.61, 77.21, 31, 110, 80, { VIOL: .25, ANSI: .25 }], ["Lagos", 6.52, 3.38, 30, 58, 78, { VIOL: .45, FOME: .3, CUID: .25, ECON: .6 }],
+    ["Cairo", 30.04, 31.24, 29, 70, 79, { VIOL: .2, CUID: .15, ECON: .55 }], ["Jacarta", -6.21, 106.85, 32, 45, 75, {}], ["Cidade do México", 19.43, -99.13, 24, 24, 73, { VIOL: .45, ANSI: .3 }],
+    ["Madri", 40.42, -3.70, 17, 9, 66, { CUID: .2 }], ["Daca", 23.81, 90.41, 30, 85, 82, { DESL: .35, FOME: .2, CUID: .3 }], ["Pequim", 39.90, 116.40, 14, 40, 70, {}], ["Tromsø", 69.65, 18.96, 2, 5, 52, {}],
+  ].map(([nome, lat, lon, T, pm, db, ex]) => ({ nome, lat, lon, T, pm, db, ex, f: {}, notas: {} }));
+  if (LIVE && LIVE.lugares) {
+    const map = { VIOL: "violencia", GUER: "guerra", FOME: "fome", DESL: "deslocamento", ANSI: "aflicao_coletiva", ECON: "economia", CUID: "cuidado" };
+    PLACES = LIVE.lugares.map(r => {
+      const p = { nome: r.nome, lat: r.lat, lon: r.lon, T: r.T ?? 22, pm: r.pm ?? 15, db: r.db || 60, ex: {}, f: {}, notas: {}, risco: r.risco };
+      for (const [k, fld] of Object.entries(map)) if (r[fld] && r[fld].i != null) { p.f[k] = r[fld].i; p.notas[k] = r[fld].nota; }
+      return p;
+    });
+  }
+  const ALERTS = (LIVE && LIVE.alertas) || [["2026-10-22T14:33Z", "EQ", "Red", "", 32.38, 93.78, 7.0], ["2026-10-21T15:00Z", "TC", "Green", "", 10.5, -101.9, 194],
+    ["2026-10-21T00:00Z", "WF", "Green", "", -20.77, 136.58, 26776], ["2026-10-20T00:00Z", "WF", "Green", "", -20.09, 23.76, 19584]];
+  const km = (a1, o1, a2, o2) => { const r = Math.PI / 180, x = Math.sin((a2 - a1) * r / 2) ** 2 + Math.cos(a1 * r) * Math.cos(a2 * r) * Math.sin((o2 - o1) * r / 2) ** 2; return 12742 * Math.asin(Math.sqrt(x)); };
+  function factorsFor(p, now = Date.now()) {
+    let dis = 0;
+    for (const [ts, type, level, , lat, lon, v] of ALERTS) {
+      const age = (now - Date.parse(ts)) / 3600e3, inten = type === "EQ" ? clamp((v - 5) / 2.5, 0, 1) : type === "WF" ? clamp(Math.sqrt(v) / 170, 0, 1) : clamp(v / 200, 0, 1);
+      const c = clamp(inten * (level === "Red" ? 1.5 : 1), 0, 1) * Math.exp(-((km(p.lat, p.lon, lat, lon) / 700) ** 2)) * Math.exp(-Math.max(0, age) / 72);
+      dis = 1 - (1 - dis) * (1 - c);
+    }
+    const f = { DIS: clamp(dis * 2.2, 0, 1), HEAT: clamp((p.T - 18) / 22, 0, 1), AIR: clamp(p.pm / 90, 0, 1), NOISE: clamp((p.db - 45) / 40, 0, 1) };
+    for (const k of ["VIOL", "GUER", "FOME", "DESL", "ANSI", "ECON", "CUID"]) f[k] = p.f[k] != null ? p.f[k] : (p.ex[k] || 0);
+    return f;
+  }
+  const loadOf = f => { const v = Object.entries(f).filter(([k]) => k !== "CUID").map(([, x]) => x).sort((a, b) => b - a); return [0.4, 0.3, 0.2, 0.1].reduce((s, w, k) => s + w * (v[k] || 0), 0); };
+  function chem(f) { const prof = {}; for (const [k, w] of Object.entries(FMED)) for (const [m, x] of Object.entries(w)) prof[m] = (prof[m] || 0) + (f[k] || 0) * x; return Object.entries(prof).sort((a, b) => b[1] - a[1]); }
+  const RANK = () => PLACES.map(p => ({ p, f: factorsFor(p) })).map(x => ({ ...x, load: loadOf(x.f) })).sort((a, b) => b.load - a.load);
+
+  // ---------- 1 places ----------
+  let selPlace = null;
+  function renderPlaces() {
+    const R = RANK(); if (!selPlace) selPlace = R[0].p.nome;
+    document.getElementById("places").innerHTML = R.map(({ p, f, load }) => {
+      const top = Object.entries(f).filter(([k]) => k !== "CUID").sort((a, b) => b[1] - a[1])[0];
+      return `<button type="button" class="place" data-n="${esc(p.nome)}" aria-pressed="${p.nome === selPlace}"><span class="nm">${esc(p.nome)}<small>${p.risco ? "INFORM " + fmt(p.risco.inform) + " · " : ""}pesa mais: ${FNAME[top[0]]}</small></span><span class="load"><i style="width:${Math.round(load * 100)}%"></i></span><span class="num">${fmt(load * 100, 0)}</span></button>`;
+    }).join("");
+    document.querySelectorAll(".place").forEach(b => b.addEventListener("click", () => { selPlace = b.dataset.n; renderPlaces(); }));
+    const s = R.find(x => x.p.nome === selPlace), f = s.f, top3 = Object.entries(f).filter(([k]) => k !== "CUID" && f[k] > 0.05).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const med = chem(f).slice(0, 3);
+    document.getElementById("placeCard").innerHTML = `<span class="tag">${LIVE ? "dados da coleta" : "valores de exemplo"}</span><h3>${esc(s.p.nome)}</h3>
+      <dl class="kv"><dt>carga</dt><dd>${fmt(s.load * 100, 0)} de 100</dd>
+      ${s.p.risco ? `<dt>risco</dt><dd>${esc(s.p.risco.nota)}</dd>` : ""}
+      <dt>pesa mais</dt><dd>${top3.map(([k, v]) => `${FNAME[k]} (${fmt(v * 100, 0)})`).join(", ") || "nada forte agora"}</dd>
+      <dt>mediadores</dt><dd>${med.map(([m]) => `${MED[m][0]} · ${Math.round(fold(MED[m][1]))} Hz`).join(", ")}</dd>
+      <dt>cuidado</dt><dd>${fmt((f.CUID || 0) * 100, 0)} de 100</dd>
+      ${top3.filter(([k]) => RESP[k]).map(([k]) => `<dt>resposta</dt><dd>${RESP[k][0]} <span class="src">(${RESP[k][1]})</span> · <a href="${RESP[k][2][1]}" target="_blank" rel="noopener">${RESP[k][2][0]}</a></dd>`).join("")}</dl>`;
+    updateSound();
+  }
+
+  // ---------- 2 research ----------
+  const PESQ = (LIVE && LIVE.pesquisa) || {};
+  const TOPICS = ["estresse e cortisol", "clima, calor e ar", "guerra, violência e refúgio", "fome e pobreza", "remédios: efeitos pouco falados", "inflamação e mente", "cuidado e comunidade"];
+  let selTopic = TOPICS[4];
+  function renderResearch() {
+    const A = PESQ.artigos || {};
+    document.getElementById("topicTabs").innerHTML = TOPICS.map(t => `<button type="button" data-t="${t}" aria-pressed="${t === selTopic}">${t}</button>`).join("");
+    document.querySelectorAll("#topicTabs button").forEach(b => b.addEventListener("click", () => { selTopic = b.dataset.t; renderResearch(); }));
+    const it = (A[selTopic] && A[selTopic].itens) || [];
+    document.getElementById("papers").innerHTML = it.length ? it.map(x => `<li><span class="src">${esc(x.data)} · ${esc(x.revista || "")}</span><a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.titulo)}</a><span class="src">${esc(x.autores)}</span></li>`).join("")
+      : `<li class="note">A coleta automática traz aqui os artigos desta semana sobre “${selTopic}”, direto do Europe PMC. Nesta prévia ela ainda não rodou.</li>`;
+    const mx = Math.max(1, ...TOPICS.map(t => (A[t] && A[t].total) || 0));
+    document.getElementById("topicBars").innerHTML = TOPICS.map(t => { const n = (A[t] && A[t].total) || 0; return `<div><span>${t}</span><span class="b"><i style="width:${Math.round(n / mx * 100)}%"></i></span><span class="n">${A[t] ? n : "–"}</span></div>`; }).join("");
+    const E = PESQ.ensaios;
+    document.getElementById("trials").innerHTML = E ? `<p><span class="big">${fmt(E.total, 0)}</span> ensaios recrutando. Na amostra dos ${E.amostra} mais recentes, ${E.industria} (${fmt(E.industria / E.amostra * 100, 0)}%) são liderados pela indústria.</p>
+      <ul class="list">${E.recentes.slice(0, 4).map(r => `<li><a href="https://clinicaltrials.gov/study/${esc(r.id)}" target="_blank" rel="noopener">${esc(r.titulo)}</a><span class="src">${esc((r.intervencoes || []).join(", "))} · ${esc(r.patrocinador)}${r.classe === "INDUSTRY" ? " (indústria)" : ""}</span></li>`).join("")}</ul>`
+      : `<p class="note">Aparece depois da primeira coleta: quantos ensaios em saúde mental estão recrutando e quanto deles é financiado pela indústria.</p>`;
+  }
+
+  // ---------- 3 hidden findings (curated, each checked against its source) ----------
+  const HIDDEN = [
+    { t: "Antidepressivos ISRS e fraturas", p: "Quem usa ISRS teve risco de fratura cerca de 1,7 vez maior em estudos observacionais. A associação continua quando se controla pela depressão, mas não há ensaio randomizado; a perda óssea e as quedas são as explicações estudadas.", s: "Wu et al., Osteoporosis International 2012 (RR 1,72); Khanassov et al. 2018 (RR 1,67)", a: "Em uso longo, vale perguntar sobre saúde dos ossos, vitamina D e exercício." },
+    { t: "Sintomas ao parar antidepressivos", p: "31% de quem para tem sintomas de descontinuação, contra 17% com placebo: cerca de 1 em 6 ou 7 pessoas pelo efeito do remédio. Casos graves: perto de 3%, mais com paroxetina, venlafaxina e imipramina.", s: "Henssler et al., Lancet Psychiatry 2024 (79 estudos, ~21 mil pessoas)", a: "A retirada deve ser gradual e combinada com quem prescreveu." },
+    { t: "Disfunção sexual que persiste", p: "A agência europeia de medicamentos mandou incluir na bula de ISRS e IRSN a possibilidade de disfunção sexual que continua depois de parar o remédio.", s: "EMA, comitê PRAC, maio de 2019", a: "É um efeito raro, mas reconhecido: pode ser conversado antes de começar." },
+    { t: "A teoria do “desequilíbrio químico”", p: "Uma revisão ampla não encontrou evidência consistente de que a depressão seja causada por serotonina baixa. Os estressores de vida tiveram efeito forte. A revisão não avaliou se os antidepressivos funcionam.", s: "Moncrieff et al., Molecular Psychiatry 2022", a: "Os autores não recomendam parar remédios sem acompanhamento." },
+    { t: "Benzodiazepínicos e dependência", p: "A FDA exigiu alerta em tarja sobre abuso, dependência física e reações de abstinência em toda a classe; parar de repente pode causar convulsões.", s: "FDA, comunicado de segurança, 23 set. 2020", a: "A redução deve ser lenta e planejada com o médico." },
+    { t: "Antipsicóticos e metabolismo", p: "Entre 18 antipsicóticos, olanzapina e clozapina foram os que mais alteraram peso, glicose e colesterol; aripiprazol, brexpiprazol, cariprazina, lurasidona e ziprasidona, os que menos.", s: "Pillinger et al., Lancet Psychiatry 2020 (100 ensaios, ~26 mil pessoas)", a: "Peso e exames de sangue merecem acompanhamento regular." },
+    { t: "O ar que se respira", p: "Cada 10 µg/m³ a mais de PM2,5 no longo prazo esteve associado a uma chance cerca de 10% maior de depressão.", s: "Braithwaite et al., Environmental Health Perspectives 2019", a: "A saúde mental também é política ambiental." },
+    { t: "Fome e mente", p: "Insegurança alimentar: chance 40% maior de depressão e 34% maior de estresse.", s: "Pourmotabbed et al., Public Health Nutrition 2020", a: "Comida no prato é cuidado em saúde mental." },
+    { t: "Exercício contra a depressão", p: "Caminhar ou correr teve um dos maiores efeitos sobre sintomas de depressão entre os exercícios estudados; ioga e musculação também ajudaram. A certeza da evidência ainda é baixa.", s: "Noetel et al., BMJ 2024 (218 estudos)", a: "Somar, não substituir: converse antes de trocar tratamento." },
+  ];
+  document.getElementById("hidden").innerHTML = HIDDEN.map(h => `<article class="card"><h3>${h.t}</h3><p>${h.p}</p><p class="note" style="color:var(--relief)">${h.a}</p><span class="src">${h.s}</span></article>`).join("");
+
+  // ---------- 4 pharmacovigilance and molecules ----------
+  const DRUGS = { sertraline: ["sertralina", 306.2, "C17H17Cl2N"], fluoxetine: ["fluoxetina", 309.3, "C17H18F3NO"], escitalopram: ["escitalopram", 324.4, "C20H21FN2O"], paroxetine: ["paroxetina", 329.4, "C19H20FNO3"],
+    venlafaxine: ["venlafaxina", 277.4, "C17H27NO2"], bupropion: ["bupropiona", 239.7, "C13H18ClNO"], quetiapine: ["quetiapina", 383.5, "C21H25N3O2S"], olanzapine: ["olanzapina", 312.4, "C17H20N4S"],
+    lithium: ["lítio", 6.94, "Li"], clonazepam: ["clonazepam", 315.7, "C15H10ClN3O3"], alprazolam: ["alprazolam", 308.8, "C17H13ClN4"], methylphenidate: ["metilfenidato", 233.3, "C14H19NO2"] };
+  // a real sample read on 24/10/2026, shown only until the collector runs
+  const FAERS_SAMPLE = { sertraline: { top: [["nausea", 13859], ["drug ineffective", 13621], ["fatigue", 12824], ["headache", 11102], ["anxiety", 10372], ["diarrhoea", 10340], ["dizziness", 9605], ["depression", 9505], ["off label use", 8420], ["pain", 8283], ["vomiting", 8217], ["dyspnoea", 8118]], amostra: true } };
+  const FAERS = (PESQ.farmaco) || FAERS_SAMPLE, MOL = PESQ.moleculas || {};
+  let selDrug = "sertraline";
+  function renderDrugs() {
+    document.getElementById("drugTabs").innerHTML = Object.entries(DRUGS).map(([k, d]) => `<button type="button" data-d="${k}" aria-pressed="${k === selDrug}">${d[0]}</button>`).join("");
+    document.querySelectorAll("#drugTabs button").forEach(b => b.addEventListener("click", () => { selDrug = b.dataset.d; renderDrugs(); updateSound(); }));
+    const d = DRUGS[selDrug], m = MOL[selDrug], fa = FAERS[selDrug], mass = m ? m.massa : d[1];
+    document.getElementById("drugCard").innerHTML = `<span class="tag">molécula · ${m ? "PubChem" : "massa de referência"}</span><h3>${d[0]}</h3>
+      <dl class="kv"><dt>fórmula</dt><dd>${esc(m ? m.formula : d[2])}</dd><dt>massa</dt><dd>${fmt(mass, 1)} g/mol</dd><dt>som</dt><dd>${fmt(fold(mass), 1)} Hz (massa levada por oitavas)</dd>
+      ${fa && fa.relatos ? `<dt>notificações</dt><dd>${fmt(fa.relatos, 0)} no FAERS</dd><dt>ossos</dt><dd>${fmt(fa.osso, 0)} (osteoporose, osteopenia, densidade óssea)</dd><dt>fraturas</dt><dd>${fmt(fa.fratura, 0)}</dd><dt>abstinência</dt><dd>${fmt(fa.abstinencia, 0)}</dd><dt>sexual</dt><dd>${fmt(fa.sexual, 0)}</dd>` : ""}
+      ${m && m.cid ? `<dt>fonte</dt><dd><a href="https://pubchem.ncbi.nlm.nih.gov/compound/${m.cid}" target="_blank" rel="noopener">PubChem ${m.cid}</a></dd>` : ""}</dl>
+      ${fa && fa.amostra ? `<p class="note">Amostra real lida no openFDA em 24/10/2026. A coleta diária completa traz todos os remédios e as contagens de ossos, fraturas, abstinência e efeitos sexuais.</p>` : ""}`;
+    const top = (fa && fa.top) || [];
+    const mx = Math.max(1, ...top.map(x => x[1]));
+    document.getElementById("drugBars").innerHTML = top.length ? top.map(([t, n]) => `<div><span>${esc(t)}</span><span class="b"><i style="width:${Math.round(n / mx * 100)}%;background:var(--gold)"></i></span><span class="n">${fmt(n, 0)}</span></div>`).join("")
+      : `<p class="note">Aparece depois da coleta diária no openFDA.</p>`;
+  }
+
+  // ---------- 5 money ----------
+  const MONEY = (LIVE && LIVE.mercado) || { SP500: [5730.4, 5712.1, "exemplo"], IBOV: [129840, 130420, "exemplo"], VIX: [18.6, 17.9, "exemplo"] };
+  document.getElementById("money").innerHTML = [["S&P 500", "SP500", 1], ["Ibovespa", "IBOV", 0], ["VIX · medo", "VIX", 1]].map(([n, k, d]) => {
+    const m = MONEY[k]; if (!m) return `<div>${n}<b>–</b></div>`; const c = m[1] ? (m[0] - m[1]) / m[1] * 100 : 0;
+    return `<div>${n}<b>${fmt(m[0], d)}</b>${c >= 0 ? "+" : ""}${fmt(c, 2)}% · ${esc(m[2])}</div>`;
+  }).join("");
+
+  // ---------- 6 simulation ----------
+  const INTERV = [
+    { id: "renda", nome: "transferência de renda", ef: { ECON: .5, FOME: .3, ANSI: .15 }, ev: "Ridley et al., Science 2020" },
+    { id: "comida", nome: "assistência alimentar", ef: { FOME: .6 }, ev: "Programa Mundial de Alimentos" },
+    { id: "paz", nome: "cessar-fogo e mediação", ef: { GUER: .7, VIOL: .4, DESL: .2 }, ev: "retira a exposição à violência" },
+    { id: "psi", nome: "apoio psicossocial comunitário", ef: { ANSI: .4, VIOL: .1 }, ev: "Chibanda et al., JAMA 2016; Rahman et al., JAMA 2016" },
+    { id: "acolher", nome: "acolhimento a deslocados", ef: { DESL: .35 }, ev: "Tol et al., Lancet Global Health 2020" },
+    { id: "verde", nome: "áreas verdes, sombra e ar limpo", ef: { HEAT: .3, AIR: .4, NOISE: .2 }, ev: "OMS 2016; Braithwaite et al. 2019" },
+  ];
+  const SIM = { cov: Object.fromEntries(INTERV.map(i => [i.id, 0])), place: null };
+  function renderSim() {
+    const p = PLACES.find(x => x.nome === SIM.place) || PLACES[0], f = factorsFor(p), g = { ...f };
+    for (const i of INTERV) { const c = SIM.cov[i.id] / 100; for (const [k, e] of Object.entries(i.ef)) g[k] = (g[k] || 0) * (1 - c * e); }
+    g.CUID = clamp((f.CUID || 0) + INTERV.reduce((a, i) => a + SIM.cov[i.id] / 100, 0) / INTERV.length * 0.6, 0, 1);
+    const l0 = loadOf(f), l1 = loadOf(g);
+    document.getElementById("simBig").innerHTML = `<div><span class="tag">carga</span><div class="big">${fmt(l0 * 100, 0)} → <span style="color:var(--relief)">${fmt(l1 * 100, 0)}</span></div></div><div><span class="tag">cuidado</span><div class="big">${fmt((f.CUID || 0) * 100, 0)} → <span style="color:var(--care)">${fmt(g.CUID * 100, 0)}</span></div></div>`;
+    document.getElementById("simRows").innerHTML = Object.keys(FNAME).filter(k => (f[k] || 0) > 0.03 || k === "CUID").map(k => `<div class="simrow"><span>${FNAME[k]}</span>
+      <span class="simbar ${k === "CUID" ? "pos" : ""}"><i class="a" style="width:${Math.round((f[k] || 0) * 100)}%"></i><i class="b" style="width:${Math.round((g[k] || 0) * 100)}%"></i></span><span>${fmt((f[k] || 0) * 100, 0)} → ${fmt((g[k] || 0) * 100, 0)}</span></div>`).join("");
+  }
+  (function setupSim() {
+    const sel = document.getElementById("simPlace"), R = RANK();
+    sel.innerHTML = R.map(x => `<option>${esc(x.p.nome)}</option>`).join(""); SIM.place = R[0].p.nome;
+    sel.addEventListener("change", () => { SIM.place = sel.value; renderSim(); });
+    document.getElementById("sliders").innerHTML = INTERV.map(i => `<div class="slider"><label for="sl_${i.id}">${i.nome}</label><output id="o_${i.id}">0%</output><input type="range" id="sl_${i.id}" min="0" max="100" step="5" value="0"><small>${i.ev}</small></div>`).join("");
+    INTERV.forEach(i => document.getElementById("sl_" + i.id).addEventListener("input", e => { SIM.cov[i.id] = +e.target.value; document.getElementById("o_" + i.id).textContent = e.target.value + "%"; renderSim(); }));
+    renderSim();
+  })();
+
+  // ---------- 7 continuous sound ----------
+  let ac = null, master, voices = [], drone;
+  function startSound() {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 6;
+    master = ac.createGain(); master.gain.value = 0; master.connect(comp); comp.connect(ac.destination); master.gain.setTargetAtTime(0.2, ac.currentTime, 1.5);
+    drone = ac.createOscillator(); drone.type = "sine"; drone.frequency.value = 41.2; const dg = ac.createGain(); dg.gain.value = 0.3; drone.connect(dg); dg.connect(master); drone.start();
+    voices = [0, 1, 2, 3].map(() => { const o = ac.createOscillator(), g = ac.createGain(); g.gain.value = 0; o.connect(g); g.connect(master); o.start(); return { o, g }; });
+    updateSound();
+  }
+  function updateSound() {
+    if (!ac) return; const t = ac.currentTime, R = RANK().slice(0, 3);
+    const vix = MONEY.VIX ? MONEY.VIX[0] : 18, dHz = 41.2 * (1 + clamp((vix - 12) / 40, 0, 1) * 0.5); drone.frequency.setTargetAtTime(dHz, t, 2);
+    const list = R.map(x => { const m = chem(x.f)[0][0]; return { label: x.p.nome, hz: fold(MED[m][1]), amp: 0.05 + 0.15 * x.load, what: MED[m][0], type: "triangle" }; });
+    const d = DRUGS[selDrug], mass = MOL[selDrug] ? MOL[selDrug].massa : d[1];
+    list.push({ label: d[0], hz: fold(mass), amp: 0.12, what: "molécula", type: "sine" });
+    voices.forEach((v, i) => { const x = list[i]; v.o.type = x.type; v.o.frequency.setTargetAtTime(x.hz, t, 1.5); v.g.gain.setTargetAtTime(x.amp, t, 1.5); });
+    const el = document.getElementById("voices"); el.hidden = false;
+    el.innerHTML = `<div><span>VIX (grave)</span><span>${fmt(dHz, 1)} Hz</span><span class="vbar"><i style="width:${Math.round(clamp((vix - 10) / 30, 0, 1) * 100)}%"></i></span></div>` +
+      list.map(x => `<div><span>${esc(x.label)}</span><span>${Math.round(x.hz)} Hz</span><span class="vbar"><i style="width:${Math.round(x.amp / 0.2 * 100)}%"></i></span></div>`).join("");
+  }
+  document.getElementById("snd").addEventListener("click", e => {
+    const b = e.currentTarget; if (!ac) startSound(); else if (ac.state === "running") ac.suspend(); else ac.resume();
+    setTimeout(() => { const on = ac && ac.state === "running"; b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "som ligado · desligar" : "ligar som"; document.getElementById("voices").hidden = !on; }, 60);
+  });
+
+  // ---------- start ----------
+  if (LIVE) {
+    document.getElementById("mode").textContent = "AO VIVO";
+    document.getElementById("fonte").textContent = `Coleta automática a cada hora. Última: ${LIVE.atualizado.replace("T", " ").replace("Z", " UTC")}.`;
+  }
+  const clock = () => { document.getElementById("clock").textContent = new Date().toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }); };
+  document.getElementById("upd").textContent = PESQ.atualizado ? `pesquisa: ${PESQ.atualizado.replace("T", " ").replace("Z", " UTC")}` : "pesquisa: aguardando a primeira coleta";
+  renderPlaces(); renderResearch(); renderDrugs(); clock(); setInterval(clock, 15000);
+})();
+</script>

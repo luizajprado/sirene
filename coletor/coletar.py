@@ -410,6 +410,57 @@ def mercado():
     return {k: v for k, v in out.items() if v}
 
 
+# ---------------------------------------------------------------- lugares de risco · INFORM Risk (via HDX HAPI) e capitais (Banco Mundial)
+# Em vez de uma lista fixa escolhida a dedo, a cada coleta entram os países de maior risco humanitário
+# segundo o índice INFORM (Comissão Europeia e ONU), representados pela capital.
+def paises_wb():
+    d = json.loads(baixar("https://api.worldbank.org/v2/country?format=json&per_page=400"))
+    out = {}
+    for r in (d[1] if isinstance(d, list) and len(d) > 1 else []):
+        if (r.get("region") or {}).get("id") == "NA" or not r.get("latitude"):
+            continue
+        out[r["id"]] = {"iso2": r.get("iso2Code"), "nome": r.get("name"), "capital": r.get("capitalCity"),
+                        "lat": float(r["latitude"]), "lon": float(r["longitude"])}
+    return out
+
+
+def hapi_ident():
+    ident = os.environ.get("HAPI_APP_IDENTIFIER")
+    email = os.environ.get("HAPI_EMAIL")
+    if not ident and email:
+        d = json.loads(baixar(f"https://hapi.humdata.org/api/v1/encode_identifier?application=sirene&email={urllib.parse.quote(email)}"))
+        ident = d.get("encoded_app_identifier") or d.get("encoded_identifier") or next(iter(d.values()), None)
+    return ident
+
+
+def risco(paises, quantos=12):
+    ident = hapi_ident()
+    if not ident:
+        return []
+    base = "https://hapi.humdata.org"
+    paths = list(json.loads(baixar(f"{base}/openapi.json")).get("paths", {}))
+    path = next((p for p in paths if "national-risk" in p), None)
+    if not path:
+        return []
+    d = json.loads(baixar(f"{base}{path}?output_format=json&limit=10000&app_identifier={urllib.parse.quote(ident)}", timeout=90))
+    rows = d.get("data", []) if isinstance(d, dict) else d
+    ult = {}
+    for r in rows:
+        iso = r.get("location_code")
+        if iso and (iso not in ult or str(r.get("reference_period_start", "")) > str(ult[iso].get("reference_period_start", ""))):
+            ult[iso] = r
+    ordem = sorted((r for r in ult.values() if r.get("overall_risk") is not None and r["location_code"] in paises),
+                   key=lambda r: -float(r["overall_risk"]))[:quantos]
+    saida = []
+    for n, r in enumerate(ordem, 1):
+        pw = paises[r["location_code"]]
+        saida.append({"nome": f"{pw['capital']}, {pw['nome']}" if pw.get("capital") else pw["nome"], "lat": pw["lat"], "lon": pw["lon"],
+                      "db": 60, "iso3": r["location_code"], "lingua": "en",
+                      "risco": {"posicao": n, "inform": round(float(r["overall_risk"]), 1),
+                                "nota": f"INFORM Risk {float(r['overall_risk']):.1f} de 10 · {n}º maior risco humanitário"}})
+    return saida
+
+
 # ---------------------------------------------------------------- execução
 def carregar(caminho, padrao):
     try:
@@ -423,6 +474,21 @@ def main():
     lugares = carregar(os.path.join(RAIZ, "coletor", "lugares.json"), [])
     anterior = carregar(os.path.join(RAIZ, "data", "ultimo.json"), {})
     fontes, alertas = {}, []
+
+    try:
+        paises = paises_wb()
+    except Exception:
+        paises = {}
+    try:
+        de_risco = risco(paises)
+        fontes["INFORM Risk (HDX)"] = f"ok · {len(de_risco)} lugares de risco" if de_risco else "sem identificador HDX · só a lista fixa"
+    except Exception as e:
+        de_risco = [p for p in anterior.get("lugares", []) if p.get("risco")]
+        de_risco = [{k: p.get(k) for k in ("nome", "lat", "lon", "db", "iso3", "lingua", "risco")} for p in de_risco]
+        fontes["INFORM Risk (HDX)"] = f"falhou ({type(e).__name__}) · mantidos os últimos"
+    nomes = {p["nome"] for p in lugares}
+    lugares = lugares + [p for p in de_risco if p["nome"] not in nomes]
+    iso2 = {k: v["iso2"] for k, v in paises.items()}
 
     for nome, fn in (("USGS", usgs), ("GDACS", gdacs)):
         try:
@@ -514,7 +580,7 @@ def main():
             economica = {"i": round(ei, 3), "nota": " · ".join(partes) or "sem dados"}
         else:
             economica = antigos.get(p["nome"], {}).get("economia")
-        saida_lugares.append({"nome": p["nome"], "lat": p["lat"], "lon": p["lon"], "iso3": p["iso3"], "lingua": lang, "economia": economica, "db": p.get("db"), "db_fonte": "estimado",
+        saida_lugares.append({"nome": p["nome"], "lat": p["lat"], "lon": p["lon"], "iso3": p["iso3"], "iso2": iso2.get(p["iso3"]), "lingua": lang, "risco": p.get("risco"), "economia": economica, "db": p.get("db"), "db_fonte": "estimado",
                               **m, "violencia": v, "cuidado": cuid, "aflicao_coletiva": atn, "esperanca": esp, **{k: x for k, x in (extra or {}).items() if x}})
 
     alertas.sort(key=lambda a: a[0])
@@ -532,7 +598,17 @@ def main():
     serie = [s for s in carregar(os.path.join(RAIZ, "data", "serie.json"), []) if s.get("t") != foto["t"]]
     serie = (serie + [foto])[-48:]
 
-    dados = {"atualizado": iso(AGORA), "inicio": inicio, "fontes": fontes, "alertas": alertas,
+    try:  # bancos de pesquisa em saúde mental, para o Observatório
+        import sys
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import pesquisa
+        pesq, f_pesq = pesquisa.coletar()
+        fontes.update(f_pesq)
+    except Exception as e:
+        pesq = carregar(os.path.join(RAIZ, "data", "pesquisa.json"), {})
+        fontes["Bancos de pesquisa"] = f"falhou ({type(e).__name__})"
+
+    dados = {"atualizado": iso(AGORA), "inicio": inicio, "fontes": fontes, "alertas": alertas, "pesquisa": pesq,
              "lugares": saida_lugares, "atencao": atencao, "redes": redes, "vix": vix, "conflitos": conflitos,
              "mercado": merc, "serie": serie}
 
@@ -542,7 +618,7 @@ def main():
     with open(os.path.join(RAIZ, "data", "ultimo.json"), "w", encoding="utf-8") as f:
         f.write(texto)
     with open(os.path.join(RAIZ, "data", "historico", AGORA.strftime("%Y-%m-%d"), AGORA.strftime("%H%M") + ".json"), "w", encoding="utf-8") as f:
-        json.dump({k: v for k, v in dados.items() if k != "serie"}, f, ensure_ascii=False, separators=(",", ":"))  # a série já está em data/serie.json
+        json.dump({k: v for k, v in dados.items() if k not in ("serie", "pesquisa")}, f, ensure_ascii=False, separators=(",", ":"))  # a série já está em data/serie.json
     with open(os.path.join(RAIZ, "data", "serie.json"), "w", encoding="utf-8") as f:
         json.dump(serie, f, ensure_ascii=False, separators=(",", ":"))
     with open(os.path.join(RAIZ, "docs", "dados.js"), "w", encoding="utf-8") as f:
