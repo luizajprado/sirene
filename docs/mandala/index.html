@@ -2,101 +2,99 @@
 <html lang="pt-BR">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mandala de si</title>
+<title>Mandala do Inconsciente</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Martian+Mono:wdth,wght@75..112.5,300..800&display=swap">
 <style>
-/* A personal, self-modulating mandala. Everything is computed in the visitor's browser; nothing leaves the device.
-   Same chemistry as Sirene, turned inward. Single dark look by choice. */
-:root { --bg: #070706; --panel: #100F0D; --line: #26221C; --fg: #EDE6D8; --dim: #9A9083; --gold: #E8B86A; --calm: #7FC4B8; --care: #E8A3C0;
+/* Full-bleed mandala drawn from what a person searches for. Everything runs in the visitor's browser; nothing leaves the device.
+   The canvas fills the screen; controls sit in a drawer over it. Single dark look by choice. */
+:root { --bg: #050504; --panel: rgba(14,13,11,.92); --line: #2A251E; --fg: #EDE6D8; --dim: #A0968A; --gold: #E8B86A; --calm: #7FC4B8;
   --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; --disp: "Martian Mono", "IBM Plex Mono", monospace; color-scheme: dark; }
 [hidden] { display: none !important; }
-html, body { background: var(--bg); color: var(--fg); margin: 0; }
+html, body { background: var(--bg); color: var(--fg); margin: 0; height: 100%; overflow: hidden; }
 body { font-family: var(--mono); font-size: 13px; line-height: 1.55; }
-button, input { font: inherit; color: inherit; }
+button, input, textarea { font: inherit; color: inherit; }
 a { color: var(--gold); }
-.wrap { max-width: 1280px; margin: 0 auto; padding: 22px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 18px; }
-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 10px 24px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
-h1 { font-family: var(--disp); font-stretch: 75%; font-weight: 800; font-size: clamp(30px, 5vw, 52px); line-height: 1; margin: 0; }
-.sub { color: var(--dim); max-width: 640px; margin: 8px 0 0; }
-.priv { border: 1px solid var(--calm); color: var(--calm); padding: 4px 10px; font-size: 11px; letter-spacing: .06em; }
-.grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; align-items: start; }
-@media (max-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr); } }
-.stage { position: relative; aspect-ratio: 1 / 1; background: #000; border: 1px solid var(--line); }
-.stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.breath { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; color: var(--fg); letter-spacing: .2em; font-size: 12px; opacity: .85; pointer-events: none; }
-.panel { background: var(--panel); border: 1px solid var(--line); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-.panel h2 { margin: 0; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); font-weight: 500; }
-.q { display: grid; grid-template-columns: minmax(0, 1fr) 70px; gap: 2px 10px; align-items: center; }
-.q label { font-size: 13px; } .q output { text-align: right; color: var(--calm); font-variant-numeric: tabular-nums; }
-.q input { grid-column: 1 / -1; width: 100%; accent-color: var(--gold); }
-.q small { grid-column: 1 / -1; color: var(--dim); font-size: 11px; }
-.btn { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 14px; min-height: 44px; cursor: pointer; }
+#cv, #words { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+#words { pointer-events: none; }
+.title { position: fixed; left: max(18px, env(safe-area-inset-left, 0px)); top: 16px; pointer-events: none; }
+.title b { font-family: var(--disp); font-stretch: 75%; font-weight: 800; font-size: clamp(18px, 2.4vw, 28px); letter-spacing: .02em; display: block; }
+.title span { color: var(--dim); font-size: 11px; letter-spacing: .12em; }
+.breath { position: fixed; left: 0; right: 0; bottom: 84px; text-align: center; letter-spacing: .3em; font-size: 13px; opacity: .85; pointer-events: none; }
+.bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: max(16px, env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 32px); }
+.btn { background: rgba(5,5,4,.6); border: 1px solid var(--gold); color: var(--gold); padding: 10px 14px; min-height: 44px; cursor: pointer; backdrop-filter: blur(6px); }
 .btn[aria-pressed="true"] { background: var(--gold); color: var(--bg); }
 .btn.ghost { border-color: var(--line); color: var(--dim); }
 .btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw); background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding: 18px 18px 90px; display: flex; flex-direction: column; gap: 16px; backdrop-filter: blur(10px); }
+.drawer h2 { margin: 0; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); font-weight: 500; }
+.sec { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 14px; }
+.sec:first-child { border-top: 0; padding-top: 0; }
+.dim { color: var(--dim); font-size: 12px; margin: 0; }
+.drop { border: 1px dashed var(--line); padding: 16px; text-align: center; cursor: pointer; color: var(--dim); }
+.drop.over { border-color: var(--gold); color: var(--fg); }
+textarea { background: #0B0A08; border: 1px solid var(--line); padding: 10px; min-height: 90px; resize: vertical; }
+.themes { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+.themes div { display: grid; grid-template-columns: 120px minmax(0, 1fr) 44px; gap: 8px; align-items: center; }
+.tb { height: 6px; background: #1E1B16; position: relative; } .tb i { position: absolute; inset: 0 auto 0 0; }
+.themes .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--dim); }
+.kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0; } .kv dt { color: var(--dim); } .kv dd { margin: 0; }
+details summary { cursor: pointer; color: var(--gold); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+.q { display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 2px 10px; align-items: center; margin-top: 8px; }
+.q output { text-align: right; color: var(--calm); } .q input { grid-column: 1 / -1; width: 100%; accent-color: var(--gold); }
+.arch { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.arch figure { margin: 0; } .arch img { width: 100%; aspect-ratio: 1; display: block; border: 1px solid var(--line); } .arch figcaption { color: var(--dim); font-size: 10px; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; }
-.kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0; }
-.kv dt { color: var(--dim); } .kv dd { margin: 0; }
-.dim { color: var(--dim); font-size: 12px; }
-.arch { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
-.arch figure { margin: 0; display: flex; flex-direction: column; gap: 4px; }
-.arch img { width: 100%; aspect-ratio: 1 / 1; display: block; border: 1px solid var(--line); }
-.arch figcaption { color: var(--dim); font-size: 11px; }
-footer { border-top: 1px solid var(--line); padding-top: 12px; color: var(--dim); font-size: 11px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
 </style>
 
-<div class="wrap">
-  <header>
-    <div>
-      <h1>MANDALA DE SI</h1>
-      <p class="sub">A mesma química da Sirene, voltada para dentro. Você conta como está; o corpo do dia vira anéis, cor e som. Depois a mandala propõe uma modulação: respirar devagar com ela até o som e a forma se acalmarem.</p>
-    </div>
-    <span class="priv">nada sai do seu aparelho</span>
-  </header>
-
-  <div class="grid">
-    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
-      <div class="stage"><canvas id="cv" aria-label="Mandala gerada a partir dos seus dados do dia"></canvas><div class="breath" id="breath" hidden></div></div>
-      <div class="row">
-        <button type="button" class="btn" id="snd" aria-pressed="false">ouvir</button>
-        <button type="button" class="btn" id="mod" aria-pressed="false">modular: respirar com a mandala</button>
-        <button type="button" class="btn ghost" id="save">guardar a mandala de hoje</button>
-      </div>
-      <div class="panel"><h2>como a mandala leu você</h2><dl class="kv" id="read"></dl></div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
-      <div class="panel">
-        <h2>diário de hoje</h2>
-        <div id="qs" style="display:flex;flex-direction:column;gap:12px"></div>
-      </div>
-      <div class="panel">
-        <h2>sensores · só com a sua permissão</h2>
-        <p class="dim" style="margin:0">Cada sensor só liga quando você pedir, e o navegador pergunta antes. Os dados ficam aqui e são esquecidos quando você fecha a página.</p>
-        <div class="row">
-          <button type="button" class="btn ghost" id="mic">ouvir o ruído do ambiente</button>
-          <button type="button" class="btn ghost" id="geo">ler o ar e o calor de onde estou</button>
-        </div>
-        <dl class="kv" id="sens"></dl>
-      </div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h2>arquivo de si · guardado só neste navegador</h2>
-    <div class="arch" id="arch"><span class="dim">As mandalas que você guardar aparecem aqui, uma por dia.</span></div>
-    <div class="row"><button type="button" class="btn ghost" id="wipe">apagar meu arquivo</button></div>
-  </div>
-
-  <footer>
-    <span>Não é diagnóstico nem tratamento. É uma obra: um espelho poético de um dia, a partir do que você conta.</span>
-    <span>Se você estiver em sofrimento, procure apoio: <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a> · no Brasil, CVV 188.</span>
-    <span>Sirene · Luiza Jesus do Prado, 2026</span>
-  </footer>
+<canvas id="cv" aria-label="Mandala gerada a partir do que você procura"></canvas>
+<canvas id="words" aria-hidden="true"></canvas>
+<div class="title"><b>MANDALA DO INCONSCIENTE</b><span id="sub">o que você procura, em forma e som</span></div>
+<div class="breath" id="breath" hidden></div>
+<div class="bar">
+  <button type="button" class="btn" id="panelBtn" aria-pressed="true" aria-controls="drawer">painel</button>
+  <button type="button" class="btn" id="snd" aria-pressed="false">ouvir</button>
+  <button type="button" class="btn" id="mod" aria-pressed="false">modular: respirar com a mandala</button>
+  <button type="button" class="btn ghost" id="save">guardar</button>
 </div>
+
+<aside class="drawer" id="drawer" aria-label="Painel">
+  <div class="sec">
+    <h2>o que você procura</h2>
+    <p class="dim">Suas buscas guardam sinais do que passa por dentro: pesquisas com centenas de estudantes mostraram que o ritmo e os temas do histórico de buscas acompanham ansiedade e depressão. Aqui elas não viram diagnóstico: viram forma e som. Tudo é lido no seu navegador e nada é enviado.</p>
+    <label class="drop" id="drop" tabindex="0">Solte aqui o arquivo do seu histórico de buscas (Google Takeout, “Minha atividade”, Pesquisa, em JSON ou HTML) ou clique para escolher<input type="file" id="file" accept=".json,.html,.htm,.txt" hidden></label>
+    <p class="dim">Como exportar: takeout.google.com → desmarque tudo → marque “Minha atividade” → escolha só “Pesquisa” e o formato JSON.</p>
+    <label for="typed" class="dim">ou escreva buscas e palavras, uma por linha</label>
+    <textarea id="typed" placeholder="como dormir melhor&#10;ansiedade à noite&#10;passagem para ver minha mãe"></textarea>
+    <div class="row"><button type="button" class="btn" id="gen">gerar mandala</button><button type="button" class="btn ghost" id="forget">esquecer buscas</button></div>
+    <p class="dim" id="status"></p>
+  </div>
+  <div class="sec">
+    <h2>como a mandala leu você</h2>
+    <div class="themes" id="themes"></div>
+    <dl class="kv" id="read"></dl>
+  </div>
+  <div class="sec">
+    <details>
+      <summary>outros sinais · opcional</summary>
+      <div id="qs"></div>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn ghost" id="mic">ruído do ambiente</button><button type="button" class="btn ghost" id="geo">ar e calor de onde estou</button></div>
+      <dl class="kv" id="sens" style="margin-top:8px"></dl>
+    </details>
+  </div>
+  <div class="sec">
+    <h2>arquivo · só neste navegador</h2>
+    <div class="arch" id="arch"></div>
+    <div class="row"><button type="button" class="btn ghost" id="wipe">apagar arquivo</button></div>
+  </div>
+  <div class="sec">
+    <p class="dim">Não é diagnóstico nem tratamento. As buscas nunca são guardadas: só a imagem, se você pedir. Se estiver em sofrimento, procure apoio: <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a> · no Brasil, CVV 188.</p>
+    <p class="dim">Base: Zhang et al. e Zaman et al., Universidade de Rochester, histórico de buscas do Google e YouTube e sinais de depressão e ansiedade.</p>
+    <p class="dim">Luiza Jesus do Prado, 2026</p>
+  </div>
+</aside>
 
 <script>
 (() => {
@@ -109,43 +107,93 @@ footer { border-top: 1px solid var(--line); padding-top: 12px; color: var(--dim)
   const hz = m => { let f = MED[m][1]; while (f > 1100) f /= 2; while (f < 100) f *= 2; return f; };
   const hex = c => "#" + c.map(v => v.toString(16).padStart(2, "0")).join("");
   const CALM = new Set(["OXT", "GABA", "SER", "DOP", "MEL"]);
+  const norm = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
-  // ---------- the day's diary: each answer weighs on mediators (a poetic translation, not a measurement) ----------
+  // ---------- themes of what one searches for, in Portuguese, Spanish and English; each weighs on mediators ----------
+  const THEMES = [
+    { id: "medo", nome: "medo e alerta", med: { NOR: .5, ADR: .3, COR: .2 }, w: "ansiedade ansioso ansiosa panico medo crise taquicardia nervoso preocupacao angustia anxiety panic fear worried ansiedad miedo" },
+    { id: "sono", nome: "sono", med: { MEL: -.4, NOR: .3, COR: .3 }, w: "insonia dormir sono acordar pesadelo cansaco cansado melatonina insomnia sleep tired nightmare dormir sueno cansancio" },
+    { id: "tristeza", nome: "tristeza e luto", med: { GLU: .35, COR: .35, SER: -.3 }, w: "depressao triste tristeza sozinho sozinha solidao luto saudade vazio chorar morte morreu depression sad lonely grief tristeza soledad duelo" },
+    { id: "dinheiro", nome: "trabalho e dinheiro", med: { COR: .6, NOR: .3 }, w: "salario divida boleto emprego demissao desemprego aluguel conta pagar trabalho chefe prazo job debt rent salary bills trabajo deuda alquiler" },
+    { id: "corpo", nome: "corpo e dor", med: { IL6: .6, COR: .25 }, w: "dor sintoma medico remedio doenca febre inflamacao exame tratamento hospital pain symptom doctor disease fever dolor sintoma medicamento" },
+    { id: "comida", nome: "comida e fome", med: { GRE: .7, SER: .1 }, w: "receita fome comida dieta jejum almoco jantar emagrecer recipe food hungry diet hambre comida receta" },
+    { id: "violencia", nome: "violência e notícias", med: { ADR: .4, GLU: .4, NOR: .2 }, w: "guerra ataque tiroteio assalto violencia crime bomba noticias morte policia war attack shooting news violence guerra ataque noticias" },
+    { id: "vinculo", nome: "vínculo e amor", med: { OXT: .8 }, w: "amor amigo amiga familia mae pai filho filha namoro namorado namorada casamento abraco saudade love friend family mother father amor amigo familia" },
+    { id: "desejo", nome: "desejo e projeto", med: { DOP: .7, SER: .2 }, w: "viagem musica show curso aprender treino danca arte filme livro passagem praia festa travel music course learn dance art book viaje musica curso" },
+    { id: "calma", nome: "calma e cuidado", med: { GABA: .7, SER: .2, OXT: .1 }, w: "meditacao respiracao yoga natureza terapia psicologo descanso cha caminhada silencio meditation breathing therapy nature walk meditacion terapia" },
+  ].map(t => ({ ...t, words: new Set(t.w.split(" ")) }));
+
+  // ---------- reading the searches ----------
+  let SEARCHES = [];   // [{q, t}] in memory only
+  function parseFile(text, name) {
+    const out = [], re = /^(searched for|pesquisou(?: por)?|buscou|buscaste|has buscado|busco)\s+/i;
+    try {
+      const j = JSON.parse(text); const arr = Array.isArray(j) ? j : (j.items || []);
+      for (const r of arr) { const tt = r.title || ""; if (re.test(tt)) out.push({ q: tt.replace(re, ""), t: r.time ? new Date(r.time) : null }); }
+      if (out.length) return out;
+    } catch (e) {}
+    if (/<html|<div/i.test(text)) {
+      const doc = new DOMParser().parseFromString(text, "text/html");
+      doc.querySelectorAll(".content-cell, .outer-cell").forEach(c => {
+        const t = c.textContent.trim(); const m = t.match(/^(Searched for|Pesquisou(?: por)?|Buscaste|Has buscado)\s*(.+?)\s*(\d{1,2}[^\n]*\d{4}[^\n]*)?$/i);
+        if (m) out.push({ q: m[2].split("\n")[0].trim(), t: m[3] ? new Date(m[3]) : null });
+      });
+      if (out.length) return out;
+    }
+    return text.split(/\n+/).map(l => l.trim()).filter(Boolean).map(q => ({ q, t: null }));
+  }
+  function analyse(list) {
+    const counts = Object.fromEntries(THEMES.map(t => [t.id, 0])), freq = {}, shown = {};
+    let night = 0, timed = 0; const hours = new Array(24).fill(0);
+    for (const s of list) {
+      const raw = s.q.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+      for (const w of raw) {
+        const tok = norm(w);
+        for (const th of THEMES) if (th.words.has(tok)) counts[th.id]++;
+        if (tok.length > 3 && !STOP.has(tok)) { freq[tok] = (freq[tok] || 0) + 1; shown[tok] = shown[tok] || w; }
+      }
+      if (s.t && !isNaN(s.t)) { timed++; const h = s.t.getHours(); hours[h]++; if (h < 5) night++; }
+    }
+    const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+    const p = hours.map(h => h / (timed || 1)), ent = timed ? -p.filter(x => x > 0).reduce((s, x) => s + x * Math.log2(x), 0) / Math.log2(24) : null;
+    const words = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 36).map(x => shown[x[0]] || x[0]);
+    return { counts, total, share: Object.fromEntries(Object.entries(counts).map(([k, v]) => [k, v / total])), nightShare: timed ? night / timed : null, timeEntropy: ent, n: list.length, words };
+  }
+  const STOP = new Set("como para que qual quais onde quando porque sobre com sem mais menos muito muita esse essa isso este esta pela pelo entre the and for with what how why where when from your this that para como donde cuando porque sobre".split(" "));
+  let A = null;
+
+  // ---------- optional signals: diary sliders and sensors ----------
   const Q = [
-    { id: "sono", label: "Quantas horas você dormiu?", min: 0, max: 12, step: 0.5, v: 7, fmt: v => `${v} h` },
-    { id: "tensao", label: "Quanta tensão no corpo?", min: 0, max: 10, step: 1, v: 4, fmt: v => `${v}/10` },
-    { id: "humor", label: "Como está o humor?", min: 0, max: 10, step: 1, v: 6, fmt: v => `${v}/10`, small: "0 muito baixo · 10 muito bom" },
-    { id: "vinculo", label: "Contato com pessoas que te fazem bem", min: 0, max: 10, step: 1, v: 5, fmt: v => `${v}/10` },
-    { id: "movimento", label: "Movimento do corpo hoje", min: 0, max: 120, step: 5, v: 20, fmt: v => `${v} min` },
-    { id: "comida", label: "Você comeu bem?", min: 0, max: 10, step: 1, v: 6, fmt: v => `${v}/10` },
-    { id: "tela", label: "Horas de tela fora do trabalho", min: 0, max: 12, step: 0.5, v: 3, fmt: v => `${v} h` },
-    { id: "calma", label: "Algum momento de calma ou respiração?", min: 0, max: 60, step: 5, v: 5, fmt: v => `${v} min` },
+    { id: "sono", label: "Horas de sono", min: 0, max: 12, step: 0.5, v: 7, fmt: v => `${v} h` },
+    { id: "tensao", label: "Tensão no corpo", min: 0, max: 10, step: 1, v: 4, fmt: v => `${v}/10` },
+    { id: "vinculo", label: "Contato com quem te faz bem", min: 0, max: 10, step: 1, v: 5, fmt: v => `${v}/10` },
+    { id: "movimento", label: "Movimento hoje", min: 0, max: 120, step: 5, v: 20, fmt: v => `${v} min` },
   ];
-  const S = Object.fromEntries(Q.map(q => [q.id, q.v]));
-  const SENS = { noise: null, air: null, heat: null };
+  const S = Object.fromEntries(Q.map(q => [q.id, q.v])), SENS = {};
+  let diaryTouched = false;
+
   function profile() {
-    const p = {};
-    const add = (m, x) => { p[m] = clamp((p[m] || 0) + x, 0, 1); };
-    const lackSleep = clamp((7.5 - S.sono) / 5, 0, 1), tens = S.tensao / 10, low = clamp((6 - S.humor) / 6, 0, 1);
-    add("MEL", 0.25 + 0.45 * clamp(S.sono / 8, 0, 1)); add("COR", 0.45 * lackSleep);
-    add("COR", 0.5 * tens); add("NOR", 0.45 * tens); add("ADR", 0.3 * clamp((tens - 0.6) / 0.4, 0, 1));
-    add("SER", 0.6 * (S.humor / 10)); add("GLU", 0.25 * low);
-    add("OXT", 0.7 * (S.vinculo / 10));
-    add("DOP", 0.6 * clamp(S.movimento / 45, 0, 1)); add("SER", 0.2 * clamp(S.movimento / 45, 0, 1));
-    add("GRE", 0.5 * clamp((6 - S.comida) / 6, 0, 1));
-    add("NOR", 0.25 * clamp(S.tela / 8, 0, 1)); add("MEL", -0.2 * clamp(S.tela / 8, 0, 1));
-    add("GABA", 0.2 + 0.6 * clamp(S.calma / 20, 0, 1));
-    if (SENS.noise != null) { add("NOR", 0.4 * SENS.noise); add("COR", 0.2 * SENS.noise); }
-    if (SENS.air != null) { add("IL6", 0.7 * SENS.air); add("GLU", 0.2 * SENS.air); }
-    if (SENS.heat != null) { add("COR", 0.3 * SENS.heat); add("MEL", -0.15 * SENS.heat); }
-    return Object.entries(p).filter(([, v]) => v > 0.03).sort((a, b) => b[1] - a[1]);
+    const p = {}; const add = (m, x) => { p[m] = (p[m] || 0) + x; };
+    add("GABA", 0.15); add("SER", 0.2); add("MEL", 0.25);
+    if (A && A.n) {
+      for (const th of THEMES) { const sh = A.share[th.id]; for (const [m, w] of Object.entries(th.med)) add(m, sh * w * 2.2); }
+      if (A.nightShare != null) { add("MEL", -0.5 * A.nightShare); add("NOR", 0.6 * A.nightShare); }
+      if (A.timeEntropy != null) add("COR", 0.25 * A.timeEntropy);
+    }
+    if (diaryTouched) {
+      const lack = clamp((7.5 - S.sono) / 5, 0, 1), tens = S.tensao / 10;
+      add("MEL", 0.3 * clamp(S.sono / 8, 0, 1) - 0.15); add("COR", 0.35 * lack + 0.35 * tens); add("NOR", 0.3 * tens); add("OXT", 0.5 * S.vinculo / 10); add("DOP", 0.4 * clamp(S.movimento / 45, 0, 1));
+    }
+    if (SENS.noise != null) add("NOR", 0.4 * SENS.noise);
+    if (SENS.air != null) add("IL6", 0.6 * SENS.air);
+    if (SENS.heat != null) add("COR", 0.3 * SENS.heat);
+    return Object.entries(p).map(([k, v]) => [k, clamp(v, 0, 1)]).filter(([, v]) => v > 0.03).sort((a, b) => b[1] - a[1]);
   }
 
-  // ---------- mandala engine (WebGL fragment shader) ----------
-  const MD = { cv: document.getElementById("cv"), ok: false, t0: performance.now(), pulse: 9, breath: 0 };
+  // ---------- mandala engine ----------
+  const MD = { cv: document.getElementById("cv"), ok: false, t0: performance.now(), pulse: 9 };
   (function init() {
-    const gl = MD.cv.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
-    if (!gl) return;
+    const gl = MD.cv.getContext("webgl", { preserveDrawingBuffer: true, antialias: false }); if (!gl) return;
     const vs = "attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}";
     const fs = `precision highp float;
 uniform vec2 uRes;uniform float uT,uN,uLoad,uCare,uPulse;
@@ -195,39 +243,63 @@ void main(){
     MD.gl = gl; MD.u = {}; for (const k of ["uRes", "uT", "uN", "uLoad", "uCare", "uPulse", "uC", "uW", "uM", "uK", "uR"]) MD.u[k] = gl.getUniformLocation(pr, k);
     MD.ok = true;
   })();
-  MD.cur = { n: 8, load: 0.4, care: 0.3, rings: Array.from({ length: 5 }, () => ({ c: [0, 0, 0], w: 0, m: 8, k: 20, R: 0.2 })) };
+  MD.cur = { n: 8, load: 0.3, care: 0.3, rings: Array.from({ length: 5 }, () => ({ c: [0, 0, 0], w: 0, m: 8, k: 20, R: 0.2 })) };
   MD.tgt = JSON.parse(JSON.stringify(MD.cur));
   function target() {
     const prof = profile().slice(0, 5); if (!prof.length) prof.push(["GABA", 0.3]);
     const calm = prof.filter(x => CALM.has(x[0])), hard = prof.filter(x => !CALM.has(x[0])), ordered = [...calm, ...hard];
-    const top = hard[0] || prof[0], nBase = [6, 8, 10, 12][Math.round(hz(top[0]) / 150) % 4];
+    // symmetry from how varied the searches are: a narrow mind-field gives few axes, a wide one many
+    const div = A && A.n ? Object.values(A.share).filter(x => x > 0.05).length : 3;
+    const nBase = [6, 6, 8, 8, 10, 12, 12, 14, 16, 16, 16][div] || 8;
     MD.tgt.n = nBase; MD.tgt.load = clamp(hard.reduce((s, x) => s + x[1], 0) / 1.6, 0, 1); MD.tgt.care = clamp(calm.reduce((s, x) => s + x[1], 0) / 1.6, 0, 1);
     MD.tgt.rings = Array.from({ length: 5 }, (_, i) => {
       const x = ordered[i]; if (!x) return { c: MD.cur.rings[i].c.slice(), w: 0, m: nBase, k: 20, R: 0.08 + 0.075 * i };
       const f = hz(x[0]); return { key: x[0], c: MED[x[0]][2].map(v => v / 255), w: clamp(0.25 + x[1] * 0.9, 0, 1), m: nBase * (1 + Math.round(f / 220) % 3) / 2, k: 18 + f / 25, R: 0.08 + 0.075 * i, hz: f };
     });
     MD.pulse = 0;
-    document.getElementById("read").innerHTML = MD.tgt.rings.filter(r => r.key).map((r, i) => `<dt style="color:${hex(MED[r.key][2])}">${MED[r.key][0]}</dt><dd>anel ${i + 1} · ${Math.round(r.hz)} Hz · ${Math.round(r.m * 2)} pétalas</dd>`).join("")
-      + `<dt>peso</dt><dd>${(MD.tgt.load * 100).toFixed(0)} de 100</dd><dt>cuidado</dt><dd>${(MD.tgt.care * 100).toFixed(0)} de 100</dd>`;
-    updateSound();
+    renderRead(); updateSound();
   }
-  function resize() { const r = MD.cv.getBoundingClientRect(), d = Math.min(1.5, devicePixelRatio || 1); MD.cv.width = Math.max(2, Math.round(r.width * d)); MD.cv.height = Math.max(2, Math.round(r.height * d)); }
-  new ResizeObserver(resize).observe(MD.cv);
+  function renderRead() {
+    const th = document.getElementById("themes");
+    if (A && A.n) {
+      const mx = Math.max(0.01, ...Object.values(A.share));
+      th.innerHTML = THEMES.map(t => { const m = Object.entries(t.med).sort((a, b) => b[1] - a[1])[0][0]; return `<div><span>${t.nome}</span><span class="tb"><i style="width:${Math.round(A.share[t.id] / mx * 100)}%;background:${hex(MED[m][2])}"></i></span><span class="n">${A.counts[t.id]}</span></div>`; }).join("");
+    } else th.innerHTML = `<p class="dim">Ainda sem buscas: a mandala respira em repouso.</p>`;
+    document.getElementById("read").innerHTML = MD.tgt.rings.filter(r => r.key).map((r, i) => `<dt style="color:${hex(MED[r.key][2])}">${MED[r.key][0]}</dt><dd>anel ${i + 1} · ${Math.round(r.hz)} Hz · ${Math.round(r.m * 2)} pétalas</dd>`).join("")
+      + `<dt>eixos</dt><dd>${MD.tgt.n}, pela variedade de temas</dd>`
+      + (A && A.nightShare != null ? `<dt>de madrugada</dt><dd>${Math.round(A.nightShare * 100)}% das buscas entre 0 h e 5 h</dd>` : "")
+      + (A && A.n ? `<dt>buscas lidas</dt><dd>${A.n}</dd>` : "");
+  }
 
-  // ---------- modulation: slow breathing, about six breaths a minute; the load eases while you breathe with it ----------
+  // ---------- the searched words orbit the mandala, faint, like what surfaces from below ----------
+  const W = { cv: document.getElementById("words") }; W.ctx = W.cv.getContext("2d");
+  function drawWords(now) {
+    const c = W.cv, d = Math.min(1.5, devicePixelRatio || 1); if (c.width !== Math.round(innerWidth * d)) { c.width = Math.round(innerWidth * d); c.height = Math.round(innerHeight * d); }
+    const x = W.ctx; x.clearRect(0, 0, c.width, c.height); if (!A || !A.words.length) return;
+    const cx = c.width / 2, cy = c.height / 2, R = Math.min(c.width, c.height) * 0.47, t = now / 1000;
+    x.font = `${Math.round(12 * d)}px "IBM Plex Mono", monospace`; x.textAlign = "center"; x.textBaseline = "middle";
+    A.words.forEach((w, i) => {
+      const ring = i % 3, a = (i / A.words.length) * Math.PI * 2 + t * (0.006 + ring * 0.003) * (ring % 2 ? -1 : 1), r = R * (0.86 + ring * 0.07);
+      x.save(); x.translate(cx + Math.cos(a) * r, cy + Math.sin(a) * r); x.rotate(a + Math.PI / 2);
+      x.fillStyle = `rgba(237,230,216,${0.16 + 0.12 * Math.sin(t * 0.3 + i)})`; x.fillText(w, 0, 0); x.restore();
+    });
+  }
+
+  // ---------- modulation and sound ----------
   const MOD = { on: false, t0: 0, ease: 0 };
-  let last = performance.now();
+  let ac = null, master = null, voices = [], last = performance.now();
+  function resize() { const d = Math.min(1.5, devicePixelRatio || 1); MD.cv.width = Math.round(innerWidth * d); MD.cv.height = Math.round(innerHeight * d); }
+  addEventListener("resize", resize); resize();
   function tick(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
     if (MD.ok) {
       const c = MD.cur, t = MD.tgt, k = Math.min(1, dt * 0.8);
-      if (MOD.on) MOD.ease = Math.min(1, MOD.ease + dt / 180); else MOD.ease = Math.max(0, MOD.ease - dt / 60);
-      const phase = MOD.on ? Math.sin((now - MOD.t0) / 10000 * Math.PI * 2) : 0;    // 10 s cycle: 5 in, 5 out
+      MOD.ease = MOD.on ? Math.min(1, MOD.ease + dt / 180) : Math.max(0, MOD.ease - dt / 60);
+      const phase = MOD.on ? Math.sin((now - MOD.t0) / 10000 * Math.PI * 2) : 0;
       c.n = t.n; c.load += (t.load * (1 - 0.6 * MOD.ease) - c.load) * k; c.care += (Math.min(1, t.care + 0.3 * MOD.ease) - c.care) * k;
       for (let i = 0; i < 5; i++) { const a = c.rings[i], b = t.rings[i]; a.w += (b.w - a.w) * k; for (let j = 0; j < 3; j++) a.c[j] += (b.c[j] - a.c[j]) * k * 0.6; a.m = b.m; a.k += (b.k - a.k) * k; a.R += (b.R * (1 + 0.08 * phase) - a.R) * Math.min(1, dt * 3); }
       MD.pulse += dt * 0.06;
-      const gl = MD.gl, u = MD.u; if (MD.cv.width < 3) resize();
-      gl.viewport(0, 0, MD.cv.width, MD.cv.height);
+      const gl = MD.gl, u = MD.u; gl.viewport(0, 0, MD.cv.width, MD.cv.height);
       gl.uniform2f(u.uRes, MD.cv.width, MD.cv.height); gl.uniform1f(u.uT, (now - MD.t0) / 1000);
       gl.uniform1f(u.uN, c.n); gl.uniform1f(u.uLoad, c.load); gl.uniform1f(u.uCare, c.care); gl.uniform1f(u.uPulse, MD.pulse);
       gl.uniform3fv(u.uC, c.rings.flatMap(r => r.c)); gl.uniform1fv(u.uW, c.rings.map(r => r.w));
@@ -235,15 +307,13 @@ void main(){
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       if (MOD.on) { document.getElementById("breath").textContent = phase >= 0 ? "inspire" : "expire"; if (master) master.gain.setTargetAtTime(0.14 + 0.08 * phase, ac.currentTime, 0.4); }
     }
+    drawWords(now);
     requestAnimationFrame(tick);
   }
-
-  // ---------- continuous sound: the day's mediators as a chord; modulation softens it toward GABA and oxytocin ----------
-  let ac = null, master = null, voices = [];
   function startSound() {
     ac = new (window.AudioContext || window.webkitAudioContext)();
     master = ac.createGain(); master.gain.value = 0; const comp = ac.createDynamicsCompressor(); master.connect(comp); comp.connect(ac.destination); master.gain.setTargetAtTime(0.18, ac.currentTime, 1.5);
-    voices = [0, 1, 2, 3].map(() => { const o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; g.gain.value = 0; o.connect(g); g.connect(master); o.start(); return { o, g }; });
+    voices = [0, 1, 2, 3].map(() => { const o = ac.createOscillator(), g = ac.createGain(); g.gain.value = 0; o.connect(g); g.connect(master); o.start(); return { o, g }; });
     updateSound();
   }
   function updateSound() {
@@ -251,70 +321,49 @@ void main(){
     voices.forEach((v, i) => { const x = prof[i]; if (!x) { v.g.gain.setTargetAtTime(0, t, 1); return; } const calm = CALM.has(x[0]);
       v.o.type = calm ? "sine" : "triangle"; v.o.frequency.setTargetAtTime(hz(x[0]), t, 1.2); v.g.gain.setTargetAtTime((0.04 + 0.16 * x[1]) * (MOD.on && !calm ? 0.4 : 1), t, 1.5); });
   }
-  document.getElementById("snd").addEventListener("click", e => {
-    const b = e.currentTarget; if (!ac) startSound(); else if (ac.state === "running") ac.suspend(); else ac.resume();
-    setTimeout(() => { const on = ac && ac.state === "running"; b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "som ligado · desligar" : "ouvir"; }, 60);
-  });
-  document.getElementById("mod").addEventListener("click", e => {
-    MOD.on = !MOD.on; MOD.t0 = performance.now(); e.currentTarget.setAttribute("aria-pressed", String(MOD.on));
-    e.currentTarget.textContent = MOD.on ? "modulando · parar" : "modular: respirar com a mandala";
-    document.getElementById("breath").hidden = !MOD.on;
-    if (MOD.on && !ac) document.getElementById("snd").click(); else updateSound();
-  });
+  const $ = id => document.getElementById(id);
+  $("snd").addEventListener("click", e => { const b = e.currentTarget; if (!ac) startSound(); else if (ac.state === "running") ac.suspend(); else ac.resume();
+    setTimeout(() => { const on = ac && ac.state === "running"; b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "som ligado" : "ouvir"; }, 60); });
+  $("mod").addEventListener("click", e => { MOD.on = !MOD.on; MOD.t0 = performance.now(); e.currentTarget.setAttribute("aria-pressed", String(MOD.on));
+    e.currentTarget.textContent = MOD.on ? "modulando · parar" : "modular: respirar com a mandala"; $("breath").hidden = !MOD.on; if (MOD.on && !ac) $("snd").click(); else updateSound(); });
+  $("panelBtn").addEventListener("click", e => { const d = $("drawer"), open = d.hidden; d.hidden = !open; e.currentTarget.setAttribute("aria-pressed", String(open)); });
 
-  // ---------- diary ----------
-  document.getElementById("qs").innerHTML = Q.map(q => `<div class="q"><label for="q_${q.id}">${q.label}</label><output id="o_${q.id}">${q.fmt(q.v)}</output>
-    <input type="range" id="q_${q.id}" min="${q.min}" max="${q.max}" step="${q.step}" value="${q.v}">${q.small ? `<small>${q.small}</small>` : ""}</div>`).join("");
-  let tmr = null;
-  Q.forEach(q => document.getElementById("q_" + q.id).addEventListener("input", e => {
-    S[q.id] = +e.target.value; document.getElementById("o_" + q.id).textContent = q.fmt(S[q.id]);
-    clearTimeout(tmr); tmr = setTimeout(target, 250);
-  }));
+  // ---------- inputs ----------
+  function useSearches(list, label) { SEARCHES = list; A = analyse(list); $("status").textContent = `${list.length} buscas lidas ${label}. Nada foi enviado nem guardado.`; target(); }
+  const fileIn = $("file"), drop = $("drop");
+  const readFile = f => f.text().then(t => useSearches(parseFile(t, f.name), `de ${f.name}`));
+  fileIn.addEventListener("change", () => fileIn.files[0] && readFile(fileIn.files[0]));
+  drop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileIn.click(); } });
+  ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => { const f = e.dataTransfer.files[0]; if (f) readFile(f); });
+  $("gen").addEventListener("click", () => { const t = $("typed").value.trim(); if (t) useSearches(t.split(/\n+/).map(q => ({ q: q.trim(), t: null })).filter(x => x.q), "do que você escreveu"); });
+  $("forget").addEventListener("click", () => { SEARCHES = []; A = null; $("typed").value = ""; fileIn.value = ""; $("status").textContent = "Buscas esquecidas."; target(); });
+  $("qs").innerHTML = Q.map(q => `<div class="q"><label for="q_${q.id}">${q.label}</label><output id="o_${q.id}">${q.fmt(q.v)}</output><input type="range" id="q_${q.id}" min="${q.min}" max="${q.max}" step="${q.step}" value="${q.v}"></div>`).join("");
+  let tmr; Q.forEach(q => $("q_" + q.id).addEventListener("input", e => { diaryTouched = true; S[q.id] = +e.target.value; $("o_" + q.id).textContent = q.fmt(S[q.id]); clearTimeout(tmr); tmr = setTimeout(target, 250); }));
+  const sensRows = () => { $("sens").innerHTML = (SENS.noise != null ? `<dt>ruído</dt><dd>${Math.round(SENS.db)} dB, estimado → noradrenalina</dd>` : "") + (SENS.air != null ? `<dt>ar</dt><dd>${SENS.pm} µg/m³ → interleucina-6</dd><dt>calor</dt><dd>${SENS.T} °C → cortisol</dd>` : ""); };
+  $("mic").addEventListener("click", async e => { const b = e.currentTarget;
+    try { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); const ctx = new (window.AudioContext || window.webkitAudioContext)(), an = ctx.createAnalyser(); an.fftSize = 2048; ctx.createMediaStreamSource(stream).connect(an);
+      const buf = new Float32Array(an.fftSize); let acc = 0, n = 0; b.textContent = "ouvindo 5 s…";
+      const iv = setInterval(() => { an.getFloatTimeDomainData(buf); let s = 0; for (const v of buf) s += v * v; acc += Math.sqrt(s / buf.length); n++; }, 100);
+      setTimeout(() => { clearInterval(iv); stream.getTracks().forEach(t => t.stop()); ctx.close(); SENS.db = clamp(20 * Math.log10(Math.max(1e-5, acc / Math.max(1, n))) + 94, 25, 100); SENS.noise = clamp((SENS.db - 45) / 40, 0, 1); b.textContent = "ruído do ambiente"; sensRows(); target(); }, 5000);
+    } catch (err) { b.textContent = "microfone indisponível aqui"; b.disabled = true; } });
+  $("geo").addEventListener("click", e => { const b = e.currentTarget; if (!navigator.geolocation) { b.textContent = "localização indisponível"; b.disabled = true; return; } b.textContent = "lendo…";
+    navigator.geolocation.getCurrentPosition(async pos => { const la = pos.coords.latitude.toFixed(2), lo = pos.coords.longitude.toFixed(2);
+      try { const [w, a] = await Promise.all([fetch(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=temperature_2m`).then(r => r.json()), fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${la}&longitude=${lo}&current=pm2_5`).then(r => r.json())]);
+        SENS.T = Math.round(w.current.temperature_2m); SENS.pm = Math.round(a.current.pm2_5); SENS.heat = clamp((SENS.T - 18) / 22, 0, 1); SENS.air = clamp(SENS.pm / 90, 0, 1); b.textContent = "ar e calor"; sensRows(); target();
+      } catch (err) { b.textContent = "sem acesso ao clima aqui"; } }, () => { b.textContent = "localização não autorizada"; }, { maximumAge: 600000, timeout: 15000 }); });
 
-  // ---------- sensors, each only on request ----------
-  const sensRows = () => { document.getElementById("sens").innerHTML = (SENS.noise != null ? `<dt>ruído</dt><dd>${Math.round(SENS.db)} dB (estimado pelo microfone) → noradrenalina</dd>` : "")
-    + (SENS.air != null ? `<dt>ar</dt><dd>${SENS.pm} µg/m³ de PM2,5 → interleucina-6</dd><dt>calor</dt><dd>${SENS.T} °C → cortisol</dd>` : ""); };
-  document.getElementById("mic").addEventListener("click", async e => {
-    const b = e.currentTarget;
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const ctx = new (window.AudioContext || window.webkitAudioContext)(), an = ctx.createAnalyser(); an.fftSize = 2048; ctx.createMediaStreamSource(stream).connect(an);
-      const buf = new Float32Array(an.fftSize); let acc = 0, n = 0; b.textContent = "ouvindo por 5 s…";
-      const iv = setInterval(() => { an.getFloatTimeDomainData(buf); let s = 0; for (const x of buf) s += x * x; acc += Math.sqrt(s / buf.length); n++; }, 100);
-      setTimeout(() => { clearInterval(iv); stream.getTracks().forEach(t => t.stop()); ctx.close();
-        const rms = acc / Math.max(1, n), db = 20 * Math.log10(Math.max(1e-5, rms)) + 94;   // rough: uncalibrated microphone
-        SENS.db = clamp(db, 25, 100); SENS.noise = clamp((SENS.db - 45) / 40, 0, 1); b.textContent = "ouvir de novo"; sensRows(); target(); }, 5000);
-    } catch (err) { b.textContent = "microfone não disponível aqui"; b.disabled = true; }
-  });
-  document.getElementById("geo").addEventListener("click", e => {
-    const b = e.currentTarget;
-    if (!navigator.geolocation) { b.textContent = "localização não disponível aqui"; b.disabled = true; return; }
-    b.textContent = "lendo…";
-    navigator.geolocation.getCurrentPosition(async pos => {
-      const { latitude: la, longitude: lo } = pos.coords;
-      try {
-        const [w, a] = await Promise.all([fetch(`https://api.open-meteo.com/v1/forecast?latitude=${la.toFixed(2)}&longitude=${lo.toFixed(2)}&current=temperature_2m`).then(r => r.json()),
-          fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${la.toFixed(2)}&longitude=${lo.toFixed(2)}&current=pm2_5`).then(r => r.json())]);
-        SENS.T = Math.round(w.current.temperature_2m); SENS.pm = Math.round(a.current.pm2_5);
-        SENS.heat = clamp((SENS.T - 18) / 22, 0, 1); SENS.air = clamp(SENS.pm / 90, 0, 1); b.textContent = "ler de novo"; sensRows(); target();
-      } catch (err) { b.textContent = "sem acesso aos dados de clima nesta prévia"; }
-    }, () => { b.textContent = "localização não autorizada"; }, { maximumAge: 600000, timeout: 15000 });
-  });
-
-  // ---------- personal archive, kept only in this browser ----------
-  const KEY = "mandala-de-si";
+  // ---------- archive: images only, never the searches ----------
+  const KEY = "mandala-do-inconsciente";
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { return []; } };
   const store = a => { try { localStorage.setItem(KEY, JSON.stringify(a)); return true; } catch (e) { return false; } };
-  function renderArch() {
-    const a = load(); const el = document.getElementById("arch");
-    el.innerHTML = a.length ? a.map(x => `<figure><img src="${x.img}" alt="Mandala de ${x.dia}"><figcaption>${x.dia}</figcaption></figure>`).join("") : `<span class="dim">As mandalas que você guardar aparecem aqui, uma por dia.</span>`;
-  }
-  document.getElementById("save").addEventListener("click", e => {
-    const c = document.createElement("canvas"); c.width = c.height = 220; c.getContext("2d").drawImage(MD.cv, 0, 0, 220, 220);
+  const renderArch = () => { const a = load(); $("arch").innerHTML = a.length ? a.map(x => `<figure><img src="${x.img}" alt="Mandala de ${x.dia}"><figcaption>${x.dia}</figcaption></figure>`).join("") : `<p class="dim" style="grid-column:1/-1">As mandalas guardadas aparecem aqui.</p>`; };
+  $("save").addEventListener("click", e => { const c = document.createElement("canvas"); c.width = c.height = 260; const s = Math.min(MD.cv.width, MD.cv.height);
+    c.getContext("2d").drawImage(MD.cv, (MD.cv.width - s) / 2, (MD.cv.height - s) / 2, s, s, 0, 0, 260, 260);
     const dia = new Date().toLocaleDateString("pt-BR"), a = load().filter(x => x.dia !== dia); a.unshift({ dia, img: c.toDataURL("image/jpeg", 0.8) });
-    e.currentTarget.textContent = store(a.slice(0, 60)) ? "guardada" : "este navegador não permite guardar"; renderArch();
-  });
-  document.getElementById("wipe").addEventListener("click", () => { try { localStorage.removeItem(KEY); } catch (e) {} renderArch(); });
+    e.currentTarget.textContent = store(a.slice(0, 60)) ? "guardada" : "não foi possível guardar aqui"; renderArch(); });
+  $("wipe").addEventListener("click", () => { try { localStorage.removeItem(KEY); } catch (e) {} renderArch(); });
 
   renderArch(); target(); requestAnimationFrame(tick);
 })();

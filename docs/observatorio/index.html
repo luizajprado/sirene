@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sirene · Observatório</title>
+<title>Observatório</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -143,6 +143,20 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
 .spark2 i { flex: 1; background: var(--amber); opacity: .85; min-height: 2px; }
 .spark2 i.hl { background: var(--worse); }
 .yrs { display: flex; justify-content: space-between; color: var(--dim); font-size: 10px; }
+.tl { padding: 8px 12px 4px; overflow-x: auto; }
+.tl svg { display: block; width: 100%; min-width: 860px; height: auto; font-family: var(--mono); }
+.tl .ev { cursor: pointer; }
+.tl .ev:focus { outline: none; } .tl .ev:focus-visible circle { stroke: var(--fg); stroke-width: 2; }
+.tldet { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; border-top: 1px solid var(--line); }
+.tldet > div { padding: 12px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.tldet > div + div { border-left: 1px solid var(--line); }
+@media (max-width: 860px) { .tldet { grid-template-columns: minmax(0, 1fr); } .tldet > div + div { border-left: 0; border-top: 1px solid var(--line); } }
+.tldet h3 { margin: 0; font-size: 16px; color: var(--amber); }
+.tldet .st { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.tlkey { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0 12px 10px; color: var(--dim); font-size: 11px; }
+@keyframes beat { 0%, 100% { opacity: .35; } 50% { opacity: .9; } }
+.tl .now-ring { animation: beat 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .tl .now-ring { animation: none; } }
 .foot { color: var(--dim); font-size: 11px; border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .sim { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 0; }
 @media (max-width: 980px) { .sim { grid-template-columns: minmax(0, 1fr); } }
@@ -167,16 +181,23 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
 
 <div class="wrap">
   <div class="top">
-    <div class="brand"><b>SIRENE · OBSERVATÓRIO</b><span>bolsa da aflição · saúde mental, ciência e dinheiro</span></div>
+    <div class="brand"><b>OBSERVATÓRIO</b><span>bolsa da aflição · saúde mental, ciência e dinheiro</span></div>
     <div class="clocks"><span>UTC <b id="cUtc">--:--:--</b></span><span>São Paulo <b id="cSp">--:--:--</b></span><span class="mode" id="mode">DEMONSTRAÇÃO</span></div>
   </div>
 
   <div class="tape" aria-hidden="true"><div class="tape-inner" id="tape"></div></div>
 
   <section class="panel" aria-labelledby="hCase">
-    <div class="ph"><span id="hCase"><b>CASOS</b> · do acontecimento a quem ele atinge</span><span>cada elo com fonte</span></div>
+    <div class="ph"><span id="hCase"><b>CASOS</b> · o que está acontecendo no mundo agora, do acontecimento a quem ele atinge</span><span>cada elo com fonte</span></div>
     <div class="casetabs" id="caseTabs" role="group" aria-label="Casos"></div>
     <div class="chain" id="chain" aria-live="polite"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="hTl">
+    <div class="ph"><span id="hTl"><b>LINHA DO TEMPO</b> · o que aconteceu, o que acontece agora e o que pode vir</span><span>curto, médio e longo prazo</span></div>
+    <div class="tl" id="tl"></div>
+    <div class="tlkey"><span>● aconteceu</span><span style="color:var(--worse)">◉ acontecendo agora (dados da coleta)</span><span>○ previsto ou projetado, com fonte</span><span>clique num ponto</span></div>
+    <div class="tldet" id="tldet" aria-live="polite"></div>
   </section>
 
   <div class="grid">
@@ -306,9 +327,9 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
   </div>
 
   <div class="foot">
-    <span id="fonte">Valores de demonstração. Na versão publicada no GitHub, os ativos vêm da coleta automática da Sirene, a cada hora.</span>
+    <span id="fonte">Valores de demonstração. Na versão publicada no GitHub, os ativos vêm da coleta automática, a cada hora.</span>
     <span>As cotações traduzem dados públicos agregados por lugar. Não medem o corpo de ninguém e não fazem diagnóstico.</span>
-    <span><a href="../">Sirene</a> · Luiza Jesus do Prado, 2026</span>
+    <span>Luiza Jesus do Prado, 2026</span>
   </div>
 </div>
 
@@ -675,44 +696,126 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
   }
   const pbars = rows => `<div class="pbars">${rows.map(([t, v, txt, col]) => `<div><span>${t}</span><span class="n" style="color:${col || "var(--fg)"}">${txt}</span><span class="bar"><i style="width:${Math.round(clamp(v, 0, 1) * 100)}%;background:${col || "var(--amber)"}"></i></span></div>`).join("")}</div>`;
   const CASES = {
-    pandemia: { nome: "Pandemia", steps: [
+    elnino: { nome: "Super El Niño", quando: "out. 2026", codes: ["AUN", "PAC", "DAC", "JKT"], steps: [
+      { k: "acontecimento", t: "Um El Niño fora da escala", big: "+3,8 °C", p: "A OMM projeta o Pacífico central cerca de 3,8 °C acima do normal de novembro a janeiro, com pico em dezembro: acima dos recordes passados. A ONU fala em calor extremo, secas e enchentes na América Latina, no leste e sul da África, na Ásia e no Pacífico.", s: "OMM e ONU, briefing de 23 out. 2026" },
+      { k: "na saúde mental", t: "Calor é carga mental", big: "+9,7%", p: "Em ondas de calor, os atendimentos hospitalares por saúde mental sobem cerca de 9,7%. Ter um transtorno mental está entre os maiores preditores de morte por calor.", s: "CMAJ 2025; Thompson et al., revisão sistemática 2023" },
+      { k: "resposta do mercado", t: "Colheita perdida, comida mais cara", big: "50 mi", p: "A ONU estima que cerca de 50 milhões de pessoas podem passar mais fome. Só nas Filipinas, a seca já causou ₱ 8,57 bi em perdas agrícolas, atingindo 288 mil agricultores.", s: "ONU; Departamento de Agricultura das Filipinas, out. 2026" },
+      { k: "o que a ciência mostra", cls: "sci", t: "Remédios psiquiátricos e calor", p: "Lítio pode intoxicar com a desidratação; antipsicóticos, antidepressivos e estimulantes podem atrapalhar a regulação da temperatura no cérebro; antipsicóticos e benzodiazepínicos podem diminuir a percepção do calor. O calor também rouba o sono, e o sono regula o humor.", s: "CMAJ 2025 (evidência direta ainda limitada)" },
+      { k: "quem é atingido", cls: "who", t: "Quem vive com transtorno mental, no calor", p: "Na onda de calor do oeste do Canadá em 2021, pessoas com esquizofrenia tiveram o maior risco de morte entre as doenças crônicas. Agricultores em seca e quem trabalha ao ar livre vêm logo atrás.", s: "CMAJ 2025", extra: () => pbars([["chance de morte por calor com transtorno mental", 1, "×3,6", "var(--worse)"], ["sem transtorno mental", 0.28, "×1", "var(--dim)"]]) },
+      { k: "o que ajuda", cls: "help", t: "Plano de calor que inclua a saúde mental", p: "Avisar e visitar quem usa remédios psiquiátricos, garantir água e lugares frescos, revisar doses com quem prescreveu, sombra e áreas verdes nas cidades.", s: "CMAJ 2025; OMS, Urban green spaces and health, 2016" },
+    ] },
+    sudao: { nome: "Sudão: guerra, seca e fome", quando: "out. 2026", codes: ["SDN"], steps: [
+      { k: "acontecimento", t: "Guerra desde 2023, agora com seca", big: "13 mi", p: "Pessoas deslocadas pela guerra, que já matou pelo menos 150 mil. A seca ligada ao El Niño atinge mais da metade do país; Darfur e Kordofan estão em risco de fome extrema.", s: "IPC, 12 out. 2026; ACLED" },
+      { k: "na saúde mental", t: "Trauma e fome ao mesmo tempo", big: "1 em 5", p: "Cerca de 1 em cada 5 pessoas em zonas de conflito vive com um transtorno mental; a insegurança alimentar aumenta em 40% a chance de depressão.", s: "Charlson et al., Lancet 2019; Pourmotabbed et al. 2020" },
+      { k: "resposta do mercado", t: "O dinheiro que falta e o que sobra", big: "−59%", p: "O financiamento da assistência alimentar caiu cerca de 59% entre 2022 e 2025. No mesmo período, as 100 maiores fabricantes de armas bateram recorde: US$ 679 bi em 2024.", s: "FAO-WFP, jun. 2026; SIPRI 2025" },
+      { k: "o que a ciência mostra", cls: "sci", t: "Fome no cérebro em formação", p: "Em Nyala, as internações de crianças por desnutrição aguda grave subiram de cerca de 5% para 11% entre janeiro e agosto. A desnutrição na infância afeta o desenvolvimento do cérebro; no corpo em estresse, cortisol alto e menos triptofano, matéria-prima da serotonina.", s: "IPC, out. 2026; psicobiologia da fome e do estresse" },
+      { k: "quem é atingido", cls: "who", t: "Crianças, deslocados, Darfur e Kordofan", p: "Quase 19,5 milhões de pessoas, mais de 40% da população, em insegurança alimentar aguda; 135 mil no nível mais grave.", s: "IPC, out. 2026", extra: () => pbars([["população em insegurança alimentar aguda", 0.41, "41%", "var(--worse)"], ["deslocados (13 mi de ~50 mi)", 0.26, "~26%", "var(--amber)"]]) },
+      { k: "o que ajuda", cls: "help", t: "Comida, renda e cuidado breve", p: "Assistência alimentar e dinheiro; autocuidado guiado, que já reduziu o sofrimento de refugiadas sul-sudanesas em Uganda; apoio psicológico breve por agentes leigos.", s: "WFP; Tol et al., Lancet Global Health 2020; Rahman et al., JAMA 2016" },
+    ] },
+    ormuz: { nome: "Guerra no Irã e Ormuz", quando: "desde fev. 2026", codes: [], steps: [
+      { k: "acontecimento", t: "Guerra e o estreito fechado", big: "fev. 2026", p: "A guerra começou em 28 de fevereiro; o cessar-fogo caiu em 8 de julho, depois de ataques a navios no Estreito de Ormuz. Foi a maior interrupção de oferta já registrada no mercado de petróleo.", s: "Wikipedia, 2026 Iran war (síntese de fontes)" },
+      { k: "na saúde mental", t: "Quem vive a guerra e quem paga a conta", big: "3.400+", p: "Civis mortos no Irã segundo a OCHA, além de mortos no Líbano, em Israel e no Golfo. Longe dali, a alta de preços pesa: em 2022, 59% dos adultos no Reino Unido disseram que os preços pioraram sua saúde mental.", s: "OCHA; Money and Mental Health 2022" },
+      { k: "resposta do mercado", t: "Petróleo e inflação", big: "US$ 94", p: "No cenário base, o barril (WTI) chegou perto de US$ 94 em abril e maio e fica acima de US$ 80 no resto de 2026; a inflação americana sobe cerca de 0,6 ponto. Gás, fertilizantes e alumínio também sentiram.", s: "CEPR VoxEU, 2026" },
+      { k: "o que a ciência mostra", cls: "sci", t: "Choque econômico vira sofrimento", p: "Choques econômicos negativos causam sofrimento mental; dar dinheiro a quem perde renda melhora depressão e ansiedade. O estresse financeiro mantém o cortisol alto e o sono curto.", s: "Ridley et al., Science 2020" },
+      { k: "quem é atingido", cls: "who", t: "Civis e quem já estava no limite", p: "Na região, civis e deslocados. No mundo, famílias de baixa renda e quem já vive com sofrimento mental: em 2022, 41% delas não conseguiram lidar com a alta de preços, o dobro das demais.", s: "Money and Mental Health 2022", extra: () => pbars([["com problema recente de saúde mental", 0.41, "41%", "var(--worse)"], ["demais adultos", 0.21, "~21%", "var(--amber)"]]) + `<p class="s">sentiram-se incapazes de lidar com os preços</p>` },
+      { k: "o que ajuda", cls: "help", t: "Cessar-fogo e proteção de renda", p: "Cessar-fogo; apoio de renda e de energia para quem tem menos; cuidado psicológico breve para quem vive o conflito.", s: "Ridley et al., Science 2020; Rahman et al., JAMA 2016" },
+    ] },
+    ebola: { nome: "Ebola na RDC", quando: "set. 2026", codes: ["COD"], steps: [
+      { k: "acontecimento", t: "O pior surto de ebola da história da RDC", big: "8.067", p: "Casos e 3.901 mortes até 28 de setembro (letalidade de 48%), pelo vírus Bundibugyo. O surto foi declarado em 15 de maio e a OMS diz que está longe do fim.", s: "Al Jazeera, 28 set. 2026; OMS" },
+      { k: "na saúde mental", t: "Medo, luto e desconfiança", big: "22%", p: "Entre sobreviventes de ebola na África, cerca de 22% têm insônia, 15% depressão e 14% ansiedade. Há raiva contra as medidas de prevenção: um político foi espancado até a morte depois de falar da epidemia no rádio.", s: "Acharibasam et al., PLOS ONE 2021; Al Jazeera 2026" },
+      { k: "resposta do mercado", t: "Sem vacina aprovada", big: "0", p: "Não há vacina nem tratamento aprovados para o Bundibugyo; vacinas experimentais estão em teste, e em Tshopo faltam por completo.", s: "Al Jazeera, set. 2026" },
+      { k: "o que a ciência mostra", cls: "sci", t: "Corpo, sono e trauma", p: "A insônia é o sintoma mais comum entre sobreviventes. Isolamento, perda de pessoas e estigma mantêm o estresse ligado depois que o vírus vai embora.", s: "Acharibasam et al., PLOS ONE 2021" },
+      { k: "quem é atingido", cls: "who", t: "Sobreviventes, famílias e quem cuida", p: "Sobreviventes estigmatizados, famílias enlutadas e profissionais de saúde em Ituri, onde a capacidade de tratar é baixa.", s: "Al Jazeera 2026", extra: () => pbars([["insônia", 0.22, "22%", "var(--worse)"], ["depressão", 0.15, "15%", "var(--amber)"], ["ansiedade", 0.14, "14%", "var(--amber)"]]) + `<p class="s">entre sobreviventes (meta-análise)</p>` },
+      { k: "o que ajuda", cls: "help", t: "Cuidado que gera confiança", p: "Apoio psicossocial a sobreviventes e famílias, informação vinda de pessoas da própria comunidade e vacina para quem está na linha de frente.", s: "OMS; Acharibasam et al. 2021" },
+    ] },
+    pandemia: { nome: "Referência: pandemia 2020–22", quando: "histórico", codes: [], steps: [
       { k: "acontecimento", t: "COVID-19, 2020 a 2022", big: "2020", p: "Isolamento, luto, medo de adoecer, perda de renda e escolas fechadas, ao mesmo tempo, no mundo inteiro.", s: "" },
       { k: "na saúde mental", t: "Ansiedade e depressão sobem", big: "+25%", p: "Aumento da prevalência de ansiedade e depressão no mundo no primeiro ano. Mulheres e jovens foram os mais atingidos.", s: "OMS, 2 mar. 2022" },
       { k: "resposta do mercado", t: "Mais antidepressivos, mais pesquisa", big: "+63,5%", p: "Nos EUA, a dispensação de antidepressivos a pessoas de 12 a 25 anos passou a crescer 63,5% mais rápido depois de março de 2020. No mesmo período, surgiram 40 novos bilionários farmacêuticos.", s: "Chua et al., Pediatrics 2024; Oxfam 2022", extra: () => trialSpark("covid_saude_mental", "saúde mental e COVID-19") },
-      { k: "o que a ciência mostra", cls: "sci", t: "ISRS e ossos", big: "×1,7", p: "Quem usa ISRS teve risco de fratura cerca de 1,7 vez maior em estudos observacionais. Por quê: células do osso (osteoblastos e osteoclastos) têm receptores e transportador de serotonina; bloquear o transportador reduziu o ganho de osso em camundongos em crescimento e causou perda óssea em adultos. Quedas por tontura também pesam.", s: "Wu et al., Osteoporos Int 2012; Warden et al. 2005 e 2008; Sansone e Sansone, revisão" },
-      { k: "quem é atingido", cls: "who", t: "Meninas e moças, no auge da formação do osso", p: "O maior salto de uso foi justamente onde o esqueleto ainda está se formando: a adolescência é quando se constrói a maior parte da massa óssea. Os estudos sobre ossos, porém, olharam sobretudo mulheres após a menopausa e idosos. É a pergunta que quase ninguém faz.", s: "Chua et al., Pediatrics 2024; Calarge et al. 2010 (meninos)", extra: () => pbars([["meninas 12 a 17 anos", 1, "+129,6%", "var(--worse)"], ["mulheres 18 a 25", 0.44, "+56,6%", "var(--amber)"], ["homens 18 a 25", 0.03, "estável", "var(--dim)"], ["meninos 12 a 17", 0, "queda", "var(--relief)"]]) + `<p class="s">aceleração do crescimento da dispensação após março de 2020</p>` },
-      { k: "o que ajuda", cls: "help", t: "Somar cuidado ao remédio", p: "Exercício reduz sintomas de depressão e fortalece o osso; apoio comunitário e terapia têm evidência. Quem usa ISRS por muito tempo pode perguntar sobre saúde óssea, vitamina D e exercício. Nunca parar sem quem prescreveu.", s: "Noetel et al., BMJ 2024; Chibanda et al., JAMA 2016" },
-    ] },
-    guerra: { nome: "Guerra", steps: [
-      { k: "acontecimento", t: "Guerras na Ucrânia, em Gaza e no Sudão", big: "2022–", p: "Bombardeios, deslocamento, perda de casa e de pessoas.", s: "" },
-      { k: "na saúde mental", t: "Transtornos em quem vive o conflito", big: "1 em 5", p: "Cerca de 22% das pessoas em zonas de conflito vivem com depressão, ansiedade, estresse pós-traumático, bipolaridade ou esquizofrenia.", s: "Charlson et al., Lancet 2019" },
-      { k: "resposta do mercado", t: "Armas em alta", big: "US$ 679 bi", p: "Receita recorde das 100 maiores fabricantes de armas em 2024, alta de 5,9%, puxada pelas guerras.", s: "SIPRI, 2025" },
-      { k: "o que a ciência mostra", cls: "sci", t: "O corpo em alarme contínuo", p: "Exposição prolongada mantém o eixo do estresse ligado: adrenalina, noradrenalina e cortisol. Na Sirene, é o acorde de alarme que não para.", s: "psicobiologia do estresse (modelo da Sirene)" },
-      { k: "quem é atingido", cls: "who", t: "Civis e deslocados", p: "Quem fica e quem foge: pessoas deslocadas perdem casa, rede e trabalho ao mesmo tempo.", s: "ACNUR; HDX" },
-      { k: "o que ajuda", cls: "help", t: "Cessar-fogo e cuidado breve", p: "Apoio psicológico breve por agentes leigos (PM+, da OMS) reduziu ansiedade e depressão; autocuidado guiado reduziu o sofrimento de refugiadas.", s: "Rahman et al., JAMA 2016; Tol et al., Lancet Global Health 2020" },
-    ] },
-    energia: { nome: "Crise de energia", steps: [
-      { k: "acontecimento", t: "Preços de energia disparam, 2022", big: "2022", p: "Gás, luz e comida mais caros, em cadeia.", s: "" },
-      { k: "na saúde mental", t: "Contas que pesam na mente", big: "59%", p: "Dos adultos no Reino Unido disseram que a alta de preços piorou sua saúde mental; 54% sentiram ansiedade.", s: "Money and Mental Health / YouGov, maio 2022" },
-      { k: "resposta do mercado", t: "Lucro recorde do petróleo e gás", big: "US$ 4 tri", p: "Renda do setor em 2022, contra uma média de US$ 1,5 tri nos anos anteriores.", s: "IEA, via Reuters, fev. 2023" },
-      { k: "o que a ciência mostra", cls: "sci", t: "Dívida e estresse crônico", p: "Choques econômicos negativos causam sofrimento mental; programas que dão dinheiro melhoram a saúde mental.", s: "Ridley et al., Science 2020" },
-      { k: "quem é atingido", cls: "who", t: "Quem já estava em sofrimento", p: "41% das pessoas com problema recente de saúde mental se sentiram incapazes de lidar, cerca do dobro das demais.", s: "Money and Mental Health 2022", extra: () => pbars([["com problema recente de saúde mental", 0.41, "41%", "var(--worse)"], ["demais adultos", 0.21, "~21%", "var(--amber)"]]) + `<p class="s">sentiram-se incapazes de lidar</p>` },
-      { k: "o que ajuda", cls: "help", t: "Renda, não só remédio", p: "Transferências de renda reduzem depressão e ansiedade.", s: "Ridley et al., Science 2020" },
-    ] },
-    fome: { nome: "Fome", steps: [
-      { k: "acontecimento", t: "Crise de alimentos, 2022", big: "345 mi", p: "Pessoas em insegurança alimentar aguda, contra 135 milhões antes da pandemia.", s: "Programa Mundial de Alimentos" },
-      { k: "na saúde mental", t: "Fome e depressão", big: "+40%", p: "Insegurança alimentar: chance 40% maior de depressão e 34% maior de estresse.", s: "Pourmotabbed et al., Public Health Nutrition 2020" },
-      { k: "resposta do mercado", t: "Grãos em alta", big: "US$ 165 bi", p: "Receita recorde da Cargill, alta de 23%; bilionários de alimentos e energia ganharam US$ 453 bi em dois anos.", s: "The Guardian, ago. 2022; Oxfam 2022" },
-      { k: "o que a ciência mostra", cls: "sci", t: "O corpo com fome", p: "Na Sirene, fome pesa sobre serotonina, grelina e cortisol: humor, alerta e estresse.", s: "modelo da Sirene" },
-      { k: "quem é atingido", cls: "who", t: "Quem gasta quase tudo com comida", p: "Onde a comida já leva a maior parte da renda, cada alta de preço vira fome.", s: "WFP" },
-      { k: "o que ajuda", cls: "help", t: "Comida e renda", p: "Assistência alimentar e transferências de renda.", s: "WFP; Ridley et al., Science 2020" },
+      { k: "o que a ciência mostra", cls: "sci", t: "ISRS e ossos", big: "×1,7", p: "Quem usa ISRS teve risco de fratura cerca de 1,7 vez maior em estudos observacionais. Por quê: células do osso têm receptores e transportador de serotonina; bloquear o transportador reduziu o ganho de osso em camundongos em crescimento e causou perda óssea em adultos. Quedas por tontura também pesam.", s: "Wu et al., Osteoporos Int 2012; Warden et al. 2005 e 2008" },
+      { k: "quem é atingido", cls: "who", t: "Meninas e moças, no auge da formação do osso", p: "O maior salto de uso foi onde o esqueleto ainda está se formando. Os estudos sobre ossos, porém, olharam sobretudo mulheres após a menopausa e idosos.", s: "Chua et al., Pediatrics 2024; Calarge et al. 2010", extra: () => pbars([["meninas 12 a 17 anos", 1, "+129,6%", "var(--worse)"], ["mulheres 18 a 25", 0.44, "+56,6%", "var(--amber)"], ["homens 18 a 25", 0.03, "estável", "var(--dim)"], ["meninos 12 a 17", 0, "queda", "var(--relief)"]]) },
+      { k: "o que ajuda", cls: "help", t: "Somar cuidado ao remédio", p: "Exercício reduz sintomas de depressão e fortalece o osso; apoio comunitário e terapia têm evidência. Nunca parar sem quem prescreveu.", s: "Noetel et al., BMJ 2024; Chibanda et al., JAMA 2016" },
     ] },
   };
-  let selCase = "pandemia";
+  let selCase = "elnino";
   function renderCases() {
-    document.getElementById("caseTabs").innerHTML = Object.entries(CASES).map(([k, c]) => `<button type="button" class="chipbtn" data-c="${k}" aria-pressed="${k === selCase}">${c.nome}</button>`).join("");
+    document.getElementById("caseTabs").innerHTML = Object.entries(CASES).map(([k, c]) => `<button type="button" class="chipbtn" data-c="${k}" aria-pressed="${k === selCase}">${c.nome} <span style="color:var(--dim)">· ${c.quando}</span></button>`).join("");
     document.querySelectorAll("#caseTabs button").forEach(b => b.addEventListener("click", () => { selCase = b.dataset.c; renderCases(); }));
-    document.getElementById("chain").innerHTML = CASES[selCase].steps.map((st, i) => `<article class="step ${st.cls || ""}"><span class="k"><b>${i + 1}</b>${st.k}</span><h3>${st.t}</h3>${st.big ? `<span class="big">${st.big}</span>` : ""}<p>${st.p}</p>${st.extra ? st.extra() : ""}${st.s ? `<span class="s">${st.s}</span>` : ""}</article>`).join("");
+    const c = CASES[selCase], live = Q.filter(q => q.k === "COR" && c.codes.includes(q.place.code));
+    document.getElementById("chain").innerHTML = c.steps.map((st, i) => `<article class="step ${st.cls || ""}"><span class="k"><b>${i + 1}</b>${st.k}</span><h3>${st.t}</h3>${st.big ? `<span class="big">${st.big}</span>` : ""}<p>${st.p}</p>${st.extra ? st.extra() : ""}${i === 0 && live.length ? `<p class="s" style="color:var(--amber)">no pregão agora: ${live.map(q => `${q.sym} ${fmtN(q.v)}`).join(" · ")}</p>` : ""}${st.s ? `<span class="s">${st.s}</span>` : ""}</article>`).join("");
+  }
+
+  // ---------- timeline: past, now (from the collector) and short, medium and long term (sourced projections) ----------
+  const LANES = [["mente", "saúde mental"], ["clima", "clima e desastres"], ["conflito", "guerra, fome, deslocamento"], ["dinheiro", "mercado e dinheiro"], ["ciencia", "ciência e remédios"], ["gente", "população"]];
+  const NOW = new Date();
+  const yr = d => d.getUTCFullYear() + (d.getUTCMonth() + d.getUTCDate() / 31) / 12;
+  const nowY = yr(NOW);
+  // piecewise axis: the past is compressed, the near future is wide
+  const SEG = [[2019.5, nowY, 0.04, 0.36, "passado"], [nowY, nowY + 0.5, 0.36, 0.56, "curto prazo · até 6 meses"], [nowY + 0.5, nowY + 5, 0.56, 0.78, "médio prazo · até 5 anos"], [nowY + 5, 2051, 0.78, 0.98, "longo prazo · até 2050"]];
+  const X = y => { for (const [a, b, xa, xb] of SEG) if (y <= b) return xa + (xb - xa) * (Math.max(y, a) - a) / (b - a); return 0.98; };
+  const EVENTS = [
+    { y: 2020.2, lane: "mente", t: "Pandemia de COVID-19", st: "aconteceu", p: "Ansiedade e depressão sobem 25% no mundo no primeiro ano. Mulheres e jovens foram os mais atingidos.", s: "OMS, 2022", caso: "pandemia" },
+    { y: 2020.4, lane: "dinheiro", t: "Antidepressivos para jovens", st: "aconteceu", p: "Nos EUA, a dispensação para 12 a 25 anos passa a crescer 63,5% mais rápido; meninas de 12 a 17, 129,6%.", s: "Chua et al., Pediatrics 2024", caso: "pandemia" },
+    { y: 2022.15, lane: "conflito", t: "Guerra na Ucrânia", st: "aconteceu", p: "Cerca de 1 em cada 5 pessoas em zonas de conflito vive com um transtorno mental.", s: "Charlson et al., Lancet 2019", caso: "sudao" },
+    { y: 2022.5, lane: "dinheiro", t: "Choque de energia", st: "aconteceu", p: "Petróleo e gás com cerca de US$ 4 tri em 2022; 59% dos adultos no Reino Unido dizem que os preços pioraram sua saúde mental.", s: "IEA via Reuters 2023; Money and Mental Health 2022", caso: "ormuz" },
+    { y: 2022.6, lane: "conflito", t: "Crise de alimentos", st: "aconteceu", p: "345 milhões de pessoas em insegurança alimentar aguda; chance 40% maior de depressão com fome.", s: "WFP; Pourmotabbed et al. 2020", caso: "sudao" },
+    { y: 2023.3, lane: "conflito", t: "Guerras em Gaza e no Sudão", st: "aconteceu", p: "Deslocamento em massa, fome e trauma ao mesmo tempo.", s: "ACNUR; FAO-WFP", caso: "sudao" },
+    { y: 2024.4, lane: "ciencia", t: "Parar antidepressivo tem sintomas", st: "aconteceu", p: "Meta-análise: 31% têm sintomas ao parar, contra 17% com placebo; cerca de 3% graves.", s: "Henssler et al., Lancet Psychiatry 2024" },
+    { y: 2024.5, lane: "dinheiro", t: "Armas em recorde", st: "aconteceu", p: "As 100 maiores fabricantes somam US$ 679 bi em 2024.", s: "SIPRI 2025", caso: "sudao" },
+    { y: 2025.5, lane: "conflito", t: "Ajuda alimentar encolhe", st: "aconteceu", p: "O financiamento de assistência alimentar caiu cerca de 59% entre 2022 e 2025.", s: "FAO-WFP, Hunger Hotspots, jun. 2026", caso: "sudao" },
+    { y: 2026.75, lane: "clima", t: "Super El Niño", st: "acontecendo", p: "A OMM projeta o Pacífico central cerca de 3,8 °C acima do normal de novembro a janeiro, acima dos recordes; a ONU estima 50 milhões de pessoas sob mais fome.", s: "OMM e ONU, 23 out. 2026", caso: "elnino" },
+    { y: 2026.16, lane: "conflito", t: "Guerra no Irã e crise de Ormuz", st: "acontecendo", p: "Desde 28 de fevereiro; a maior interrupção de oferta de petróleo já registrada.", s: "síntese de fontes, 2026", caso: "ormuz" },
+    { y: 2026.37, lane: "gente", t: "Ebola Bundibugyo na RDC", st: "acontecendo", p: "8.067 casos e 3.901 mortes até 28 de setembro; sem vacina aprovada.", s: "Al Jazeera, set. 2026", caso: "ebola" },
+    { y: 2026.78, lane: "conflito", t: "Sudão à beira da fome extrema", st: "acontecendo", p: "Guerra e seca: 19,5 milhões em insegurança alimentar aguda; Darfur e Kordofan em risco de fome.", s: "IPC, 12 out. 2026", caso: "sudao" },
+    { y: 2026.45, lane: "conflito", t: "13 focos de fome", st: "acontecendo", p: "Maior preocupação, de junho a novembro de 2026: Sudão, Sudão do Sul, Iêmen, Palestina, Nigéria e Somália. Conflito é o motor em 12 dos 13.", s: "FAO-WFP, Hunger Hotspots, jun. 2026", caso: "sudao" },
+    { y: nowY + 0.15, lane: "clima", caso: "elnino", t: "Calor acima do normal", st: "previsto", p: "Calor acima do normal na maior parte dos continentes; secas no sul da Ásia e na Austrália, chuvas no Chifre da África e no sudeste da América do Sul. Em ondas de calor, os atendimentos por transtorno mental sobem cerca de 9,7%.", s: "OMM, 2026; Thompson et al., revisão sistemática 2023", quem: "quem já vive com transtorno mental, idosos, quem trabalha ao ar livre" },
+    { y: nowY + 0.1, lane: "conflito", t: "Fome pode piorar nos focos", st: "previsto", p: "Sem financiamento, os 13 focos tendem a piorar até o fim do período do relatório.", s: "FAO-WFP, Hunger Hotspots, jun. 2026", caso: "sudao" },
+    { y: nowY + 1.5, lane: "dinheiro", t: "O custo que se repete todo ano", st: "projetado", p: "Depressão e ansiedade custam cerca de 12 bilhões de dias de trabalho por ano, quase US$ 1 tri à economia mundial.", s: "OMS e OIT, 2022" },
+    { y: 2030, lane: "gente", t: "1 em cada 6 terá 60 anos ou mais", st: "projetado", p: "O envelhecimento põe mais gente no grupo onde ISRS e fraturas foram mais estudados.", s: "OMS, Ageing and health", quem: "idosos, mulheres após a menopausa" },
+    { y: 2040, lane: "clima", t: "250 mil mortes a mais por ano", st: "projetado", p: "Entre 2030 e 2050, a mudança do clima deve causar cerca de 250 mil mortes a mais por ano, por desnutrição, malária, diarreia e calor.", s: "OMS, avaliação de risco, 2014" },
+    { y: 2050, lane: "conflito", t: "216 milhões de migrantes do clima", st: "projetado", p: "Até 2050, a mudança do clima pode forçar 216 milhões de pessoas a migrar dentro do próprio país; ação imediata pode reduzir isso em até 80%.", s: "Banco Mundial, Groundswell, 2021", quem: "África Subsaariana (86 mi), Leste Asiático e Pacífico (49 mi), Sul da Ásia (40 mi)" },
+    { y: 2050, lane: "gente", t: "2,1 bilhões com 60 anos ou mais", st: "projetado", p: "O número de pessoas com 60 anos ou mais dobra entre 2020 e 2050; com 80 ou mais, triplica, para 426 milhões.", s: "OMS, Ageing and health" },
+  ];
+  // what is happening right now, straight from the collector
+  function liveEvents() {
+    const out = [], recent = ALERTS.filter(a => (Date.now() - Date.parse(a[0])) / 36e5 < 72);
+    const red = recent.filter(a => a[2] === "Red" || a[2] === "Orange");
+    if (recent.length) out.push({ y: nowY, lane: "clima", t: `${recent.length} alertas de desastre em 72 h`, st: "agora", p: `${red.length} vermelhos ou laranja. Cada alerta entra como adrenalina e noradrenalina no lugar atingido.`, s: "GDACS · coleta automática" });
+    const top = Q.filter(q => q.k === "COR").sort((a, b) => b.v - a.v)[0];
+    if (top) out.push({ y: nowY, lane: "mente", t: `Maior carga agora: ${top.lugar}`, st: "agora", p: `Cortisol do lugar em ${fmtN(top.v)} de 100.`, s: LIVE ? "coleta automática" : "valor de demonstração" });
+    const A = PESQ.artigos; if (A) { const n = Object.values(A).reduce((s, x) => s + (x.total || 0), 0); out.push({ y: nowY, lane: "ciencia", t: `${n} artigos novos na semana`, st: "agora", p: "Artigos em saúde mental indexados nos últimos 7 dias, nos temas do Observatório.", s: "Europe PMC · coleta automática" }); }
+    const risk = PLACES.filter(p => p.risco).sort((a, b) => a.risco.posicao - b.risco.posicao)[0];
+    if (risk) out.push({ y: nowY, lane: "conflito", t: `Maior risco humanitário: ${risk.nome}`, st: "agora", p: risk.risco.nota, s: "INFORM via HDX · coleta automática" });
+    return out;
+  }
+  let selEv = null;
+  function renderTimeline() {
+    const W = 1200, top = 34, lh = 50, H = top + LANES.length * lh + 10, x = y => 150 + X(y) * (W - 160);
+    const evs = [...EVENTS, ...liveEvents()];
+    let g = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Linha do tempo de acontecimentos e projeções ligados à saúde mental">`;
+    for (const [a, b, , , lab] of SEG) { const x0 = x(a), x1 = x(b); g += `<rect x="${x0}" y="${top - 6}" width="${x1 - x0}" height="${H - top}" fill="${lab === "passado" ? "#100E0B" : lab.startsWith("curto") ? "#17120C" : lab.startsWith("médio") ? "#14110C" : "#110F0C"}"/><text x="${x0 + 6}" y="18" fill="#9C9180" font-size="11">${lab}</text>`; }
+    for (const yy of [2020, 2022, 2024, 2030, 2040, 2050]) g += `<text x="${x(yy)}" y="${H - 2}" fill="#5E574B" font-size="10" text-anchor="middle">${yy}</text>`;
+    LANES.forEach(([k, lab], i) => { const yv = top + i * lh + lh / 2; g += `<text x="8" y="${yv + 4}" fill="#9C9180" font-size="11">${lab}</text><line x1="150" x2="${W - 8}" y1="${yv}" y2="${yv}" stroke="#2C261C"/>`; });
+    const nx = x(nowY); g += `<line x1="${nx}" x2="${nx}" y1="${top - 6}" y2="${H - 14}" stroke="#FF5A4A" stroke-width="1.5"/><text x="${nx + 4}" y="${top + 2}" fill="#FF5A4A" font-size="11">agora</text>`;
+    // stack events that share a lane and a spot
+    const used = {};
+    evs.forEach((e, i) => {
+      const li = LANES.findIndex(l => l[0] === e.lane), cx = x(e.y), key = li + ":" + Math.round(cx / 18); used[key] = (used[key] || 0) + 1;
+      const cy = top + li * lh + lh / 2 + (used[key] - 1) * 12 - (used[key] > 1 ? 6 : 0), fut = e.st === "previsto" || e.st === "projetado", now = e.st === "agora" || e.st === "acontecendo";
+      const col = now ? "#FF5A4A" : fut ? "#FFB547" : "#F2E9D8", sel = selEv === i;
+      g += `<g class="ev" tabindex="0" role="button" data-i="${i}" aria-label="${esc(e.t)}, ${e.st}">${now ? `<circle class="now-ring" cx="${cx}" cy="${cy}" r="11" fill="none" stroke="${col}"/>` : ""}<circle cx="${cx}" cy="${cy}" r="${sel ? 8 : 6}" fill="${fut ? "#0A0907" : col}" stroke="${col}" stroke-width="${fut ? 1.6 : 1}" ${fut ? 'stroke-dasharray="3 2"' : ""}/>${sel ? `<text x="${cx > W - 300 ? cx - 14 : cx + 12}" y="${cy + 4}" fill="${col}" font-size="11" text-anchor="${cx > W - 300 ? "end" : "start"}">${esc(e.t)}</text>` : ""}</g>`;
+    });
+    g += "</svg>";
+    document.getElementById("tl").innerHTML = g;
+    document.querySelectorAll("#tl .ev").forEach(el => { const go = () => { selEv = +el.dataset.i; renderTimeline(); }; el.addEventListener("click", go); el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }); });
+    const e = evs[selEv == null ? evs.findIndex(v => v.st === "previsto") : selEv];
+    if (!e) return;
+    const horizon = e.y < nowY - 0.05 ? "passado" : e.y <= nowY + 0.05 ? "agora" : e.y <= nowY + 0.5 ? "curto prazo" : e.y <= nowY + 5 ? "médio prazo" : "longo prazo";
+    const stCol = e.st === "agora" || e.st === "acontecendo" ? "var(--worse)" : e.st === "aconteceu" ? "var(--fg)" : "var(--amber)";
+    document.getElementById("tldet").innerHTML = `<div><span class="st" style="color:${stCol}">${e.st} · ${horizon}</span><h3>${esc(e.t)}</h3><p style="margin:0">${esc(e.p)}</p><span style="color:var(--dim);font-size:11px">${esc(e.s)}</span></div>
+      <div><dl class="kv"><dt>faixa</dt><dd>${LANES.find(l => l[0] === e.lane)[1]}</dd>${e.quem ? `<dt>quem</dt><dd>${esc(e.quem)}</dd>` : ""}${e.caso ? `<dt>caso</dt><dd><button type="button" class="chipbtn" id="goCase">ver a cadeia completa: ${CASES[e.caso].nome}</button></dd>` : ""}</dl>
+      ${e.st === "previsto" || e.st === "projetado" ? `<p style="margin:0;color:var(--dim);font-size:11px">Projeção de quem a assina, não certeza. O futuro muda com o que for feito agora.</p>` : ""}</div>`;
+    const gc = document.getElementById("goCase"); if (gc) gc.addEventListener("click", () => { selCase = e.caso; renderCases(); document.getElementById("hCase").scrollIntoView({ behavior: "smooth", block: "start" }); });
   }
 
   // ---------- live loop ----------
@@ -734,7 +837,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     } else if (LIVE) { Q = buildQuotes(); renderBoard(); }
     renderIdx(); updateSound();
   }
-  renderBoard(); renderIdx(); renderTape(); renderExt(); renderCare(); clocks(); renderResearch(); renderHidden(); renderDrugs(); renderCases();
+  renderBoard(); renderIdx(); renderTape(); renderExt(); renderCare(); clocks(); renderResearch(); renderHidden(); renderDrugs(); renderCases(); renderTimeline();
   select(Q.slice().sort((a, b) => b.d - a.d)[0].sym);
   for (let i = 0; i < 6; i++) pushWire(bulletin());
   setInterval(clocks, 1000);
