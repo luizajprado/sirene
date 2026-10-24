@@ -27,6 +27,8 @@ As correspondências entre fatores e mediadores simplificam a literatura de psic
 | Aflição coletiva e esperança: o que se procura | Wikipédia, acessos por idioma (aflição × cuidado, ontem comparado à semana) | real, automático; o Google não oferece acesso livre às buscas |
 | Aflição coletiva e esperança: o que se escreve | Bluesky, postagens públicas (só contagens de palavras, nada é guardado) | real, automático |
 | Contraponto: ajuda humanitária, acordos, cooperação | GDELT | real, automático |
+| Pressão econômica (inflação, desemprego, por país) | Banco Mundial | real, automático (anual) |
+| Medo dos mercados (VIX) | FRED, Federal Reserve de St. Louis | real, automático (diário); camada mundial pequena |
 | Ruído | estimativa por lugar | estimado; mapas de ruído oficiais existem só para algumas regiões |
 | Violência e crise política (protestos, repressão, agressões, combates) | GDELT · aberto, a cada 15 min | real, automático; mede o que a imprensa relata |
 | Guerra (mortes em conflitos, por país) | HDX HAPI (OCHA/ONU), dados ACLED | precisa do secret `HAPI_EMAIL` |

@@ -357,6 +357,30 @@ def hapi(lugares):
     return por_pais
 
 
+# ---------------------------------------------------------------- pressão econômica · Banco Mundial (inflação, desemprego) e FRED (VIX)
+# Inflação anual (FP.CPI.TOTL.ZG) e desemprego (SL.UEM.TOTL.ZS, estimativa OIT) por país, último ano disponível.
+# VIX: volatilidade esperada da bolsa americana, o "índice do medo" dos mercados; entra como camada mundial pequena.
+def economia(lugares):
+    isos = ";".join(sorted({p["iso3"] for p in lugares}))
+    out = {}
+    for ind, nome in (("FP.CPI.TOTL.ZG", "inflacao"), ("SL.UEM.TOTL.ZS", "desemprego")):
+        d = json.loads(baixar(f"https://api.worldbank.org/v2/country/{isos}/indicator/{ind}?format=json&mrnev=1&per_page=500"))
+        for r in (d[1] if isinstance(d, list) and len(d) > 1 and d[1] else []):
+            if r.get("value") is not None:
+                out.setdefault(r["countryiso3code"], {})[nome] = [round(float(r["value"]), 1), r.get("date")]
+    vix = None
+    try:
+        linhas = baixar("https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS").decode().strip().splitlines()
+        for ln in reversed(linhas[1:]):
+            data, val = ln.split(",")[:2]
+            if val not in (".", ""):
+                vix = [float(val), data]
+                break
+    except Exception:
+        pass
+    return out, vix
+
+
 # ---------------------------------------------------------------- execução
 def carregar(caminho, padrao):
     try:
@@ -395,6 +419,14 @@ def main():
     except Exception as e:
         atencao = anterior.get("atencao", {})
         fontes["Wikimedia"] = f"falhou ({type(e).__name__}) · mantido o último valor"
+
+    try:
+        econ, vix = economia(lugares)
+        fontes["Banco Mundial"] = f"ok · {len(econ)} países"
+        fontes["FRED (VIX)"] = f"ok · {vix[0]} em {vix[1]}" if vix else "sem valor"
+    except Exception as e:
+        econ, vix = None, anterior.get("vix")
+        fontes["Banco Mundial"] = f"falhou ({type(e).__name__}) · mantido o último valor"
 
     try:
         redes = bluesky()
@@ -440,13 +472,22 @@ def main():
             esp_i = min(1, (esp_i or 0) * 0.6 + min(1, (rd["cuidado_por_mil"] or 0) / 60) * 0.4)
         atn = None if afl_i is None else {"i": round(afl_i, 3), "nota": f"Wikipédia ({lang}) ontem × semana: {wk.get('aflicao', 1):.2f}" + (f" · Bluesky: {rd['aflicao_por_mil']} por mil posts" if rd.get("posts") else "")}
         esp = None if esp_i is None else {"i": round(esp_i, 3), "nota": f"Wikipédia ({lang}) ontem × semana: {wk.get('cuidado', 1):.2f}" + (f" · Bluesky: {rd['cuidado_por_mil']} por mil posts" if rd.get("posts") else "")}
-        saida_lugares.append({"nome": p["nome"], "lat": p["lat"], "lon": p["lon"], "iso3": p["iso3"], "lingua": lang, "db": p.get("db"), "db_fonte": "estimado",
+        if econ is not None:
+            ec = econ.get(p["iso3"], {})
+            inf, des = (ec.get("inflacao") or [None])[0], (ec.get("desemprego") or [None])[0]
+            vv = vix[0] if vix else None
+            ei = 0.5 * min(1, max(0, (inf or 0) / 25)) + 0.3 * min(1, (des or 0) / 20) + 0.2 * min(1, max(0, ((vv or 15) - 15) / 25))
+            partes = ([f"inflação {inf}% ({ec['inflacao'][1]})"] if inf is not None else []) + ([f"desemprego {des}%"] if des is not None else []) + ([f"VIX {vv}"] if vv else [])
+            economica = {"i": round(ei, 3), "nota": " · ".join(partes) or "sem dados"}
+        else:
+            economica = antigos.get(p["nome"], {}).get("economia")
+        saida_lugares.append({"nome": p["nome"], "lat": p["lat"], "lon": p["lon"], "iso3": p["iso3"], "lingua": lang, "economia": economica, "db": p.get("db"), "db_fonte": "estimado",
                               **m, "violencia": v, "cuidado": cuid, "aflicao_coletiva": atn, "esperanca": esp, **{k: x for k, x in (extra or {}).items() if x}})
 
     alertas.sort(key=lambda a: a[0])
     inicio = alertas[0][0] if alertas else iso(AGORA - timedelta(hours=72))
     dados = {"atualizado": iso(AGORA), "inicio": inicio, "fontes": fontes, "alertas": alertas,
-             "lugares": saida_lugares, "atencao": atencao, "redes": redes, "conflitos": conflitos}
+             "lugares": saida_lugares, "atencao": atencao, "redes": redes, "vix": vix, "conflitos": conflitos}
 
     os.makedirs(os.path.join(RAIZ, "data", "historico", AGORA.strftime("%Y-%m-%d")), exist_ok=True)
     os.makedirs(os.path.join(RAIZ, "docs"), exist_ok=True)

@@ -538,6 +538,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     FOME: { SER: .40, GRE: .35, COR: .25 },
     DESL: { OXT: .50, COR: .50 },
     ATN:  { NOR: .40, COR: .40, MEL: .20 },
+    ECON: { COR: .60, NOR: .25, SER: .15 },
     CUID: { OXT: .50, GABA: .30, SER: .20 },
     ESP:  { DOP: .40, SER: .30, OXT: .30 },
   };
@@ -1012,7 +1013,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
 
   // ================= view: metodo =================
   { const el = document.getElementById("mChem"); if (el) el.innerHTML = Object.entries(MED).map(([k, m]) => `<dt style="color:${hex(m.cor)}">● ${m.nome}</dt><dd>${m.massa.toLocaleString("pt-BR")} g/mol → ${medHz(k).toFixed(1)} Hz<br><span class="dim" style="font-size:10px">${m.papel}</span></dd>`).join("");
-    const FN = { ATN: "aflição coletiva (buscas e posts)", CUID: "cuidado: ajuda, acordos, cooperação (contraponto)", ESP: "esperança e vínculo (contraponto)", EQ: "terremoto", WF: "incêndio", TC: "tempestade, inundação", HEAT: "calor", AIR: "poluição do ar", NOISE: "ruído", LIGHT: "luz e escuridão", WAR: "guerra", VIOL: "violência, crise política", FOME: "fome", DESL: "deslocamento forçado" };
+    const FN = { ECON: "pressão econômica (inflação, desemprego, medo dos mercados)", ATN: "aflição coletiva (buscas e posts)", CUID: "cuidado: ajuda, acordos, cooperação (contraponto)", ESP: "esperança e vínculo (contraponto)", EQ: "terremoto", WF: "incêndio", TC: "tempestade, inundação", HEAT: "calor", AIR: "poluição do ar", NOISE: "ruído", LIGHT: "luz e escuridão", WAR: "guerra", VIOL: "violência, crise política", FOME: "fome", DESL: "deslocamento forçado" };
     const el2 = document.getElementById("mFmed"); if (el2) el2.innerHTML = Object.entries(FMED).map(([f, w]) => `<dt>${FN[f]}</dt><dd>${Object.entries(w).map(([m, x]) => `<span style="color:${hex(MED[m].cor)}">${MED[m].nome} ${Math.round(x * 100)}%</span>`).join(" · ")}</dd>`).join(""); }
   document.querySelector("#tData tbody").innerHTML = EV.slice().reverse().map(e => `<tr><td>${fmt(e.t)}</td><td class="${e.red ? "r" : "b"}">${e.type}</td><td>${e.level === "Red" ? '<span class="r">vermelho</span>' : "verde"}</td><td>${e.country}</td><td>${e.lat.toFixed(2)}</td><td>${e.lon.toFixed(2)}</td><td>${valueText(e)}</td><td>${Math.round(e.deg)}°</td></tr>`).join("");
 
@@ -1190,14 +1191,14 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     { name: "Costa do Pacífico, México", lat: 17.0, lon: -100.5, T: 30, pm: 15, db: 60 },
     { name: "Vanuatu", lat: -15.4, lon: 167.0, T: 27, pm: 6, db: 50 },
     { name: "Nova Escócia, Canadá", lat: 44.6, lon: -63.6, T: 12, pm: 6, db: 58 },
-    ...CITIES.map(c => ({ name: c.name, lat: c.lat, lon: CITY_LON[c.name], T: c.T, pm: c.pm, db: c.db, ex: ({ "São Paulo": { VIOL: 0.35, ATN: 0.4, CUID: 0.2, ESP: 0.25 }, "Lagos": { VIOL: 0.45, FOME: 0.3, CUID: 0.25 }, "Cidade do México": { VIOL: 0.45, ATN: 0.3, ESP: 0.2 }, "Daca": { DESL: 0.35, FOME: 0.2, CUID: 0.3 }, "Cairo": { VIOL: 0.2, CUID: 0.15 }, "Nova Délhi": { VIOL: 0.25, ATN: 0.25 }, "Madri": { ESP: 0.3, CUID: 0.2 }, "Tromsø": { ESP: 0.2 } })[c.name] || {} })),
+    ...CITIES.map(c => ({ name: c.name, lat: c.lat, lon: CITY_LON[c.name], T: c.T, pm: c.pm, db: c.db, ex: ({ "São Paulo": { VIOL: 0.35, ATN: 0.4, CUID: 0.2, ESP: 0.25, ECON: 0.3 }, "Lagos": { VIOL: 0.45, FOME: 0.3, CUID: 0.25, ECON: 0.6 }, "Cidade do México": { VIOL: 0.45, ATN: 0.3, ESP: 0.2 }, "Daca": { DESL: 0.35, FOME: 0.2, CUID: 0.3 }, "Cairo": { VIOL: 0.2, CUID: 0.15, ECON: 0.55 }, "Nova Délhi": { VIOL: 0.25, ATN: 0.25 }, "Madri": { ESP: 0.3, CUID: 0.2 }, "Tromsø": { ESP: 0.2 } })[c.name] || {} })),
   ];
   if (LIVE && LIVE.lugares) for (const p of PLACES) {
     const r = LIVE.lugares.find(x => x.nome === p.name); if (!r) continue;
     if (r.T != null) { p.T = Math.round(r.T); p.realT = true; }
     if (r.pm != null) { p.pm = Math.round(r.pm); p.realPM = true; }
     p.ex = {}; p.live = {};
-    for (const [k, f] of [["VIOL", "violencia"], ["WAR", "guerra"], ["FOME", "fome"], ["DESL", "deslocamento"], ["ATN", "aflicao_coletiva"], ["CUID", "cuidado"], ["ESP", "esperanca"]]) if (r[f] && r[f].i != null) p.live[k] = r[f];
+    for (const [k, f] of [["VIOL", "violencia"], ["WAR", "guerra"], ["FOME", "fome"], ["DESL", "deslocamento"], ["ATN", "aflicao_coletiva"], ["CUID", "cuidado"], ["ESP", "esperanca"], ["ECON", "economia"]]) if (r[f] && r[f].i != null) p.live[k] = r[f];
   }
   function liveFac(pl, k, fonte) {
     const r = pl.live && pl.live[k];
@@ -1233,6 +1234,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       { key: "FOME", name: "fome", ...liveFac(pl, "FOME", "HDX · IPC") },
       { key: "DESL", name: "deslocamento forçado", ...liveFac(pl, "DESL", "HDX") },
       { key: "ATN", name: "aflição coletiva (buscas e posts)", ...liveFac(pl, "ATN", "Wikipédia · Bluesky") },
+      { key: "ECON", name: "pressão econômica", ...liveFac(pl, "ECON", "Banco Mundial · FRED") },
       { key: "CUID", name: "cuidado: ajuda, acordos, cooperação", positivo: true, ...liveFac(pl, "CUID", "GDELT") },
       { key: "ESP", name: "esperança e vínculo (buscas e posts)", positivo: true, ...liveFac(pl, "ESP", "Wikipédia · Bluesky") },
     ];
