@@ -95,6 +95,25 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
 .mock { border: 1px solid var(--line); padding: 10px; background: #F2EEE6; color: #1A1814; font-family: Georgia, serif; font-size: 14px; }
 .mock .q { font-family: var(--mono); font-size: 12px; background: #fff; border: 1px solid #ddd; padding: 2px 6px; display: inline-block; margin: 2px 4px 2px 0; }
 .foot { color: var(--dim); font-size: 11px; border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.sim { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 0; }
+@media (max-width: 980px) { .sim { grid-template-columns: minmax(0, 1fr); } }
+.sim > div { padding: 12px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.sim > div + div { border-left: 1px solid var(--line); }
+@media (max-width: 980px) { .sim > div + div { border-left: 0; border-top: 1px solid var(--line); } }
+.sim select { background: var(--bg); color: var(--fg); border: 1px solid var(--line); font: inherit; padding: 8px; min-height: 40px; }
+.slider { display: grid; grid-template-columns: minmax(0, 1fr) 44px; gap: 2px 10px; align-items: center; }
+.slider label { font-size: 12px; } .slider small { grid-column: 1 / -1; color: var(--dim); font-size: 11px; }
+.slider output { text-align: right; font-variant-numeric: tabular-nums; color: var(--relief); }
+.slider input { grid-column: 1 / -1; width: 100%; accent-color: var(--relief); }
+.simrow { display: grid; grid-template-columns: 96px minmax(0, 1fr) 128px; gap: 10px; align-items: center; font-variant-numeric: tabular-nums; font-size: 12px; }
+.simbar { height: 8px; background: #221E16; position: relative; }
+.simbar i { position: absolute; inset: 0 auto 0 0; }
+.simbar i.a { background: var(--worse); opacity: .45; } .simbar i.b { background: var(--relief); }
+.simbar.pos i.b { background: var(--care); }
+.bigsim { display: flex; gap: 24px; flex-wrap: wrap; align-items: baseline; }
+.bigsim b { font-family: var(--disp); font-stretch: 75%; font-size: 30px; font-weight: 700; }
+.note { color: var(--dim); font-size: 11px; }
+.resp { color: var(--relief); }
 </style>
 
 <div class="wrap">
@@ -149,6 +168,23 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
       </div>
     </section>
   </div>
+
+  <section class="panel" aria-labelledby="hSim">
+    <div class="ph"><span id="hSim"><b>ZONA DE SIMULAÇÃO</b> · e se houvesse resposta?</span><span>especulativo · não é previsão</span></div>
+    <div class="sim">
+      <div>
+        <label for="simPlace" class="note">lugar</label>
+        <select id="simPlace"></select>
+        <div id="sliders" style="display:flex;flex-direction:column;gap:10px"></div>
+        <button type="button" class="btn" id="simSnd" aria-pressed="false">ouvir a simulação no pregão sonoro</button>
+      </div>
+      <div>
+        <div class="bigsim" id="simBig"></div>
+        <div id="simRows" style="display:flex;flex-direction:column;gap:8px"></div>
+        <p class="note">Barra vermelha clara: hoje. Barra verde: com as respostas escolhidas. Os pesos são ilustrativos: seguem a direção das evidências citadas em cada resposta, não a sua medida exata. A obra mostra que existe saída, não promete números.</p>
+      </div>
+    </div>
+  </section>
 
   <div class="bottom">
     <section class="panel" aria-labelledby="hBot">
@@ -207,6 +243,25 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     ECON: { nome: "pressão econômica", med: "COR", cuidado: ["Find A Helpline", "https://findahelpline.com"] },
     CUID: { curto: "cuidado ✚", nome: "cuidado: ajuda e cooperação (contraponto)", med: "GABA", positivo: true, cuidado: ["ReliefWeb", "https://reliefweb.int"] },
   };
+  // counterpoint: when an asset explodes, a response with evidence that it helps
+  const RESP = {
+    COR: ["apoio psicossocial comunitário", "Friendship Bench, Chibanda et al., JAMA 2016"],
+    FOME: ["transferência de renda e assistência alimentar", "Ridley et al., Science 2020; WFP"],
+    ANSI: ["bancos de escuta: depressão caiu de 50% para 14% em seis meses", "Friendship Bench, Chibanda et al., JAMA 2016"],
+    VIOL: ["mediação comunitária e apoio psicológico breve (PM+, OMS)", "Rahman et al., JAMA 2016"],
+    GUER: ["cessar-fogo e apoio psicológico breve (PM+, OMS)", "Rahman et al., JAMA 2016"],
+    DESL: ["acolhimento e autocuidado guiado para refugiados (Self-Help Plus, OMS)", "Tol et al., Lancet Global Health 2020"],
+    ECON: ["transferência de renda: dinheiro reduz depressão e ansiedade", "Ridley et al., Science 2020"],
+    CUID: ["fortalecer quem já está cuidando", "ReliefWeb"],
+  };
+  const INTERV = [
+    { id: "renda", nome: "transferência de renda", ef: { ECON: .5, FOME: .3, ANSI: .15 }, ev: "Ridley et al., Science 2020" },
+    { id: "comida", nome: "assistência alimentar", ef: { FOME: .6 }, ev: "Programa Mundial de Alimentos" },
+    { id: "paz", nome: "cessar-fogo e mediação", ef: { GUER: .7, VIOL: .4, DESL: .2 }, ev: "retira a exposição à violência" },
+    { id: "psi", nome: "apoio psicossocial comunitário", ef: { ANSI: .4 }, amortece: .25, ev: "Chibanda et al., JAMA 2016; Rahman et al., JAMA 2016" },
+    { id: "acolher", nome: "acolhimento a deslocados", ef: { DESL: .35 }, ev: "Tol et al., Lancet Global Health 2020" },
+    { id: "verde", nome: "áreas verdes, sombra e ar limpo", ef: { HEAT: .3, AIR: .4, NOISE: .2 }, ev: "OMS, Urban green spaces and health, 2016" },
+  ];
   const FMED = { DIS: { ADR: .45, NOR: .35, COR: .2 }, HEAT: { COR: .4, MEL: .3, SER: .3 }, AIR: { IL6: .7, GLU: .3 }, NOISE: { NOR: .4, COR: .3, MEL: .3 },
     GUER: { NOR: .35, GLU: .3, COR: .2, ADR: .15 }, VIOL: { COR: .45, NOR: .3, GLU: .25 }, FOME: { SER: .4, GRE: .35, COR: .25 }, DESL: { OXT: .5, COR: .5 },
     ANSI: { NOR: .4, COR: .4, MEL: .2 }, ECON: { COR: .6, NOR: .25, SER: .15 } };
@@ -228,6 +283,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
   ].map(a => a.length === 6 ? [a[0], a[1], a[2], "", a[3], a[4], a[5]] : a);
   const km = (a1, o1, a2, o2) => { const r = Math.PI / 180, x = Math.sin((a2 - a1) * r / 2) ** 2 + Math.cos(a1 * r) * Math.cos(a2 * r) * Math.sin((o2 - o1) * r / 2) ** 2; return 12742 * Math.asin(Math.sqrt(x)); };
 
+  function corFrom(f) { let cor = 0; for (const [k, w] of Object.entries(FMED)) cor += (f[k] || 0) * (w.COR || 0); return clamp(cor / 1.2, 0, 1); }
   function factorsFor(p, now) {
     let dis = 0;
     for (const a of ALERTS) {
@@ -239,8 +295,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     const solar = (new Date(now).getUTCHours() + p.lon / 15 + 24) % 24, diurnal = 0.5 + 0.5 * Math.cos(2 * Math.PI * (solar - 15) / 24);
     const f = { DIS: clamp(dis * 2.2, 0, 1), HEAT: clamp((p.T - 18) / 22, 0, 1) * (0.6 + 0.4 * diurnal), AIR: clamp(p.pm / 90, 0, 1), NOISE: clamp((p.db - 45) / 40, 0, 1) };
     for (const k of ["VIOL", "GUER", "FOME", "DESL", "ANSI", "ECON", "CUID"]) f[k] = p.f[k] != null ? p.f[k] : (p.ex[k] || 0);
-    let cor = 0; for (const [k, w] of Object.entries(FMED)) cor += (f[k] || 0) * (w.COR || 0);
-    f.COR = clamp(cor / 1.2, 0, 1);
+    f.COR = corFrom(f);
     return f;
   }
 
@@ -317,6 +372,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     document.getElementById("detail").innerHTML = `<h2>${q.sym}</h2>
       <dl class="kv"><dt>mede</dt><dd>${q.nome}</dd><dt>lugar</dt><dd>${q.lugar}</dd><dt>cotação</dt><dd>${fmtN(q.v)} <span class="${cls(q)}">${arrow(q.d)} ${q.d >= 0 ? "+" : ""}${fmtN(q.d)}% em 24 h</span></dd>
       <dt>mediador</dt><dd>${m[0]} · ${fmtN(medHz(q.med), 1)} Hz</dd><dt>origem</dt><dd>${q.nota || (LIVE ? "dados da coleta automática" : "valor de demonstração")}${LIVE && !q.real ? " · tendência ilustrativa até juntar algumas horas de coleta" : ""}</dd>
+      <dt>resposta</dt><dd class="resp">${RESP[q.k][0]} <span class="note">(${RESP[q.k][1]})</span></dd>
       <dt>${q.positivo ? "fortalecer" : "fazer cair"}</dt><dd><a href="${a.cuidado[1]}" target="_blank" rel="noopener">${a.cuidado[0]}</a></dd></dl>`;
   }
   function renderIdx() {
@@ -346,8 +402,10 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     const q = movers[Math.floor(Math.random() * movers.length)], up = q.d > 0;
     const verb = (up ? VERB_UP : VERB_DN)[Math.floor(Math.random() * 4)];
     const sp = moneyChange("SP500"), vix = MONEY.VIX ? MONEY.VIX[0] : null;
-    if (r < 0.35) return `${q.sym} ${verb} ${fmtN(Math.abs(q.d))}% e fecha a ${fmtN(q.v)}. ${q.positivo ? "Analistas apontam ajuda e cooperação relatadas na região." : `Pressão vem de ${q.nome}${q.nota ? ": " + q.nota : ""}.`}`;
-    if (r < 0.65) return `S&P 500 ${sp >= 0 ? "fecha em alta" : "fecha em baixa"} de ${fmtN(Math.abs(sp), 2)}%. No mesmo pregão, ${q.sym} (${q.lugar}) ${verb} ${fmtN(Math.abs(q.d))}%.`;
+    if (r < 0.3) { const x = movers.filter(m => !m.positivo && m.d > 0).sort((a, b) => b.d - a.d)[0];
+      if (x) return `${x.sym} explode ${fmtN(x.d)}% em 24 h. Contraponto: ${RESP[x.k][0]} (${RESP[x.k][1]}).`; }
+    if (r < 0.5) return `${q.sym} ${verb} ${fmtN(Math.abs(q.d))}% e fecha a ${fmtN(q.v)}. ${q.positivo ? "Analistas apontam ajuda e cooperação relatadas na região." : `Pressão vem de ${q.nome}${q.nota ? ": " + q.nota : ""}.`}`;
+    if (r < 0.7) return `S&P 500 ${sp >= 0 ? "fecha em alta" : "fecha em baixa"} de ${fmtN(Math.abs(sp), 2)}%. No mesmo pregão, ${q.sym} (${q.lugar}) ${verb} ${fmtN(Math.abs(q.d))}%.`;
     if (r < 0.85 && vix) return `Índice do medo dos mercados em ${fmtN(vix)}. Índice de aflição de ${q.lugar}: ${fmtN(q.v)}. Só um deles terá injeção de liquidez.`;
     const c = Q.filter(x => x.k === "CUID").sort((a, b) => b.v - a.v)[0];
     return c ? `Contraponto: ${c.sym} cotado a ${fmtN(c.v)} em ${c.lugar}. Cooperação também é notícia, só circula menos.` : null;
@@ -373,6 +431,52 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
       .map(a => `<div><dt>${a.nome}</dt><dd><a href="${a.cuidado[1]}" target="_blank" rel="noopener">${a.cuidado[0]}</a></dd></div>`).join("");
   }
 
+  // ---------- simulation zone ----------
+  const SIM = { on: false, place: null, cov: Object.fromEntries(INTERV.map(i => [i.id, 0])) };
+  function simFactors(p) {
+    const f = factorsFor(p, Date.now()), g = { ...f };
+    for (const i of INTERV) { const c = SIM.cov[i.id] / 100; for (const [k, e] of Object.entries(i.ef)) g[k] = (g[k] || 0) * (1 - c * e); }
+    const total = INTERV.reduce((a, i) => a + SIM.cov[i.id] / 100, 0) / INTERV.length;
+    g.CUID = clamp((f.CUID || 0) + total * 0.6, 0, 1);
+    const psi = INTERV.find(i => i.id === "psi");
+    g.COR = corFrom(g) * (1 - SIM.cov.psi / 100 * psi.amortece);
+    return [f, g];
+  }
+  function simQuotes() {
+    const p = SIM.place; if (!p) return [];
+    const [f, g] = simFactors(p);
+    return Object.entries(ASSETS).filter(([k]) => (f[k] || 0) * 100 >= 3 || k === "CUID")
+      .map(([k, a]) => ({ k, sym: `${k}.${p.code}`, nome: a.nome, curto: a.curto || a.nome, v: g[k] * 100, now: (f[k] || 0) * 100, d: f[k] ? (g[k] - f[k]) / f[k] * 100 : 0, positivo: !!a.positivo, med: a.med }));
+  }
+  function renderSim() {
+    const p = SIM.place; if (!p) return;
+    const qs = simQuotes(), cor = qs.find(q => q.k === "COR"), cu = qs.find(q => q.k === "CUID");
+    document.getElementById("simBig").innerHTML =
+      `<span><small class="note">cortisol do lugar</small><br><b>${fmtN(cor ? cor.now : 0)}</b> <span class="note">→</span> <b class="down">${fmtN(cor ? cor.v : 0)}</b></span>` +
+      `<span><small class="note">cuidado</small><br><b>${fmtN(cu ? cu.now : 0)}</b> <span class="note">→</span> <b class="pos">${fmtN(cu ? cu.v : 0)}</b></span>`;
+    document.getElementById("simRows").innerHTML = qs.map(q => `<div class="simrow"><span class="sym">${q.sym}</span>
+      <span class="simbar ${q.positivo ? "pos" : ""}"><i class="a" style="width:${Math.round(q.now)}%"></i><i class="b" style="width:${Math.round(q.v)}%"></i></span>
+      <span>${fmtN(q.now)} → ${fmtN(q.v)} <span class="${q.positivo ? "pos" : q.d < -0.3 ? "down" : "flat"}">${q.d >= 0 ? "+" : ""}${fmtN(q.d, 0)}%</span></span></div>`).join("");
+    if (SIM.on) updateSound();
+  }
+  (function setupSim() {
+    const sel = document.getElementById("simPlace");
+    const ord = PLACES.slice().sort((a, b) => factorsFor(b, Date.now()).COR - factorsFor(a, Date.now()).COR);
+    sel.innerHTML = ord.map(p => `<option value="${p.code}">${p.nome}</option>`).join("");
+    SIM.place = ord[0];
+    sel.addEventListener("change", () => { SIM.place = PLACES.find(p => p.code === sel.value); renderSim(); });
+    document.getElementById("sliders").innerHTML = INTERV.map(i => `<div class="slider"><label for="sl_${i.id}">${i.nome}</label><output id="o_${i.id}">0%</output>
+      <input type="range" id="sl_${i.id}" min="0" max="100" step="5" value="0"><small>${i.ev}</small></div>`).join("");
+    INTERV.forEach(i => document.getElementById("sl_" + i.id).addEventListener("input", e => {
+      SIM.cov[i.id] = +e.target.value; document.getElementById("o_" + i.id).textContent = e.target.value + "%"; renderSim(); }));
+    document.getElementById("simSnd").addEventListener("click", e => {
+      SIM.on = !SIM.on; e.currentTarget.setAttribute("aria-pressed", String(SIM.on));
+      e.currentTarget.textContent = SIM.on ? "o pregão sonoro toca a simulação · voltar ao real" : "ouvir a simulação no pregão sonoro";
+      if (!ac) document.getElementById("snd").click(); else { if (ac.state !== "running") document.getElementById("snd").click(); updateSound(); }
+    });
+    renderSim();
+  })();
+
   // ---------- continuous trading-floor sound ----------
   let ac = null, master = null, voices = [], drone = null;
   function startSound() {
@@ -386,7 +490,8 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
   function updateSound() {
     if (!ac) return; const t = ac.currentTime;
     const vix = MONEY.VIX ? MONEY.VIX[0] : 18, droneHz = 41.2 * (1 + clamp((vix - 12) / 40, 0, 1) * 0.5); drone.frequency.setTargetAtTime(droneHz, t, 2);
-    const top = Q.filter(q => !q.positivo).sort((a, b) => b.d - a.d).slice(0, 3).concat(Q.filter(q => q.positivo).sort((a, b) => b.v - a.v).slice(0, 1));
+    const SRC = SIM.on ? simQuotes() : Q;
+    const top = SRC.filter(q => !q.positivo).sort((a, b) => SIM.on ? b.v - a.v : b.d - a.d).slice(0, 3).concat(SRC.filter(q => q.positivo).sort((a, b) => b.v - a.v).slice(0, 1));
     voices.forEach((v, i) => { const q = top[i]; v.q = q || null; if (!q) { v.g.gain.setTargetAtTime(0, t, 1.5); return; }
       v.o.type = q.positivo ? "sine" : "triangle"; v.o.frequency.setTargetAtTime(medHz(q.med) * (1 + clamp(q.d, -10, 10) / 400), t, 1.5);
       v.g.gain.setTargetAtTime((0.05 + 0.2 * q.v / 100) * (q.positivo ? 1.2 : 1), t, 1.5); });
