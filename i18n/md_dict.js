@@ -58,3 +58,5 @@ F.en.push(["buscas lidas do que você escreveu","searches read from what you wro
 F.es.push(["buscas lidas do que você escreveu","búsquedas leídas de lo que escribiste"],["buscas lidas de","búsquedas leídas de"],["Nada foi enviado nem guardado.","No se envió ni se guardó nada."],["estimado","estimado"],["anel","anillo"],["pétalas","pétalos"],["Mandala de","Mandala de"]);
 })();
 window.I18N_POS = "bottom:16px;left:16px";
+
+window.I18N_POS_NARROW = "top:10px;right:10px";

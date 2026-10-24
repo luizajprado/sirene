@@ -87,7 +87,8 @@
     }
   }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
   // the switcher
-  const pos = window.I18N_POS || "bottom:12px;left:12px";
+  const posWide = window.I18N_POS || "bottom:12px;left:12px", posNarrow = window.I18N_POS_NARROW || posWide;
+  const mq = matchMedia("(max-width: 560px)"), pos = mq.matches ? posNarrow : posWide;
   const box = document.createElement("div"); box.setAttribute("data-noi18n", ""); box.setAttribute("role", "group"); box.setAttribute("aria-label", "Idioma · Language · Idioma");
   box.style.cssText = `position:fixed;${pos};z-index:2147483000;display:flex;gap:2px;background:rgba(8,8,7,.82);border:1px solid #2C2820;padding:3px;font:500 11px/1 "IBM Plex Mono",ui-monospace,Menlo,monospace;letter-spacing:.08em;backdrop-filter:blur(6px)`;
   for (const l of LANGS) {
@@ -96,6 +97,8 @@
     b.addEventListener("click", () => { lang = l; try { localStorage.setItem("lang", l); } catch (e) {} all(); });
     box.append(b);
   }
+  const place = () => { box.style.top = box.style.right = box.style.bottom = box.style.left = ""; for (const d of (mq.matches ? posNarrow : posWide).split(";")) { const [k, v] = d.split(":"); if (k && v) box.style[k.trim()] = v.trim(); } };
+  mq.addEventListener("change", place);
   const st = document.createElement("style"); st.textContent = `[data-i18n-btn][aria-pressed="true"]{color:#0A0907!important;background:#E8B86A!important}[data-i18n-btn]:focus-visible{outline:2px solid #EDE6D8}`;
   document.head.append(st);
   const start = () => { document.body.append(box); all(); };
