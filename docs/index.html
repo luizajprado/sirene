@@ -42,21 +42,21 @@ nav { display: flex; flex-direction: column; gap: 18px; border-right: 1px solid 
 .tabs button:focus-visible, .chip:focus-visible, .btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .navnote { color: var(--dim); font-size: 10px; line-height: 1.6; }
 main { min-width: 0; padding-bottom: 24px; }
-.view { display: flex; flex-direction: column; gap: 16px; }
+.view { display: flex; flex-direction: column; gap: 24px; }
 .vhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 10px 24px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
 .vhead h2 { margin: 0; font-weight: 800; font-stretch: 75%; font-size: clamp(24px, 3vw, 38px); line-height: 1; text-wrap: balance; }
-.vhead p { margin: 0; color: var(--dim); max-width: 62ch; }
+.vhead p { margin: 8px 0 0; color: var(--dim); max-width: 62ch; line-height: 1.7; }
 .clock { font-weight: 100; font-stretch: 75%; font-size: clamp(30px, 5vw, 72px); line-height: 0.9; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
-.panel { background: var(--panel); border: 1px solid var(--line); padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); padding: 20px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .panel h3 { margin: 0; font-size: 10px; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); }
-.kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 12px; margin: 0; font-variant-numeric: tabular-nums; }
+.kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 18px; margin: 0; font-variant-numeric: tabular-nums; line-height: 1.5; }
 .kv dt { color: var(--dim); }
 .kv dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
 .stage { position: relative; width: 100%; max-width: 100%; aspect-ratio: 2 / 1; border: 1px solid var(--line); cursor: crosshair; touch-action: manipulation; }
 .square { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / 1; border: 1px solid var(--line); background: #000; }
 .stage canvas, .square canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.log { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; font-variant-numeric: tabular-nums; min-height: 9em; }
+.log { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-variant-numeric: tabular-nums; min-height: 9em; }
 .log li { color: var(--dim); white-space: pre-wrap; overflow-wrap: anywhere; }
 .log li:first-child { color: var(--fg); }
 .r { color: var(--red); } .b { color: var(--blue); }
@@ -88,7 +88,7 @@ pre.eq { margin: 0; white-space: pre-wrap; font: inherit; font-size: clamp(14px,
 table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
-.prose { max-width: 70ch; color: var(--fg); display: flex; flex-direction: column; gap: 10px; }
+.prose { max-width: 70ch; color: var(--fg); display: flex; flex-direction: column; gap: 14px; line-height: 1.7; }
 .prose p { margin: 0; }
 .dim { color: var(--dim); }
 .status {
@@ -135,11 +135,11 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
         <div class="clock" id="aClock">--:--:--</div>
       </div>
       <div class="grid2">
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
           <div class="stage" id="aStage" role="img" aria-label="Organismo contínuo sobre o mapa do mundo, com a faixa da noite em violeta"><canvas id="aCv"></canvas></div>
           <ol class="log" id="aLog"><li>sincronizando a memória desde 20.10…</li></ol>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
           <div class="panel">
             <h3>carga alostática do planeta</h3>
             <div style="font-weight:100;font-stretch:75%;font-size:48px;line-height:1;font-variant-numeric:tabular-nums" id="aLoad">0,00</div>
@@ -190,10 +190,10 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       <div class="psndMon panel" hidden style="display:flex;flex-direction:column;gap:6px"></div>
       <div class="search" data-search="figuras"></div>
       <div class="grid2">
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
           <div class="square"><canvas id="gCv" width="720" height="720" aria-label="Figura gerada continuamente a partir dos dados" hidden></canvas><canvas id="gGl" aria-label="Nebulosa gerada continuamente a partir dos dados"></canvas></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
           <div class="panel">
             <h3>fonte agora</h3>
             <div style="font-weight:800;font-stretch:75%;font-size:22px;line-height:1.1" id="gSrc">—</div>
@@ -223,11 +223,11 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
         <div class="clock" id="mClock">20.10 00:00</div>
       </div>
       <div class="grid2">
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
           <div class="stage" id="mStage" role="img" aria-label="Mapa do mundo em pontos com o organismo crescendo nas posições dos alertas"><canvas id="mCv"></canvas></div>
           <ol class="log" id="mLog"><li>aguardando o primeiro alerta…</li></ol>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
           <div class="panel">
             <h3>leitura</h3>
             <dl class="kv">
@@ -259,11 +259,11 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       </div>
       <div class="chips" id="pChips" role="group" aria-label="Fontes"></div>
       <div class="grid2">
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
           <div class="square"><canvas id="pCv" width="720" height="720" aria-label="Retrato do evento sendo gerado"></canvas></div>
           <div class="strip" id="pStrip"></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
           <div class="panel">
             <h3>entrada (dado real)</h3>
             <dl class="kv" id="pIn"></dl>
@@ -292,14 +292,14 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     <!-- SOM -->
     <section class="view" data-view="som" hidden>
       <div class="vhead">
-        <div><h2>Retrato e som</h2><p>Cada lugar como tinta na água e como som. Os fatores que mais pesam ali soltam cor, que se espalha e vai se dissipando; as mesmas frequências desenham a cimática ao lado e tocam sem parar. O retrato também pode ser lido como partitura: uma linha percorre a imagem e cada faixa de altura vira uma frequência.</p></div>
+        <div><h2>Retrato e som</h2></div>
         <button type="button" class="btn" id="sAuto" aria-pressed="true">automático: ligado</button>
       </div>
       <div class="search" data-search="som"></div>
       <div class="chips" id="sChips" role="group" aria-label="Eventos"></div>
       <div class="grid2">
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
-          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px">
             <div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div class="square"><canvas id="sCv" width="720" height="720" aria-label="Retrato com a linha de leitura sonora"></canvas></div><span class="dim">retrato · tinta na água</span></div>
             <div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div class="square"><canvas id="sCym" aria-label="Figura de Chladni gerada pelas frequências do lugar"></canvas></div><span class="dim">cimática · figuras de Chladni das frequências</span></div>
           </div>
@@ -307,7 +307,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
           <div class="dim" style="font-size:10px">onda larga = grave · apertada = agudo · altura = peso</div>
           <canvas class="scope" id="sSpec" width="1200" height="300" style="height:auto;aspect-ratio:1200/300" aria-label="Cascata espectral"></canvas>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
           <div class="panel">
             <h3>tocar</h3>
             <div class="row">
@@ -360,7 +360,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
             <div class="tablewrap"><table id="tData"><thead><tr><th>data UTC</th><th>tipo</th><th>nível</th><th>local</th><th>lat</th><th>lon</th><th>valor</th><th>zona</th></tr></thead><tbody></tbody></table></div>
           </div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
           <div class="panel">
             <h3>regras de tradução</h3>
             <dl class="kv">
@@ -1844,7 +1844,7 @@ void main(){
       const src = currentPlace(), name = src ? (src.label || (src.pl && src.pl.name) || "") : "";
       const html = `<div style="font-size:10px;letter-spacing:.14em;color:var(--dim)">TOCANDO AGORA · ${name.toUpperCase()}</div>` + PSND.slots.filter(sl => sl.key).map(sl => {
         const lvl = Math.min(1, (sl.og.gain.value * 2 + sl.ng.gain.value) * 2.2), c = COL[sl.key] || [237, 231, 220];
-        return `<div style="display:grid;grid-template-columns:110px 70px minmax(0,1fr);gap:8px;align-items:center;font-variant-numeric:tabular-nums"><span style="color:${hex(c)}">${MED[sl.key] ? MED[sl.key].nome : sl.key}</span><span>${Math.round(sl.osc.frequency.value)} Hz</span><span style="height:6px;background:#1A1920;position:relative"><span style="position:absolute;left:0;top:0;bottom:0;width:${Math.round(lvl * 100)}%;background:${hex(c)}"></span></span></div>`;
+        return `<div style="display:grid;grid-template-columns:110px 70px minmax(0,1fr);gap:10px 12px;padding:4px 0;align-items:center;font-variant-numeric:tabular-nums"><span style="color:${hex(c)}">${MED[sl.key] ? MED[sl.key].nome : sl.key}</span><span>${Math.round(sl.osc.frequency.value)} Hz</span><span style="height:6px;background:#1A1920;position:relative"><span style="position:absolute;left:0;top:0;bottom:0;width:${Math.round(lvl * 100)}%;background:${hex(c)}"></span></span></div>`;
       }).join("");
       document.querySelectorAll(".psndMon").forEach(el => { el.hidden = false; el.innerHTML = html; });
     }
@@ -2166,7 +2166,7 @@ es: {
 add("en", [["coral ramificado","branching coral"],["fibras curtas","short fibres"],["filamentos errantes","wandering filaments"],["labirinto aberto","open labyrinth"],["labirinto denso","dense labyrinth"],["anel pulsante","pulsing ring"],["coral","coral"],["memória sincronizada","memory synced"],["intensidade","intensity"],["alertas","alerts"],["alerta","alert"],["célula","cell"],["ruído","noise"],["e","and"],["carga alostática","allostatic load"],["som do lugar","place sound"],["desligado","off"],["ligado","on"],["automático","automatic"],["poluição do ar","air pollution"],["luz do dia","daylight"],["noite","night"]]);
 add("es", [["coral ramificado","coral ramificado"],["fibras curtas","fibras cortas"],["filamentos errantes","filamentos errantes"],["labirinto aberto","laberinto abierto"],["labirinto denso","laberinto denso"],["anel pulsante","anillo pulsante"],["memória sincronizada","memoria sincronizada"],["intensidade","intensidad"],["célula","célula"],["ruído","ruido"],["e","y"],["som do lugar","sonido del lugar"],["desligado","apagado"],["ligado","encendido"],["poluição do ar","contaminación del aire"],["luz do dia","luz del día"],["noite","noche"]]);
 })();
-window.I18N_POS = "top:10px;right:10px";
+window.I18N_POS = "bottom:48px;left:24px";
 
 window.I18N_POS_NARROW = "bottom:62px;right:10px";
 
@@ -2238,6 +2238,15 @@ END: ["beta-endorfina", "Opioide produzido pelo próprio corpo. Alivia a dor e s
 ANA: ["anandamida", "Endocanabinoide produzido pelo próprio corpo. Amortece o estresse e o medo e acompanha o bem-estar.",
  "anandamide", "An endocannabinoid made by the body itself. It buffers stress and fear and accompanies wellbeing.",
  "anandamida", "Endocannabinoide producido por el propio cuerpo. Amortigua el estrés y el miedo y acompaña el bienestar."],
+PRL: ["prolactina", "Hormônio que sobe depois do orgasmo e na amamentação; ajuda a desligar o desejo sexual por um tempo.",
+ "prolactin", "A hormone that rises after orgasm and during breastfeeding; it helps switch sexual desire off for a while.",
+ "prolactina", "Hormona que sube después del orgasmo y durante la lactancia; ayuda a apagar el deseo sexual por un tiempo."],
+intencao: ["como quero me sentir", "Você escolhe ou escreve um estado (calma, foco, menos tesão). A mandala calcula a química desse estado e viaja até ela: cores e anéis mudam e o som de agora se cruza com o som do destino. É representação, não tratamento.",
+ "how I want to feel", "You choose or write a state (calm, focus, less arousal). The mandala works out that state's chemistry and travels to it: colours and rings change and the sound of now crosses into the sound of the destination. It is a representation, not a treatment.",
+ "cómo quiero sentirme", "Eliges o escribes un estado (calma, enfoque, menos deseo). La mandala calcula la química de ese estado y viaja hasta ella: colores y anillos cambian y el sonido de ahora se cruza con el sonido del destino. Es representación, no tratamiento."],
+cruz: ["cruzamento de frequências", "Duas camadas de som tocam juntas: as frequências de como você está e as do estado desejado. Enquanto uma some, a outra cresce.",
+ "frequency crossing", "Two layers of sound play together: the frequencies of how you are and those of the desired state. As one fades, the other grows.",
+ "cruce de frecuencias", "Dos capas de sonido suenan juntas: las frecuencias de cómo estás y las del estado deseado. Mientras una se apaga, la otra crece."],
 // concepts
 carga: ["carga alostática", "O desgaste que o corpo acumula quando precisa se adaptar ao estresse por muito tempo. Conceito de Bruce McEwen.",
  "allostatic load", "The wear the body builds up when it has to adapt to stress for a long time. A concept by Bruce McEwen.",

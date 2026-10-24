@@ -189,6 +189,6 @@ es: {
 add("en", [["coral ramificado","branching coral"],["fibras curtas","short fibres"],["filamentos errantes","wandering filaments"],["labirinto aberto","open labyrinth"],["labirinto denso","dense labyrinth"],["anel pulsante","pulsing ring"],["coral","coral"],["memória sincronizada","memory synced"],["intensidade","intensity"],["alertas","alerts"],["alerta","alert"],["célula","cell"],["ruído","noise"],["e","and"],["carga alostática","allostatic load"],["som do lugar","place sound"],["desligado","off"],["ligado","on"],["automático","automatic"],["poluição do ar","air pollution"],["luz do dia","daylight"],["noite","night"]]);
 add("es", [["coral ramificado","coral ramificado"],["fibras curtas","fibras cortas"],["filamentos errantes","filamentos errantes"],["labirinto aberto","laberinto abierto"],["labirinto denso","laberinto denso"],["anel pulsante","anillo pulsante"],["memória sincronizada","memoria sincronizada"],["intensidade","intensidad"],["célula","célula"],["ruído","ruido"],["e","y"],["som do lugar","sonido del lugar"],["desligado","apagado"],["ligado","encendido"],["poluição do ar","contaminación del aire"],["luz do dia","luz del día"],["noite","noche"]]);
 })();
-window.I18N_POS = "top:10px;right:10px";
+window.I18N_POS = "bottom:48px;left:24px";
 
 window.I18N_POS_NARROW = "bottom:62px;right:10px";

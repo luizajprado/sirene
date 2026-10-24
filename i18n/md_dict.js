@@ -60,3 +60,14 @@ F.es.push(["buscas lidas do que você escreveu","búsquedas leídas de lo que es
 window.I18N_POS = "bottom:16px;left:16px";
 
 window.I18N_POS_NARROW = "top:10px;right:10px";
+(function () { const D = window.I18N_DICT; const add = (pt, en, es) => { D.en[pt] = en; D.es[pt] = es; };
+[["como quero me sentir","how I want to feel","cómo quiero sentirme"],
+["Escolha ou escreva. A mandala sai de como você está agora e vai, aos poucos, até o estado desejado: as cores mudam e as frequências se cruzam. É uma representação: cor e som não mudam a química do corpo. O que pode ajudar de verdade é respirar devagar junto com ela.","Choose or write. The mandala starts from how you are now and moves, little by little, to the state you want: the colours change and the frequencies cross. It is a representation: colour and sound do not change the body's chemistry. What can truly help is breathing slowly with it.","Elige o escribe. La mandala parte de cómo estás ahora y va, poco a poco, hasta el estado deseado: los colores cambian y las frecuencias se cruzan. Es una representación: el color y el sonido no cambian la química del cuerpo. Lo que puede ayudar de verdad es respirar despacio con ella."],
+["ou escreva, por exemplo: calma, menos ansiedade, diminuir o tesão","or write, for example: calm, less anxiety, lower my arousal","o escribe, por ejemplo: calma, menos ansiedad, bajar el deseo"],
+["tempo","time","tiempo"],["{#} min","{#} min","{#} min"],["ir até lá","go there","ir hasta allí"],["voltar ao agora","back to now","volver al ahora"],["destino","destination","destino"],["chegou","arrived","llegó"],["{#}% do caminho","{#}% of the way","{#}% del camino"],
+["calma","calm","calma"],["energia","energy","energía"],["foco","focus","enfoque"],["acolhimento","being held","acogida"],["descanso","rest","descanso"],["alegria","joy","alegría"],["coragem","courage","coraje"],["desejo","desire","deseo"],["alívio da dor","pain relief","alivio del dolor"],
+["Não reconheci um sentimento aqui. Tente palavras como calma, foco, energia, acolhimento, descanso, alegria, coragem ou desejo, com \"menos\" quando quiser diminuir.","I did not recognise a feeling here. Try words such as calm, focus, energy, held, rest, joy, courage or desire, with \"less\" when you want to lower something.","No reconocí un sentimiento aquí. Prueba palabras como calma, enfoque, energía, acogida, descanso, alegría, coraje o deseo, con \"menos\" cuando quieras bajar algo."],
+["esconder menu","hide menu","ocultar menú"],["mostrar menu","show menu","mostrar menú"],["prolactina","prolactin","prolactina"]
+].forEach(r => add(...r));
+const F = window.I18N_FRAG; F.en.push(["menos","less"],["desejo","desire"],["energia","energy"],["descanso","rest"],["calma","calm"]); F.es.push(["desejo","deseo"],["energia","energía"]);
+})();

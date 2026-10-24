@@ -48,6 +48,16 @@ details summary { cursor: pointer; color: var(--gold); font-size: 11px; letter-s
 .arch { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .arch figure { margin: 0; } .arch img { width: 100%; aspect-ratio: 1; display: block; border: 1px solid var(--line); } .arch figcaption { color: var(--dim); font-size: 10px; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { background: none; border: 1px solid var(--line); color: var(--dim); padding: 6px 10px; min-height: 34px; cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--calm); color: var(--fg); background: rgba(127,196,184,.14); }
+input[type=text], select { background: #0B0A08; border: 1px solid var(--line); padding: 10px; min-height: 42px; box-sizing: border-box; }
+input[type=text] { width: 100%; }
+.trip { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; } .trip .tb i { background: linear-gradient(90deg, var(--gold), var(--calm)); }
+.title, .bar, .drawer, .breath { transition: opacity .6s; }
+body.clean .title, body.clean .bar, body.clean .drawer, body.clean div[role="group"][data-noi18n] { opacity: 0; pointer-events: none; }
+.showhint { position: fixed; right: 16px; bottom: max(16px, env(safe-area-inset-bottom, 0px)); background: rgba(5,5,4,.5); border: 1px solid var(--line); color: var(--dim); padding: 8px 12px; min-height: 40px; cursor: pointer; opacity: 0; transition: opacity .6s; }
+.showhint.on, .showhint:focus-visible { opacity: 1; }
 </style>
 
 <canvas id="cv" aria-label="Mandala gerada a partir do que você procura"></canvas>
@@ -59,7 +69,9 @@ details summary { cursor: pointer; color: var(--gold); font-size: 11px; letter-s
   <button type="button" class="btn" id="snd" aria-pressed="false">ouvir</button>
   <button type="button" class="btn" id="mod" aria-pressed="false">modular: respirar com a mandala</button>
   <button type="button" class="btn ghost" id="save">guardar</button>
+  <button type="button" class="btn ghost" id="hide">esconder menu</button>
 </div>
+<button type="button" class="showhint" id="showBtn" hidden>mostrar menu</button>
 
 <aside class="drawer" id="drawer" aria-label="Painel">
   <div class="sec">
@@ -71,6 +83,17 @@ details summary { cursor: pointer; color: var(--gold); font-size: 11px; letter-s
     <textarea id="typed" placeholder="como dormir melhor&#10;ansiedade à noite&#10;passagem para ver minha mãe"></textarea>
     <div class="row"><button type="button" class="btn" id="gen">gerar mandala</button><button type="button" class="btn ghost" id="forget">esquecer buscas</button></div>
     <p class="dim" id="status"></p>
+  </div>
+  <div class="sec">
+    <h2>como quero me sentir</h2>
+    <p class="dim">Escolha ou escreva. A mandala sai de como você está agora e vai, aos poucos, até o estado desejado: as cores mudam e as frequências se cruzam. É uma representação: cor e som não mudam a química do corpo. O que pode ajudar de verdade é respirar devagar junto com ela.</p>
+    <div class="chips" id="feelChips"></div>
+    <label for="feelTxt" class="dim">ou escreva, por exemplo: calma, menos ansiedade, diminuir o tesão</label>
+    <input type="text" id="feelTxt" autocomplete="off">
+    <div class="row"><label class="dim" for="feelDur" style="align-self:center">tempo</label><select id="feelDur"><option value="60">1 min</option><option value="180" selected>3 min</option><option value="600">10 min</option></select>
+      <button type="button" class="btn" id="feelGo">ir até lá</button><button type="button" class="btn ghost" id="feelStop">voltar ao agora</button></div>
+    <div class="trip" id="feelTrip" hidden><div class="tb"><i id="feelBar"></i></div><span class="dim" id="feelPct"></span></div>
+    <dl class="kv" id="feelRead"></dl>
   </div>
   <div class="sec">
     <h2>como a mandala leu você</h2>
@@ -104,24 +127,27 @@ details summary { cursor: pointer; color: var(--gold); font-size: 11px; letter-s
     ADR: ["adrenalina", 183.20, [255, 45, 30]], NOR: ["noradrenalina", 169.18, [255, 138, 30]], COR: ["cortisol", 362.46, [242, 194, 48]], GLU: ["glutamato", 147.13, [232, 32, 126]],
     IL6: ["interleucina-6", 21000, [166, 200, 50]], SER: ["serotonina", 176.22, [46, 196, 182]], GRE: ["grelina", 3370.9, [201, 180, 138]], MEL: ["melatonina", 232.28, [91, 61, 240]],
     OXT: ["ocitocina", 1007.19, [245, 140, 184]], DOP: ["dopamina", 153.18, [255, 226, 120]], GABA: ["GABA", 103.12, [111, 168, 255]],
+    ACH: ["acetilcolina", 146.21, [180, 255, 236]], HIS: ["histamina", 111.15, [205, 130, 255]], CRH: ["CRH", 4757.5, [196, 128, 52]],
+    SUBP: ["substância P", 1347.6, [200, 64, 64]], AVP: ["vasopressina", 1084.2, [150, 172, 205]], END: ["beta-endorfina", 3465.0, [255, 192, 150]],
+    ANA: ["anandamida", 347.5, [134, 226, 140]], PRL: ["prolactina", 22900, [214, 200, 236]],
   };
   const hz = m => { let f = MED[m][1]; while (f > 1100) f /= 2; while (f < 100) f *= 2; return f; };
   const hex = c => "#" + c.map(v => v.toString(16).padStart(2, "0")).join("");
-  const CALM = new Set(["OXT", "GABA", "SER", "DOP", "MEL"]);
+  const CALM = new Set(["OXT", "GABA", "SER", "DOP", "MEL", "END", "ANA", "PRL", "ACH"]);
   const norm = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
   // ---------- themes of what one searches for, in Portuguese, Spanish and English; each weighs on mediators ----------
   const THEMES = [
-    { id: "medo", nome: "medo e alerta", med: { NOR: .5, ADR: .3, COR: .2 }, w: "ansiedade ansioso ansiosa panico medo crise taquicardia nervoso preocupacao angustia anxiety panic fear worried ansiedad miedo" },
-    { id: "sono", nome: "sono", med: { MEL: -.4, NOR: .3, COR: .3 }, w: "insonia dormir sono acordar pesadelo cansaco cansado melatonina insomnia sleep tired nightmare dormir sueno cansancio" },
-    { id: "tristeza", nome: "tristeza e luto", med: { GLU: .35, COR: .35, SER: -.3 }, w: "depressao triste tristeza sozinho sozinha solidao luto saudade vazio chorar morte morreu depression sad lonely grief tristeza soledad duelo" },
-    { id: "dinheiro", nome: "trabalho e dinheiro", med: { COR: .6, NOR: .3 }, w: "salario divida boleto emprego demissao desemprego aluguel conta pagar trabalho chefe prazo job debt rent salary bills trabajo deuda alquiler" },
-    { id: "corpo", nome: "corpo e dor", med: { IL6: .6, COR: .25 }, w: "dor sintoma medico remedio doenca febre inflamacao exame tratamento hospital pain symptom doctor disease fever dolor sintoma medicamento" },
-    { id: "comida", nome: "comida e fome", med: { GRE: .7, SER: .1 }, w: "receita fome comida dieta jejum almoco jantar emagrecer recipe food hungry diet hambre comida receta" },
-    { id: "violencia", nome: "violência e notícias", med: { ADR: .4, GLU: .4, NOR: .2 }, w: "guerra ataque tiroteio assalto violencia crime bomba noticias morte policia war attack shooting news violence guerra ataque noticias" },
-    { id: "vinculo", nome: "vínculo e amor", med: { OXT: .8 }, w: "amor amigo amiga familia mae pai filho filha namoro namorado namorada casamento abraco saudade love friend family mother father amor amigo familia" },
-    { id: "desejo", nome: "desejo e projeto", med: { DOP: .7, SER: .2 }, w: "viagem musica show curso aprender treino danca arte filme livro passagem praia festa travel music course learn dance art book viaje musica curso" },
-    { id: "calma", nome: "calma e cuidado", med: { GABA: .7, SER: .2, OXT: .1 }, w: "meditacao respiracao yoga natureza terapia psicologo descanso cha caminhada silencio meditation breathing therapy nature walk meditacion terapia" },
+    { id: "medo", nome: "medo e alerta", med: { NOR: .4, ADR: .25, CRH: .2, COR: .15 }, w: "ansiedade ansioso ansiosa panico medo crise taquicardia nervoso nervosa preocupacao angustia estresse estressada estressado anxiety panic fear worried stress ansiedad miedo estres" },
+    { id: "sono", nome: "sono", med: { MEL: -.4, NOR: .25, COR: .2, HIS: .15 }, w: "insonia dormir sono acordar pesadelo cansaco cansado cansada melatonina insomnia sleep tired nightmare dormir sueno cansancio" },
+    { id: "tristeza", nome: "tristeza e luto", med: { GLU: .3, COR: .3, SER: -.3, IL6: .1 }, w: "depressao triste tristeza sozinho sozinha solidao luto saudade vazio chorar morte morreu depression sad lonely grief tristeza soledad duelo" },
+    { id: "dinheiro", nome: "trabalho e dinheiro", med: { COR: .5, NOR: .25, CRH: .15, ACH: .1 }, w: "salario divida boleto emprego demissao desemprego aluguel conta pagar trabalho chefe prazo job debt rent salary bills trabajo deuda alquiler" },
+    { id: "corpo", nome: "corpo e dor", med: { IL6: .45, SUBP: .3, COR: .15, HIS: .1 }, w: "dor sintoma medico remedio doenca febre inflamacao exame tratamento hospital alergia enxaqueca pain symptom doctor disease fever allergy dolor sintoma medicamento" },
+    { id: "comida", nome: "comida e fome", med: { GRE: .6, SER: .15, DOP: .1, AVP: .15 }, w: "receita fome comida dieta jejum almoco jantar emagrecer sede agua recipe food hungry diet thirst hambre comida receta" },
+    { id: "violencia", nome: "violência e notícias", med: { ADR: .35, GLU: .3, NOR: .2, CRH: .15 }, w: "guerra ataque tiroteio assalto violencia crime bomba noticias morte policia war attack shooting news violence guerra ataque noticias" },
+    { id: "vinculo", nome: "vínculo e amor", med: { OXT: .6, END: .2, AVP: .1, DOP: .1 }, w: "amor amigo amiga familia mae pai filho filha namoro namorado namorada casamento abraco saudade carinho love friend family mother father hug amor amigo familia" },
+    { id: "desejo", nome: "desejo e projeto", med: { DOP: .55, ACH: .15, END: .15, NOR: .15 }, w: "viagem musica show curso aprender treino danca arte filme livro passagem praia festa tesao desejo libido sexo sensual travel music course learn dance art book desire sex viaje musica curso deseo" },
+    { id: "calma", nome: "calma e cuidado", med: { GABA: .45, ANA: .2, SER: .15, END: .1, OXT: .1 }, w: "calma calmo tranquila tranquilo paz relaxar relaxamento descanso descansar meditacao respiracao yoga natureza terapia psicologo cha caminhada silencio calm peace relax meditation breathing therapy nature walk calma paz meditacion terapia" },
   ].map(t => ({ ...t, words: new Set(t.w.split(" ")) }));
 
   // ---------- reading the searches ----------
@@ -191,6 +217,53 @@ details summary { cursor: pointer; color: var(--gold); font-size: 11px; letter-s
     return Object.entries(p).map(([k, v]) => [k, clamp(v, 0, 1)]).filter(([, v]) => v > 0.03).sort((a, b) => b[1] - a[1]);
   }
 
+  // ---------- how one wants to feel: a desired chemistry the mandala travels to ----------
+  const FEEL = [
+    { id: "calma", nome: "calma", w: "calma calmo calmaria tranquila tranquilo tranquilidade paz relaxar relaxada relaxado serena sereno calm peace relaxed serene tranquila", up: { GABA: .45, SER: .2, ANA: .2, END: .15 } },
+    { id: "energia", nome: "energia", w: "energia disposta disposto disposicao animada animado vigor acordada energy energized energia animada", up: { DOP: .4, NOR: .25, ACH: .2, ADR: .15 }, down: "descanso" },
+    { id: "foco", nome: "foco", w: "foco focada focado concentrar concentracao concentrada atencao clareza focus focused clarity enfoque concentracion", up: { ACH: .45, DOP: .3, NOR: .25 } },
+    { id: "acolhimento", nome: "acolhimento", w: "acolhida acolhido acolhimento amada amado conectada conectado vinculo carinho abraco protegida held loved connected cariño abrazo", up: { OXT: .5, END: .3, SER: .2 } },
+    { id: "descanso", nome: "descanso", w: "descanso descansada descansado dormir sono sonolenta sleep rest rested sueño descansar", up: { MEL: .5, GABA: .3, SER: .2 }, down: "energia" },
+    { id: "alegria", nome: "alegria", w: "alegre alegria feliz felicidade leve leveza riso rir happy joy light alegria feliz", up: { DOP: .35, SER: .3, END: .25, ANA: .1 } },
+    { id: "coragem", nome: "coragem", w: "coragem corajosa corajoso forte confiante segura seguro courage brave confident strong valiente", up: { DOP: .35, SER: .3, NOR: .2, OXT: .15 } },
+    { id: "desejo", nome: "desejo", w: "tesao desejo libido excitada excitado sensual desejada desire aroused horny deseo", up: { DOP: .5, OXT: .2, END: .15, NOR: .15 }, downMed: { SER: .35, GABA: .3, PRL: .35 } },
+  ];
+  // states named in order to leave them: "menos ansiedade" goes to calm, "sem tristeza" to joy
+  const LEAVE = { ansiedade: "calma", ansiosa: "calma", ansioso: "calma", medo: "coragem", estresse: "calma", raiva: "calma", panico: "calma", tristeza: "alegria", triste: "alegria",
+    cansaco: "energia", cansada: "energia", cansado: "energia", dor: "alivio", insonia: "descanso", solidao: "acolhimento", sozinha: "acolhimento", sozinho: "acolhimento",
+    anxiety: "calma", fear: "coragem", stress: "calma", anger: "calma", sadness: "alegria", pain: "alivio", miedo: "coragem", tristeza_es: "alegria" };
+  const ALIVIO = { END: .45, ANA: .3, GABA: .25 };
+  const NEG = new Set("menos sem diminuir diminui reduzir reduz parar tirar baixar nao nunca less reduce without stop lower no not sin reducir bajar".split(" "));
+  FEEL.forEach(f => f.words = new Set(f.w.split(" ").map(norm)));
+  const INT = { sel: new Set(), txt: "", des: null, run: false, mix: 0, t0: 0, dur: 180, names: [] };
+  function desired() {
+    const p = {}, add = (o, k = 1) => { for (const [m, w] of Object.entries(o)) p[m] = (p[m] || 0) + w * k; }, names = [];
+    for (const id of INT.sel) { const f = FEEL.find(x => x.id === id); add(f.up); names.push(f.nome); }
+    const tok = INT.txt.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean).map(norm);
+    tok.forEach((w, i) => {
+      const neg = NEG.has(tok[i - 1]) || NEG.has(tok[i - 2]);
+      const f = FEEL.find(x => x.words.has(w));
+      if (f) {
+        if (!neg) { add(f.up); names.push(f.nome); }
+        else if (f.downMed) { add(f.downMed); names.push("menos " + f.nome); }
+        else if (f.down) { add(FEEL.find(x => x.id === f.down).up); names.push("menos " + f.nome); }
+        return;
+      }
+      if (neg && LEAVE[w]) { const to = LEAVE[w]; if (to === "alivio") { add(ALIVIO); names.push("alívio da dor"); } else { add(FEEL.find(x => x.id === to).up); names.push(FEEL.find(x => x.id === to).nome); } }
+    });
+    INT.names = [...new Set(names)];
+    const mx = Math.max(0, ...Object.values(p)); if (!mx) return null;
+    return Object.entries(p).map(([k, v]) => [k, clamp(0.25 + 0.75 * v / mx, 0, 1)]).sort((a, b) => b[1] - a[1]);
+  }
+  // what the mandala shows: the chemistry of now, travelling toward the desired one
+  function effective() {
+    const now = profile(); if (!INT.des || INT.mix <= 0) return now;
+    const m = INT.mix, p = {};
+    for (const [k, v] of now) p[k] = (p[k] || 0) + (1 - m) * v;
+    for (const [k, v] of INT.des) p[k] = (p[k] || 0) + m * v;
+    return Object.entries(p).filter(([, v]) => v > 0.03).sort((a, b) => b[1] - a[1]);
+  }
+
   // ---------- mandala engine ----------
   const MD = { cv: document.getElementById("cv"), ok: false, t0: performance.now(), pulse: 9 };
   (function init() {
@@ -198,7 +271,7 @@ details summary { cursor: pointer; color: var(--gold); font-size: 11px; letter-s
     const vs = "attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}";
     const fs = `precision highp float;
 uniform vec2 uRes;uniform float uT,uN,uLoad,uCare,uPulse;
-uniform vec3 uC[5];uniform float uW[5],uM[5],uK[5],uR[5];
+uniform vec3 uC[8];uniform float uW[8],uM[8],uK[8],uR[8];
 float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*f*(f*(f*6.-15.)+10.);return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),f.x),f.y);}
 float fbm(vec2 p){float v=0.,a=.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<6;i++){v+=a*n(p);p=m*p;a*=.5;}return v;}
@@ -212,9 +285,9 @@ void main(){
  float rw=r+(q.x-.5)*warp*(.4+r);
  vec3 col=vec3(.012,.010,.016);
  float glow=0.;
- for(int i=0;i<5;i++){
+ for(int i=0;i<8;i++){
   if(uW[i]<.01) continue;
-  float R=uR[i],w=.028+.035*uW[i];
+  float R=uR[i],w=.022+.028*uW[i];
   float band=exp(-pow((rw-R)/w,2.));
   float pet=.55+.45*cos(uM[i]*af*2.+uK[i]*rw*.35-t*.03*(1.+float(i)*.4));
   float ink=smoothstep(.42,.78,fbm(vec2(af*uM[i]*.3,rw*9.)+q*3.+float(i)*3.7+t*.01));
@@ -244,20 +317,21 @@ void main(){
     MD.gl = gl; MD.u = {}; for (const k of ["uRes", "uT", "uN", "uLoad", "uCare", "uPulse", "uC", "uW", "uM", "uK", "uR"]) MD.u[k] = gl.getUniformLocation(pr, k);
     MD.ok = true;
   })();
-  MD.cur = { n: 8, load: 0.3, care: 0.3, rings: Array.from({ length: 5 }, () => ({ c: [0, 0, 0], w: 0, m: 8, k: 20, R: 0.2 })) };
+  const NR = 8, RR = i => 0.07 + 0.047 * i;
+  MD.cur = { n: 8, load: 0.3, care: 0.3, rings: Array.from({ length: NR }, () => ({ c: [0, 0, 0], w: 0, m: 8, k: 20, R: 0.2 })) };
   MD.tgt = JSON.parse(JSON.stringify(MD.cur));
   function target() {
-    const prof = profile().slice(0, 5); if (!prof.length) prof.push(["GABA", 0.3]);
+    const prof = effective().slice(0, NR); if (!prof.length) prof.push(["GABA", 0.3]);
     const calm = prof.filter(x => CALM.has(x[0])), hard = prof.filter(x => !CALM.has(x[0])), ordered = [...calm, ...hard];
     // symmetry from how varied the searches are: a narrow mind-field gives few axes, a wide one many
     const div = A && A.n ? Object.values(A.share).filter(x => x > 0.05).length : 3;
     const nBase = [6, 6, 8, 8, 10, 12, 12, 14, 16, 16, 16][div] || 8;
     MD.tgt.n = nBase; MD.tgt.load = clamp(hard.reduce((s, x) => s + x[1], 0) / 1.6, 0, 1); MD.tgt.care = clamp(calm.reduce((s, x) => s + x[1], 0) / 1.6, 0, 1);
-    MD.tgt.rings = Array.from({ length: 5 }, (_, i) => {
-      const x = ordered[i]; if (!x) return { c: MD.cur.rings[i].c.slice(), w: 0, m: nBase, k: 20, R: 0.08 + 0.075 * i };
-      const f = hz(x[0]); return { key: x[0], c: MED[x[0]][2].map(v => v / 255), w: clamp(0.25 + x[1] * 0.9, 0, 1), m: nBase * (1 + Math.round(f / 220) % 3) / 2, k: 18 + f / 25, R: 0.08 + 0.075 * i, hz: f };
+    MD.tgt.rings = Array.from({ length: NR }, (_, i) => {
+      const x = ordered[i]; if (!x) return { c: MD.cur.rings[i].c.slice(), w: 0, m: nBase, k: 20, R: RR(i) };
+      const f = hz(x[0]); return { key: x[0], c: MED[x[0]][2].map(v => v / 255), w: clamp(0.25 + x[1] * 0.9, 0, 1), m: nBase * (1 + Math.round(f / 220) % 3) / 2, k: 18 + f / 25, R: RR(i), hz: f };
     });
-    MD.pulse = 0;
+    if (!INT.run) MD.pulse = 0;
     renderRead(); updateSound();
   }
   function renderRead() {
@@ -298,8 +372,13 @@ void main(){
       MOD.ease = MOD.on ? Math.min(1, MOD.ease + dt / 180) : Math.max(0, MOD.ease - dt / 60);
       const phase = MOD.on ? Math.sin((now - MOD.t0) / 10000 * Math.PI * 2) : 0;
       c.n = t.n; c.load += (t.load * (1 - 0.6 * MOD.ease) - c.load) * k; c.care += (Math.min(1, t.care + 0.3 * MOD.ease) - c.care) * k;
-      for (let i = 0; i < 5; i++) { const a = c.rings[i], b = t.rings[i]; a.w += (b.w - a.w) * k; for (let j = 0; j < 3; j++) a.c[j] += (b.c[j] - a.c[j]) * k * 0.6; a.m = b.m; a.k += (b.k - a.k) * k; a.R += (b.R * (1 + 0.08 * phase) - a.R) * Math.min(1, dt * 3); }
+      for (let i = 0; i < NR; i++) { const a = c.rings[i], b = t.rings[i]; a.w += (b.w - a.w) * k; for (let j = 0; j < 3; j++) a.c[j] += (b.c[j] - a.c[j]) * k * 0.6; a.m = b.m; a.k += (b.k - a.k) * k; a.R += (b.R * (1 + 0.08 * phase) - a.R) * Math.min(1, dt * 3); }
       MD.pulse += dt * 0.06;
+      if (INT.run && INT.des) {
+        const p = clamp((now - INT.t0) / 1000 / INT.dur, 0, 1), m = p * p * (3 - 2 * p);
+        if (Math.abs(m - INT.mix) > 0.01 || p >= 1) { INT.mix = m; target(); renderFeel(); }
+        if (p >= 1) INT.run = false;
+      }
       const gl = MD.gl, u = MD.u; gl.viewport(0, 0, MD.cv.width, MD.cv.height);
       gl.uniform2f(u.uRes, MD.cv.width, MD.cv.height); gl.uniform1f(u.uT, (now - MD.t0) / 1000);
       gl.uniform1f(u.uN, c.n); gl.uniform1f(u.uLoad, c.load); gl.uniform1f(u.uCare, c.care); gl.uniform1f(u.uPulse, MD.pulse);
@@ -314,13 +393,16 @@ void main(){
   function startSound() {
     ac = new (window.AudioContext || window.webkitAudioContext)();
     master = ac.createGain(); master.gain.value = 0; const comp = ac.createDynamicsCompressor(); master.connect(comp); comp.connect(ac.destination); master.gain.setTargetAtTime(0.18, ac.currentTime, 1.5);
-    voices = [0, 1, 2, 3].map(() => { const o = ac.createOscillator(), g = ac.createGain(); g.gain.value = 0; o.connect(g); g.connect(master); o.start(); return { o, g }; });
+    const bank = () => [0, 1, 2, 3, 4, 5].map(() => { const o = ac.createOscillator(), g = ac.createGain(); g.gain.value = 0; o.connect(g); g.connect(master); o.start(); return { o, g }; });
+    voices = [bank(), bank()];   // [now, desired]: the two cross as the mandala travels
     updateSound();
   }
   function updateSound() {
-    if (!ac) return; const t = ac.currentTime, prof = profile().slice(0, 4);
-    voices.forEach((v, i) => { const x = prof[i]; if (!x) { v.g.gain.setTargetAtTime(0, t, 1); return; } const calm = CALM.has(x[0]);
-      v.o.type = calm ? "sine" : "triangle"; v.o.frequency.setTargetAtTime(hz(x[0]), t, 1.2); v.g.gain.setTargetAtTime((0.04 + 0.16 * x[1]) * (MOD.on && !calm ? 0.4 : 1), t, 1.5); });
+    if (!ac) return; const t = ac.currentTime, m = INT.des ? INT.mix : 0;
+    const play = (vs, prof, amt) => vs.forEach((v, i) => { const x = prof[i]; if (!x || amt < 0.005) { v.g.gain.setTargetAtTime(0, t, 1.2); return; } const calm = CALM.has(x[0]);
+      v.o.type = calm ? "sine" : "triangle"; v.o.frequency.setTargetAtTime(hz(x[0]), t, 1.2); v.g.gain.setTargetAtTime(amt * (0.03 + 0.12 * x[1]) * (MOD.on && !calm ? 0.4 : 1), t, 1.5); });
+    play(voices[0], profile().slice(0, 6), 1 - m);
+    play(voices[1], INT.des ? INT.des.slice(0, 6) : [], m);
   }
   const $ = id => document.getElementById(id);
   $("snd").addEventListener("click", e => { const b = e.currentTarget; if (!ac) startSound(); else if (ac.state === "running") ac.suspend(); else ac.resume();
@@ -366,7 +448,41 @@ void main(){
     e.currentTarget.textContent = store(a.slice(0, 60)) ? "guardada" : "não foi possível guardar aqui"; renderArch(); });
   $("wipe").addEventListener("click", () => { try { localStorage.removeItem(KEY); } catch (e) {} renderArch(); });
 
-  renderArch(); target(); requestAnimationFrame(tick);
+  // ---------- how one wants to feel: controls ----------
+  $("feelChips").innerHTML = FEEL.map(f => `<button type="button" class="chip" data-f="${f.id}" aria-pressed="false">${f.nome}</button>`).join("");
+  const refreshDesire = () => { INT.des = desired(); if (INT.des && INT.mix > 0) target(); renderFeel(); updateSound(); };
+  $("feelChips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; const on = !INT.sel.has(b.dataset.f);
+    on ? INT.sel.add(b.dataset.f) : INT.sel.delete(b.dataset.f); b.setAttribute("aria-pressed", String(on)); refreshDesire(); });
+  let ftm; $("feelTxt").addEventListener("input", e => { INT.txt = e.target.value; clearTimeout(ftm); ftm = setTimeout(refreshDesire, 300); });
+  $("feelTxt").addEventListener("keydown", e => { if (e.key === "Enter") $("feelGo").click(); });
+  $("feelGo").addEventListener("click", () => { INT.des = desired(); if (!INT.des) { renderFeel(); return; }
+    INT.dur = +$("feelDur").value; INT.t0 = performance.now(); INT.mix = 0; INT.run = true; target(); renderFeel(); if (!ac) $("snd").click(); });
+  $("feelStop").addEventListener("click", () => { INT.run = false; INT.mix = 0; target(); renderFeel(); updateSound(); });
+  function renderFeel() {
+    const d = INT.des, trip = $("feelTrip");
+    trip.hidden = !(INT.run || INT.mix > 0);
+    $("feelBar").style.width = Math.round(INT.mix * 100) + "%";
+    $("feelPct").textContent = INT.run ? `${Math.round(INT.mix * 100)}% do caminho` : INT.mix >= 0.999 ? "chegou" : "";
+    $("feelRead").innerHTML = d ? `<dt>destino</dt><dd>${INT.names.join(", ") || "—"}</dd>` + d.slice(0, 6).map(([k, v]) => `<dt style="color:${hex(MED[k][2])}">${MED[k][0]}</dt><dd>${Math.round(hz(k))} Hz · ${Math.round(v * 100)}%</dd>`).join("")
+      : (INT.txt.trim() || INT.sel.size ? `<dd class="dim" style="grid-column:1/-1">Não reconheci um sentimento aqui. Tente palavras como calma, foco, energia, acolhimento, descanso, alegria, coragem ou desejo, com "menos" quando quiser diminuir.</dd>` : "");
+  }
+
+  // ---------- hide the menu: only the mandala ----------
+  const showBtn = $("showBtn"); let hintT;
+  const setClean = on => { document.body.classList.toggle("clean", on); showBtn.hidden = !on; $("hide").setAttribute("aria-pressed", String(on));
+    if (on) { try { document.documentElement.requestFullscreen && !document.fullscreenElement && document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {} poke(); showBtn.focus({ preventScroll: true }); }
+    else { try { document.fullscreenElement && document.exitFullscreen(); } catch (e) {} } };
+  const poke = () => { showBtn.classList.add("on"); clearTimeout(hintT); hintT = setTimeout(() => showBtn.classList.remove("on"), 2200); };
+  $("hide").addEventListener("click", () => setClean(true));
+  showBtn.addEventListener("click", () => setClean(false));
+  addEventListener("pointermove", () => { if (document.body.classList.contains("clean")) poke(); });
+  addEventListener("pointerdown", e => { if (document.body.classList.contains("clean") && e.target === MD.cv) poke(); });
+  document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && document.body.classList.contains("clean")) setClean(false); });
+  addEventListener("keydown", e => { if (e.target.closest && e.target.closest("input, textarea, select")) return;
+    if (e.key === "h" || e.key === "H") setClean(!document.body.classList.contains("clean"));
+    else if (e.key === "Escape" && document.body.classList.contains("clean")) setClean(false); });
+
+  renderArch(); target(); renderFeel(); requestAnimationFrame(tick);
 })();
 </script>
 <!--i18n--><script>
@@ -500,6 +616,17 @@ F.es.push(["buscas lidas do que você escreveu","búsquedas leídas de lo que es
 window.I18N_POS = "bottom:16px;left:16px";
 
 window.I18N_POS_NARROW = "top:10px;right:10px";
+(function () { const D = window.I18N_DICT; const add = (pt, en, es) => { D.en[pt] = en; D.es[pt] = es; };
+[["como quero me sentir","how I want to feel","cómo quiero sentirme"],
+["Escolha ou escreva. A mandala sai de como você está agora e vai, aos poucos, até o estado desejado: as cores mudam e as frequências se cruzam. É uma representação: cor e som não mudam a química do corpo. O que pode ajudar de verdade é respirar devagar junto com ela.","Choose or write. The mandala starts from how you are now and moves, little by little, to the state you want: the colours change and the frequencies cross. It is a representation: colour and sound do not change the body's chemistry. What can truly help is breathing slowly with it.","Elige o escribe. La mandala parte de cómo estás ahora y va, poco a poco, hasta el estado deseado: los colores cambian y las frecuencias se cruzan. Es una representación: el color y el sonido no cambian la química del cuerpo. Lo que puede ayudar de verdad es respirar despacio con ella."],
+["ou escreva, por exemplo: calma, menos ansiedade, diminuir o tesão","or write, for example: calm, less anxiety, lower my arousal","o escribe, por ejemplo: calma, menos ansiedad, bajar el deseo"],
+["tempo","time","tiempo"],["{#} min","{#} min","{#} min"],["ir até lá","go there","ir hasta allí"],["voltar ao agora","back to now","volver al ahora"],["destino","destination","destino"],["chegou","arrived","llegó"],["{#}% do caminho","{#}% of the way","{#}% del camino"],
+["calma","calm","calma"],["energia","energy","energía"],["foco","focus","enfoque"],["acolhimento","being held","acogida"],["descanso","rest","descanso"],["alegria","joy","alegría"],["coragem","courage","coraje"],["desejo","desire","deseo"],["alívio da dor","pain relief","alivio del dolor"],
+["Não reconheci um sentimento aqui. Tente palavras como calma, foco, energia, acolhimento, descanso, alegria, coragem ou desejo, com \"menos\" quando quiser diminuir.","I did not recognise a feeling here. Try words such as calm, focus, energy, held, rest, joy, courage or desire, with \"less\" when you want to lower something.","No reconocí un sentimiento aquí. Prueba palabras como calma, enfoque, energía, acogida, descanso, alegría, coraje o deseo, con \"menos\" cuando quieras bajar algo."],
+["esconder menu","hide menu","ocultar menú"],["mostrar menu","show menu","mostrar menú"],["prolactina","prolactin","prolactina"]
+].forEach(r => add(...r));
+const F = window.I18N_FRAG; F.en.push(["menos","less"],["desejo","desire"],["energia","energy"],["descanso","rest"],["calma","calm"]); F.es.push(["desejo","deseo"],["energia","energía"]);
+})();
 
 // Shared glossary: id → [termo, definição, term, definition, término, definición]. Each page picks the ids it uses.
 window.GLOSS = {
@@ -569,6 +696,15 @@ END: ["beta-endorfina", "Opioide produzido pelo próprio corpo. Alivia a dor e s
 ANA: ["anandamida", "Endocanabinoide produzido pelo próprio corpo. Amortece o estresse e o medo e acompanha o bem-estar.",
  "anandamide", "An endocannabinoid made by the body itself. It buffers stress and fear and accompanies wellbeing.",
  "anandamida", "Endocannabinoide producido por el propio cuerpo. Amortigua el estrés y el miedo y acompaña el bienestar."],
+PRL: ["prolactina", "Hormônio que sobe depois do orgasmo e na amamentação; ajuda a desligar o desejo sexual por um tempo.",
+ "prolactin", "A hormone that rises after orgasm and during breastfeeding; it helps switch sexual desire off for a while.",
+ "prolactina", "Hormona que sube después del orgasmo y durante la lactancia; ayuda a apagar el deseo sexual por un tiempo."],
+intencao: ["como quero me sentir", "Você escolhe ou escreve um estado (calma, foco, menos tesão). A mandala calcula a química desse estado e viaja até ela: cores e anéis mudam e o som de agora se cruza com o som do destino. É representação, não tratamento.",
+ "how I want to feel", "You choose or write a state (calm, focus, less arousal). The mandala works out that state's chemistry and travels to it: colours and rings change and the sound of now crosses into the sound of the destination. It is a representation, not a treatment.",
+ "cómo quiero sentirme", "Eliges o escribes un estado (calma, enfoque, menos deseo). La mandala calcula la química de ese estado y viaja hasta ella: colores y anillos cambian y el sonido de ahora se cruza con el sonido del destino. Es representación, no tratamiento."],
+cruz: ["cruzamento de frequências", "Duas camadas de som tocam juntas: as frequências de como você está e as do estado desejado. Enquanto uma some, a outra cresce.",
+ "frequency crossing", "Two layers of sound play together: the frequencies of how you are and those of the desired state. As one fades, the other grows.",
+ "cruce de frecuencias", "Dos capas de sonido suenan juntas: las frecuencias de cómo estás y las del estado deseado. Mientras una se apaga, la otra crece."],
 // concepts
 carga: ["carga alostática", "O desgaste que o corpo acumula quando precisa se adaptar ao estresse por muito tempo. Conceito de Bruce McEwen.",
  "allostatic load", "The wear the body builds up when it has to adapt to stress for a long time. A concept by Bruce McEwen.",
@@ -802,13 +938,17 @@ const T = [
  "Each theme pulls on substances in the body linked to it: fear pulls noradrenaline and cortisol; bond, oxytocin; calm, GABA; desire, dopamine. They decide the mandala.",
  "Cada tema activa sustancias del cuerpo ligadas a él: el miedo activa noradrenalina y cortisol; el vínculo, oxitocina; la calma, GABA; el deseo, dopamina. Ellas deciden la mandala."],
 ["anéis, pétalas e eixos", "rings, petals and axes", "anillos, pétalos y ejes"],
-["Cada anel é um neurotransmissor, com a cor dele e o som na frequência tirada da massa molecular. Quanto mais pesa, mais forte o anel; as pétalas dependem da frequência e dos eixos. O número de eixos de simetria vem da variedade de temas.",
- "Each ring is a neurotransmitter, in its colour and sounding at the frequency taken from its molecular mass. The more it weighs, the stronger the ring; the petals depend on the frequency and the axes. The number of symmetry axes comes from the variety of themes.",
- "Cada anillo es un neurotransmisor, con su color y su sonido en la frecuencia sacada de la masa molecular. Cuanto más pesa, más fuerte el anillo; los pétalos dependen de la frecuencia y de los ejes. El número de ejes de simetría viene de la variedad de temas."],
+["Cada anel (até 8) é um neurotransmissor, com a cor dele e o som na frequência tirada da massa molecular. Quanto mais pesa, mais forte o anel; as pétalas dependem da frequência e dos eixos. O número de eixos de simetria vem da variedade de temas.",
+ "Each ring (up to 8) is a neurotransmitter, in its colour and sounding at the frequency taken from its molecular mass. The more it weighs, the stronger the ring; the petals depend on the frequency and the axes. The number of symmetry axes comes from the variety of themes.",
+ "Cada anillo (hasta 8) es un neurotransmisor, con su color y su sonido en la frecuencia sacada de la masa molecular. Cuanto más pesa, más fuerte el anillo; los pétalos dependen de la frecuencia y de los ejes. El número de ejes de simetría viene de la variedad de temas."],
 ["de madrugada", "late at night", "de madrugada"],
 ["Quando o arquivo tem horário, a parte das buscas feitas entre 0 h e 5 h puxa noradrenalina e baixa a melatonina, porque buscar de madrugada aparece junto com ansiedade e depressão nos estudos.",
  "When the file has times, the share of searches made between midnight and 5 am pulls noradrenaline up and melatonin down, because late-night searching shows up alongside anxiety and depression in the studies.",
  "Cuando el archivo tiene horario, la parte de búsquedas hechas entre las 0 h y las 5 h sube la noradrenalina y baja la melatonina, porque buscar de madrugada aparece junto a la ansiedad y la depresión en los estudios."],
+["como quero me sentir", "how I want to feel", "cómo quiero sentirme"],
+["Escolha ou escreva um estado, como calma, foco ou menos tesão, e o tempo da viagem. A mandala vai do seu estado de agora até esse, e o som de agora se cruza com o do destino. Esconder menu deixa só a mandala na tela (tecla H; Esc volta).",
+ "Choose or write a state, such as calm, focus or less arousal, and the length of the journey. The mandala moves from your current state to that one, and the sound of now crosses into the sound of the destination. Hide menu leaves only the mandala on screen (H key; Esc brings it back).",
+ "Elige o escribe un estado, como calma, enfoque o menos deseo, y el tiempo del viaje. La mandala va de tu estado de ahora hasta ese, y el sonido de ahora se cruza con el del destino. Ocultar menú deja solo la mandala en pantalla (tecla H; Esc vuelve)."],
 ["ouvir e modular", "listen and modulate", "escuchar y modular"],
 ["Ouvir liga o som contínuo da mandala. Modular faz a mandala respirar devagar com você, e em cerca de três minutos a carga cai e o cuidado cresce na forma e no som.",
  "Listen turns on the mandala's continuous sound. Modulate makes the mandala breathe slowly with you, and over about three minutes the load falls and care grows in form and sound.",
@@ -833,7 +973,7 @@ D.en[FOOT[0]] = FOOT[1]; D.es[FOOT[0]] = FOOT[2];
 const partes = [];
 for (let i = 2; i < T.length; i += 2) partes.push([T[i][0], T[i + 1][0]]);
 const P = window.GLOSS["_partes"]; D.en[P[0]] = P[2]; D.es[P[0]] = P[4];
-window.GUIDE = { titulo: T[0][0], intro: T[1][0], rodape: FOOT[0], groups: [{ nome: P[0], items: partes }].concat(window.GLOSS_USE([["_md", ["takeout","tema","anel","petala","eixo","madru","modular"]], ["_med", ["ADR","NOR","COR","GLU","IL6","SER","DOP","GABA","MEL","GRE","OXT"]], ["_conc", ["neuro","horm","hpa","circ"]], ["_som", ["massa","hz","oitava"]]])) };
+window.GUIDE = { titulo: T[0][0], intro: T[1][0], rodape: FOOT[0], groups: [{ nome: P[0], items: partes }].concat(window.GLOSS_USE([["_md", ["takeout","tema","anel","petala","eixo","madru","modular","intencao","cruz"]], ["_med", ["ADR","NOR","COR","CRH","GLU","IL6","SUBP","HIS","ACH","SER","DOP","GABA","MEL","GRE","OXT","AVP","END","ANA","PRL"]], ["_conc", ["neuro","horm","hpa","circ"]], ["_som", ["massa","hz","oitava"]]])) };
 })();
 
 // Three languages without touching the page's own code: every Portuguese text node (and placeholder, aria-label,
