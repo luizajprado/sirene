@@ -1,0 +1,19 @@
+[
+  {"nome": "Planalto Tibetano, China", "lat": 32.4, "lon": 93.8, "db": 45, "iso3": "CHN"},
+  {"nome": "Norte da Austrália", "lat": -19.5, "lon": 128.5, "db": 45, "iso3": "AUS"},
+  {"nome": "Okavango, Botsuana", "lat": -20.5, "lon": 24.8, "db": 45, "iso3": "BWA"},
+  {"nome": "Sudão do Sul", "lat": 9.7, "lon": 26.0, "db": 50, "iso3": "SSD"},
+  {"nome": "Costa do Pacífico, México", "lat": 17.0, "lon": -100.5, "db": 60, "iso3": "MEX"},
+  {"nome": "Vanuatu", "lat": -15.4, "lon": 167.0, "db": 50, "iso3": "VUT"},
+  {"nome": "Nova Escócia, Canadá", "lat": 44.6, "lon": -63.6, "db": 58, "iso3": "CAN"},
+  {"nome": "São Paulo", "lat": -23.55, "lon": -46.63, "db": 72, "iso3": "BRA"},
+  {"nome": "Nova Délhi", "lat": 28.61, "lon": 77.21, "db": 80, "iso3": "IND"},
+  {"nome": "Lagos", "lat": 6.52, "lon": 3.38, "db": 78, "iso3": "NGA"},
+  {"nome": "Cairo", "lat": 30.04, "lon": 31.24, "db": 79, "iso3": "EGY"},
+  {"nome": "Jacarta", "lat": -6.21, "lon": 106.85, "db": 75, "iso3": "IDN"},
+  {"nome": "Cidade do México", "lat": 19.43, "lon": -99.13, "db": 73, "iso3": "MEX"},
+  {"nome": "Madri", "lat": 40.42, "lon": -3.7, "db": 66, "iso3": "ESP"},
+  {"nome": "Daca", "lat": 23.81, "lon": 90.41, "db": 82, "iso3": "BGD"},
+  {"nome": "Pequim", "lat": 39.9, "lon": 116.4, "db": 70, "iso3": "CHN"},
+  {"nome": "Tromsø", "lat": 69.65, "lon": 18.96, "db": 52, "iso3": "NOR"}
+]

@@ -1,0 +1,1797 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<title>Sirene</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>html,body{margin:0}[hidden]{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,100..800&display=swap">
+<style>
+/* Layout: a lab instrument. Fixed nav rail with keyboard shortcuts, one working view at a time, a status bar of live counters. Dark by design. */
+:root {
+  --bg: #070609;
+  --panel: #0E0D12;
+  --fg: #EDE7DC;
+  --dim: #8F8980;
+  --line: #26242C;
+  --red: #FF3B26;
+  --blue: #5A80FF;
+  --mono: "Martian Mono", "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+html, body { background: var(--bg); color: var(--fg); height: 100%; }
+body { font-family: var(--mono); font-size: 12px; line-height: 1.55; }
+button { font: inherit; color: inherit; }
+.app {
+  display: grid; grid-template-columns: 220px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; min-height: 100%;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px 0; column-gap: 24px;
+}
+nav { display: flex; flex-direction: column; gap: 18px; border-right: 1px solid var(--line); padding-right: 18px; position: sticky; top: 16px; align-self: start; }
+.brand { display: flex; flex-direction: column; gap: 4px; }
+.brand b { font-weight: 800; font-stretch: 75%; font-size: 22px; line-height: 1; letter-spacing: -0.01em; }
+.brand span { color: var(--dim); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+.tabs { display: flex; flex-direction: column; gap: 2px; }
+.tabs button { display: flex; justify-content: space-between; gap: 10px; text-align: left; background: none; border: 1px solid transparent; padding: 9px 10px; min-height: 44px; cursor: pointer; color: var(--dim); }
+.tabs button kbd { font: inherit; font-size: 10px; border: 1px solid var(--line); padding: 0 5px; color: var(--dim); align-self: center; }
+.tabs button:hover { color: var(--fg); }
+.tabs button[aria-current="page"] { color: var(--fg); border-color: var(--line); background: var(--panel); }
+.tabs button:focus-visible, .chip:focus-visible, .btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.navnote { color: var(--dim); font-size: 10px; line-height: 1.6; }
+main { min-width: 0; padding-bottom: 24px; }
+.view { display: flex; flex-direction: column; gap: 16px; }
+.vhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 10px 24px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+.vhead h2 { margin: 0; font-weight: 800; font-stretch: 75%; font-size: clamp(24px, 3vw, 38px); line-height: 1; text-wrap: balance; }
+.vhead p { margin: 0; color: var(--dim); max-width: 62ch; }
+.clock { font-weight: 100; font-stretch: 75%; font-size: clamp(30px, 5vw, 72px); line-height: 0.9; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+.panel { background: var(--panel); border: 1px solid var(--line); padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.panel h3 { margin: 0; font-size: 10px; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); }
+.kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 12px; margin: 0; font-variant-numeric: tabular-nums; }
+.kv dt { color: var(--dim); }
+.kv dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.stage { position: relative; width: 100%; max-width: 100%; aspect-ratio: 2 / 1; border: 1px solid var(--line); cursor: crosshair; touch-action: manipulation; }
+.square { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / 1; border: 1px solid var(--line); background: #000; }
+.stage canvas, .square canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.log { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; font-variant-numeric: tabular-nums; min-height: 9em; }
+.log li { color: var(--dim); white-space: pre-wrap; overflow-wrap: anywhere; }
+.log li:first-child { color: var(--fg); }
+.r { color: var(--red); } .b { color: var(--blue); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { background: none; border: 1px solid var(--line); padding: 8px 10px; min-height: 44px; cursor: pointer; color: var(--dim); text-align: left; }
+.chip[aria-pressed="true"] { color: var(--fg); border-color: var(--fg); }
+.chip i { font-style: normal; }
+.btn { background: none; border: 1px solid var(--line); padding: 10px 12px; min-height: 44px; cursor: pointer; }
+.btn:hover { border-color: var(--fg); }
+.btn[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.strip figure { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.strip canvas { width: 100%; aspect-ratio: 1 / 1; border: 1px solid var(--line); background: #000; display: block; }
+.strip figcaption { color: var(--dim); font-size: 10px; font-variant-numeric: tabular-nums; }
+.spark { width: 100%; height: 48px; display: block; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+.gallery figure { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.gallery canvas { width: 100%; aspect-ratio: 1 / 1; display: block; border: 1px solid var(--line); background: #000; }
+.gallery figcaption { font-size: 10px; color: var(--dim); overflow-wrap: anywhere; line-height: 1.35; }
+.chiphead { width: 100%; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-top: 4px; }
+.chain { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0; }
+.chain li { border: 1px solid var(--line); padding: 8px 10px; }
+.chain li + li { border-top: 0; position: relative; }
+.chain li + li::before { content: "↓"; position: absolute; left: 10px; top: -9px; background: var(--panel); padding: 0 4px; color: var(--dim); font-size: 10px; }
+.scope { width: 100%; height: 120px; display: block; border: 1px solid var(--line); background: #000; }
+pre.eq { margin: 0; white-space: pre-wrap; font: inherit; font-size: clamp(14px, 1.6vw, 20px); line-height: 1.6; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+.prose { max-width: 70ch; color: var(--fg); display: flex; flex-direction: column; gap: 10px; }
+.prose p { margin: 0; }
+.dim { color: var(--dim); }
+.status {
+  grid-column: 1 / -1; position: sticky; bottom: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line); background: var(--bg); color: var(--dim); font-size: 10px; font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
+}
+.status b { color: var(--fg); font-weight: 400; }
+@media (max-width: 980px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  nav { position: static; border-right: 0; border-bottom: 1px solid var(--line); padding: 0 0 12px; margin-bottom: 14px; }
+  .tabs { flex-direction: row; flex-wrap: wrap; }
+  .tabs button { flex: 1 1 40%; }
+  .navnote { display: none; }
+  .strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <nav aria-label="Seções">
+    <div class="brand"><b>Sirene</b><span>O que é a loucura? · laboratório</span></div>
+    <div class="tabs" role="tablist">
+      <button type="button" data-v="agora"><span>agora</span><kbd>1</kbd></button>
+      <button type="button" data-v="figuras"><span>figuras</span><kbd>2</kbd></button>
+      <button type="button" data-v="mapa"><span>reprise 72 h</span><kbd>3</kbd></button>
+      <button type="button" data-v="retratos"><span>retratos</span><kbd>4</kbd></button>
+      <button type="button" data-v="som"><span>imagem → som</span><kbd>5</kbd></button>
+      <button type="button" data-v="metodo"><span>método</span><kbd>6</kbd></button>
+    </div>
+    <div class="navnote">Tudo aqui é calculado ao vivo no seu navegador, a partir de 26 alertas reais do GDACS (20 a 22/10/2026). Teclas 1 a 6 trocam de seção. Espaço liga e desliga o som.</div>
+  </nav>
+
+  <main>
+    <!-- AGORA -->
+    <section class="view" data-view="agora">
+      <div class="vhead">
+        <div><h2>Agora</h2><p>Um único organismo que nunca recomeça. Ele roda no relógio real, guarda a memória de cada alerta, acumula carga quando os eventos se sobrepõem e desacelera no lado do planeta onde é noite.</p></div>
+        <div class="clock" id="aClock">--:--:--</div>
+      </div>
+      <div class="grid2">
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="stage" id="aStage" role="img" aria-label="Organismo contínuo sobre o mapa do mundo, com a faixa da noite em violeta"><canvas id="aCv"></canvas></div>
+          <ol class="log" id="aLog"><li>sincronizando a memória desde 20.10…</li></ol>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="panel">
+            <h3>carga alostática do planeta</h3>
+            <div style="font-weight:100;font-stretch:75%;font-size:48px;line-height:1;font-variant-numeric:tabular-nums" id="aLoad">0,00</div>
+            <canvas class="spark" id="aSpark" width="560" height="96" aria-label="Carga ao longo do tempo"></canvas>
+            <dl class="kv">
+              <dt>estado</dt><dd id="aState">sincronizando</dd>
+              <dt>alertas ativos</dt><dd id="aActive">0</dd>
+              <dt>cicatrizes</dt><dd id="aScars">0</dd>
+              <dt>noite</dt><dd id="aNight">0%</dd>
+              <dt>corpos</dt><dd id="aBodies">0</dd>
+            </dl>
+          </div>
+          <div class="panel">
+            <h3>som contínuo</h3>
+            <div class="row"><button type="button" class="btn" id="aSound" aria-pressed="false">ligar som</button></div>
+            <div class="dim">Um drone acompanha a carga. Rajadas vêm do ruído das cidades; sirenes, dos alertas vermelhos.</div>
+          </div>
+          <div class="panel">
+            <h3>como ele muda</h3>
+            <dl class="kv">
+              <dt>alerta novo</dt><dd>cresce por 24 h</dd>
+              <dt>memória</dt><dd>enfraquece em ~3 dias</dd>
+              <dt>cicatriz</dt><dd>marca que nunca some</dd>
+              <dt>sobreposição</dt><dd>vira labirinto (carga)</dd>
+              <dt>noite</dt><dd>crescimento mais lento</dd>
+              <dt>cidades</dt><dd>calor varia com a hora local</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>arquivo · uma fotografia por minuto (na versão final, uma por hora)</h3>
+        <div class="gallery" id="aArchive"><div class="dim" id="aArchEmpty">A primeira fotografia aparece depois do primeiro minuto.</div></div>
+      </div>
+    </section>
+
+    <!-- FIGURAS -->
+    <section class="view" data-view="figuras" hidden>
+      <div class="vhead">
+        <div><h2>Figuras</h2><p>Cada figura é um lugar do mundo. Ela junta tudo o que pode pesar na saúde mental de quem vive ali (desastres próximos, calor, ar, ruído, luz, conflito) e se transforma sem parar, passando de um lugar ao próximo sem recomeçar. Dois motores: nebulosa e rede.</p></div>
+        <div class="row">
+          <button type="button" class="btn" id="gModeNeb" aria-pressed="true">nebulosa</button>
+          <button type="button" class="btn" id="gModeNet" aria-pressed="false">rede</button>
+          <button type="button" class="btn" id="gAuto" aria-pressed="true">automático: ligado</button>
+          <button type="button" class="btn psndBtn" aria-pressed="false">som do lugar: desligado</button>
+        </div>
+      </div>
+      <div class="psndMon panel" hidden style="display:flex;flex-direction:column;gap:6px"></div>
+      <div class="grid2">
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="square"><canvas id="gCv" width="720" height="720" aria-label="Figura gerada continuamente a partir dos dados" hidden></canvas><canvas id="gGl" aria-label="Nebulosa gerada continuamente a partir dos dados"></canvas></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="panel">
+            <h3>fonte agora</h3>
+            <div style="font-weight:800;font-stretch:75%;font-size:22px;line-height:1.1" id="gSrc">—</div>
+            <div class="dim" id="gNext">—</div>
+          </div>
+          <div class="panel">
+            <h3>o que pesa neste lugar · e como vira figura</h3>
+            <dl class="kv" id="gParams"></dl>
+            <dl class="kv" id="gNebRows"></dl>
+          </div>
+          <div class="panel">
+            <h3>lugares</h3>
+            <div class="chips" id="gChips" role="group" aria-label="Fontes"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>arquivo · uma fotografia a cada 30 s · <span id="gCount">0</span></h3>
+        <div class="gallery" id="gArchive"><div class="dim" id="gArchEmpty">As fotografias aparecem aqui enquanto a figura se transforma.</div></div>
+      </div>
+    </section>
+
+    <!-- MAPA -->
+    <section class="view" data-view="mapa" hidden>
+      <div class="vhead">
+        <div><h2>Reprise 72 h</h2><p>Os alertas entram no mapa na ordem em que aconteceram. Cada um abre uma zona onde o organismo pode crescer. Toque no mapa para inserir um corpo.</p></div>
+        <div class="clock" id="mClock">20.10 00:00</div>
+      </div>
+      <div class="grid2">
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="stage" id="mStage" role="img" aria-label="Mapa do mundo em pontos com o organismo crescendo nas posições dos alertas"><canvas id="mCv"></canvas></div>
+          <ol class="log" id="mLog"><li>aguardando o primeiro alerta…</li></ol>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="panel">
+            <h3>leitura</h3>
+            <dl class="kv">
+              <dt>alertas</dt><dd id="mFired">0 / 26</dd>
+              <dt><span style="color:#EC2034">massa terremoto</span></dt><dd id="mMassE">0</dd>
+              <dt><span style="color:#FF7422">massa incêndio</span></dt><dd id="mMassW">0</dd>
+              <dt><span style="color:#507CFF">massa tempestade</span></dt><dd id="mMassT">0</dd>
+              <dt>corpos</dt><dd id="mBodies">0</dd>
+              <dt>grade</dt><dd>320 × 160 · 1 célula ≈ 1,1°</dd>
+            </dl>
+            <canvas class="spark" id="mSpark" width="560" height="96" aria-label="Massa do organismo ao longo do tempo"></canvas>
+          </div>
+          <div class="panel">
+            <h3>controle</h3>
+            <div class="row">
+              <button type="button" class="btn" id="mSpeed">velocidade 1×</button>
+              <button type="button" class="btn" id="mRestart">recomeçar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RETRATOS -->
+    <section class="view" data-view="retratos" hidden>
+      <div class="vhead">
+        <div><h2>Retratos</h2><p>Cada retrato é um lugar do mundo como tinta na água: os fatores que mais pesam ali soltam cor, que se espalha, se mistura e vai se dissipando. Na troca de lugar, a imagem anterior se desfaz enquanto a nova nasce. No modo automático, a máquina passa de um lugar a outro e guarda fotografias no mural abaixo.</p></div>
+        <button type="button" class="btn" id="pAuto" aria-pressed="true">automático: ligado</button>
+      </div>
+      <div class="chips" id="pChips" role="group" aria-label="Fontes"></div>
+      <div class="grid2">
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="square"><canvas id="pCv" width="720" height="720" aria-label="Retrato do evento sendo gerado"></canvas></div>
+          <div class="strip" id="pStrip"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="panel">
+            <h3>entrada (dado real)</h3>
+            <dl class="kv" id="pIn"></dl>
+          </div>
+          <div class="panel">
+            <h3>tradução em parâmetros</h3>
+            <dl class="kv" id="pParams"></dl>
+          </div>
+          <div class="panel">
+            <h3>processo</h3>
+            <dl class="kv">
+              <dt>passo</dt><dd id="pStep">0</dd>
+              <dt>cobertura</dt><dd id="pCover">0%</dd>
+              <dt>estado</dt><dd id="pState">crescendo</dd>
+            </dl>
+            <div class="row"><button type="button" class="btn" id="pAgain">gerar de novo</button><button type="button" class="btn" id="pToSound">ouvir este retrato</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>mural · gerados nesta sessão <span id="pCount">0</span></h3>
+        <div class="gallery" id="pGallery"><div class="dim" id="pEmpty">Os retratos concluídos aparecem aqui.</div></div>
+      </div>
+    </section>
+
+    <!-- SOM -->
+    <section class="view" data-view="som" hidden>
+      <div class="vhead">
+        <div><h2>Imagem → som</h2><p>Dois caminhos: cada tipo de alerta tem um som sintetizado, e cada retrato pode ser lido como uma partitura. Uma linha percorre a imagem; cada faixa de altura vira uma frequência, e a quantidade de organismo vira volume.</p></div>
+      </div>
+      <div class="chips" id="sChips" role="group" aria-label="Eventos"></div>
+      <div class="grid2">
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div class="square"><canvas id="sCv" width="720" height="720" aria-label="Retrato com a linha de leitura sonora"></canvas></div><span class="dim">retrato lido como partitura</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div class="square"><canvas id="sCym" aria-label="Figura de Chladni gerada pelas frequências do lugar"></canvas></div><span class="dim">cimática · figuras de Chladni das frequências</span></div>
+          </div>
+          <canvas class="scope" id="sScope" width="480" height="84" style="height:auto;aspect-ratio:480/84;max-width:340px;border:0" aria-label="Partitura do lugar: uma onda por fator, com sua frequência e seu peso"></canvas>
+          <div class="dim" style="font-size:10px">onda larga = grave · apertada = agudo · altura = peso</div>
+          <canvas class="scope" id="sSpec" width="1200" height="300" style="height:auto;aspect-ratio:1200/300" aria-label="Cascata espectral"></canvas>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="panel">
+            <h3>tocar</h3>
+            <div class="row">
+              <button type="button" class="btn" id="sSonify" aria-pressed="false">ler retrato como som</button>
+              <button type="button" class="btn psndBtn" aria-pressed="false">som do lugar: desligado</button>
+            </div>
+            <div class="psndMon" hidden style="display:flex;flex-direction:column;gap:6px"></div>
+            <div class="dim">O som do lugar é contínuo: segue o lugar da tela e muda junto com os dados, e só para quando você desligar. Volume limitado por compressor.</div>
+          </div>
+          <div class="panel">
+            <h3>leitura do retrato</h3>
+            <ol class="chain">
+              <li>coluna x da imagem (varre em 12 s)</li>
+              <li>32 faixas de altura → 32 senoides, 110 a 1760 Hz</li>
+              <li>quantidade de organismo na faixa → volume</li>
+              <li>soma → compressor → saída</li>
+            </ol>
+          </div>
+          <div class="panel">
+            <h3>cimática · frequência → modo de vibração</h3>
+            <dl class="kv" id="sCymInfo"></dl>
+            <div class="dim">Numa placa vibrando, a areia se junta onde ela não se move. Cada frequência do lugar vira um modo (n, m) e desenha suas linhas; os modos se somam.</div>
+          </div>
+          <div class="panel">
+            <h3>síntese do lugar · Hz calculados</h3>
+            <ol class="chain" id="sChain"></ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- METODO -->
+    <section class="view" data-view="metodo" hidden>
+      <div class="vhead">
+        <div><h2>Método</h2><p>O modelo, as regras de tradução e os dados brutos.</p></div>
+      </div>
+      <div class="grid2">
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+          <div class="panel">
+            <h3>modelo de Gray-Scott (reação-difusão, 1993)</h3>
+<pre class="eq">∂u/∂t = Du ∇²u − u·v² + F·(1 − u)
+∂v/∂t = Dv ∇²v + u·v² − (F + k)·v</pre>
+            <div class="prose dim">
+              <p>Duas substâncias se espalham e reagem. u é o alimento, v é o organismo. F controla quanto alimento entra; k controla quanto organismo se perde. Pequenas mudanças em F e k produzem células, vermes, labirintos ou corais, como na formação de manchas em tecidos vivos descrita por Alan Turing em 1952.</p>
+              <p>Aqui: Du = 1,0 · Dv = 0,5 · Δt = 1 · laplaciano 3×3 (0,2 nos lados, 0,05 nas diagonais).</p>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>dados brutos · GDACS · 26 alertas</h3>
+            <div class="tablewrap"><table id="tData"><thead><tr><th>data UTC</th><th>tipo</th><th>nível</th><th>local</th><th>lat</th><th>lon</th><th>valor</th><th>zona</th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="panel">
+            <h3>regras de tradução</h3>
+            <dl class="kv">
+              <dt>cor</dt><dd><span class="r">EQ, WF</span> · <span class="b">TC</span></dd>
+              <dt>intensidade EQ</dt><dd>(M − 5) / 2,5</dd>
+              <dt>intensidade WF</dt><dd>√ha / 170</dd>
+              <dt>intensidade TC</dt><dd>vento / 200</dd>
+              <dt>alerta vermelho</dt><dd>F 0,029 · k 0,057</dd>
+              <dt>tempestade</dt><dd>F 0,0545 · k 0,062</dd>
+              <dt>demais</dt><dd>F 0,0367 − 0,006·i</dd>
+              <dt></dt><dd>k 0,0649 − 0,004·i</dd>
+              <dt>sementes</dt><dd>30 + 300·i</dd>
+              <dt>raio do retrato</dt><dd>22% + 30%·i</dd>
+              <dt>passos</dt><dd>2200 + 2600·i</dd>
+              <dt>zona no mapa</dt><dd>cresce com √(idade / 24 h)</dd>
+            </dl>
+          </div>
+          <div class="panel">
+            <h3>química · mediador → cor e som</h3>
+            <dl class="kv" id="mChem"></dl>
+            <div class="dim">O som de cada mediador vem da sua massa molecular, levada por oitavas até a faixa audível (massa em g/mol = Hz, dividida ou multiplicada por 2). As correspondências entre fatores e mediadores simplificam a literatura de psicobiologia do estresse: descrevem tendências em populações, nunca a medida do corpo de alguém.</div>
+          </div>
+          <div class="panel">
+            <h3>fator → mediadores</h3>
+            <dl class="kv" id="mFmed"></dl>
+          </div>
+          <div class="panel">
+            <h3>ambiente e psicobiologia</h3>
+            <dl class="kv">
+              <dt>calor</dt><dd>sono e regulação térmica · células em divisão</dd>
+              <dt>ar (PM2,5)</dt><dd>neuroinflamação · labirinto</dd>
+              <dt>guerra</dt><dd>trauma e deslocamento · labirinto denso com rajadas</dd>
+              <dt>ruído</dt><dd>cortisol e alerta · rajadas que reiniciam o crescimento</dd>
+              <dt>luz do dia</dt><dd>ritmo circadiano · o organismo pulsa</dd>
+            </dl>
+            <div class="dim">Luz do dia: calculada pela latitude e pela data de hoje. Temperatura, PM2,5, ruído e conflitos: valores de exemplo até a conexão com Open-Meteo, mapas de ruído e UCDP (que exige chave de acesso).</div>
+          </div>
+          <div class="panel">
+            <h3>fonte</h3>
+            <div class="dim"><span id="fonteData">GDACS, Global Disaster Alert and Coordination System (ONU e Comissão Europeia). Lido em 24/10/2026, 02:00 UTC.</span> Mapa esquemático. <a href="https://www.gdacs.org" target="_blank" rel="noopener" style="color: var(--fg)">gdacs.org</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="status" id="status">
+    <span>vista <b id="stView">mapa</b></span>
+    <span>passos <b id="stSteps">0</b></span>
+    <span>fps <b id="stFps">0</b></span>
+    <span>som <b id="stAudio">desligado</b></span>
+    <span>fonte <b>GDACS · 24.10.2026</b></span>
+    <span>Luiza Jesus do Prado, 2026</span>
+  </div>
+</div>
+
+<script src="dados.js"></script>
+<script>
+(() => {
+  // ================= data =================
+  const LIVE = window.SIRENE_DATA || null;
+  const RAW = (LIVE && LIVE.alertas && LIVE.alertas.length) ? LIVE.alertas : [
+    ["2026-10-22T14:33Z","EQ","Red","China",32.38,93.78,7.0],
+    ["2026-10-22T00:00Z","WF","Green","Austrália",-18.07,133.03,5034],
+    ["2026-10-22T00:00Z","WF","Green","China",49.02,116.58,7370],
+    ["2026-10-21T21:00Z","TC","Green","EUA, Canadá, Saint-Pierre",40.0,-65.8,120],
+    ["2026-10-21T15:00Z","TC","Green","México",10.5,-101.9,194],
+    ["2026-10-21T00:00Z","WF","Green","Botsuana",-22.52,24.80,7463],
+    ["2026-10-21T00:00Z","WF","Green","Austrália",-21.14,125.55,6666],
+    ["2026-10-21T00:00Z","WF","Green","Austrália",-20.65,136.50,6351],
+    ["2026-10-21T00:00Z","WF","Green","Austrália",-18.98,131.45,6912],
+    ["2026-10-21T00:00Z","WF","Green","Austrália",-18.60,123.71,12657],
+    ["2026-10-21T00:00Z","WF","Green","Austrália",-20.77,136.58,26776],
+    ["2026-10-20T04:20Z","EQ","Green","Vanuatu",-13.99,165.59,6.3],
+    ["2026-10-20T00:00Z","WF","Green","Austrália",-19.61,122.61,6383],
+    ["2026-10-20T00:00Z","WF","Green","Sudão do Sul, Sudão",9.69,26.18,5118],
+    ["2026-10-20T00:00Z","WF","Green","Austrália",-22.18,123.44,11187],
+    ["2026-10-20T00:00Z","WF","Green","Austrália",-20.38,123.02,9891],
+    ["2026-10-20T00:00Z","WF","Green","Botsuana",-20.09,23.76,19584],
+    ["2026-10-20T00:00Z","WF","Green","Austrália",-21.22,125.46,8327],
+    ["2026-10-20T00:00Z","WF","Green","Botsuana",-19.83,25.97,6974],
+    ["2026-10-20T00:00Z","WF","Green","Sudão do Sul",9.74,25.79,7938],
+    ["2026-10-20T00:00Z","WF","Green","Austrália",-20.79,129.33,8003],
+    ["2026-10-20T00:00Z","WF","Green","Austrália",-16.90,132.94,24623],
+    ["2026-10-20T00:00Z","WF","Green","Austrália",-21.60,122.32,17294],
+    ["2026-10-20T00:00Z","WF","Green","Austrália",-23.34,122.35,14739],
+    ["2026-10-20T00:00Z","WF","Green","Austrália",-21.92,123.41,20792],
+    ["2026-10-20T00:00Z","WF","Green","Austrália",-17.87,125.03,5225],
+  ];
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const TYPE = { EQ: "terremoto", WF: "incêndio", TC: "tempestade" };
+  const EV = RAW.map(([ts, type, level, country, lat, lon, v, label]) => {
+    let deg = type === "EQ" ? (v - 5) * 6 : type === "WF" ? Math.sqrt(v) / 18 : v / 18;
+    if (level === "Red") deg *= 1.6;
+    deg = Math.max(4, deg * 1.8);
+    const inten = type === "EQ" ? clamp((v - 5) / 2.5, 0, 1) : type === "WF" ? clamp(Math.sqrt(v) / 170, 0, 1) : clamp(v / 200, 0, 1);
+    return { t: Date.parse(ts), ts, type, level, country, lat, lon, v, deg, inten, red: type !== "TC", label: label || null };
+  }).sort((a, b) => a.t - b.t);
+  function regime(e) {
+    if (e.level === "Red") return { F: 0.029, K: 0.057, name: "labirinto" };
+    if (e.type === "TC") return { F: 0.0545, K: 0.062, name: "coral" };
+    const i = e.inten; return { F: 0.0367 - 0.006 * i, K: 0.0649 - 0.004 * i, name: i > 0.5 ? "vermes" : "células" };
+  }
+  const valueText = e => e.label ? e.label : e.type === "EQ" ? `M ${e.v.toFixed(1).replace(".", ",")}` : e.type === "WF" ? `${e.v.toLocaleString("pt-BR")} ha` : `${e.v} km/h`;
+  const pad = n => String(n).padStart(2, "0");
+  const fmt = t => { const d = new Date(t); return `${pad(d.getUTCDate())}.${pad(d.getUTCMonth() + 1)} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`; };
+  const KEY = [
+    EV.find(e => e.level === "Red"),
+    EV.find(e => e.country === "México"),
+    EV.find(e => e.v === 26776),
+    EV.find(e => e.v === 19584),
+    EV.find(e => e.country === "Vanuatu"),
+    EV.find(e => e.country.startsWith("EUA")),
+  ];
+
+  // ================= simulation engine =================
+  function createSim(W, H) {
+    const N = W * H;
+    return { W, H, N, U: new Float32Array(N).fill(1), V: new Float32Array(N), U2: new Float32Array(N), V2: new Float32Array(N), F: new Float32Array(N).fill(0.02), K: new Float32Array(N).fill(0.075), steps: 0 };
+  }
+  function step(s) {
+    const { W, H, U, V, U2, V2, F, K } = s;
+    for (let y = 0; y < H; y++) {
+      const ym = (y === 0 ? H - 1 : y - 1) * W, yp = (y === H - 1 ? 0 : y + 1) * W, yc = y * W;
+      for (let x = 0; x < W; x++) {
+        const xm = x === 0 ? W - 1 : x - 1, xp = x === W - 1 ? 0 : x + 1, i = yc + x, u = U[i], v = V[i];
+        const lu = (U[yc+xm] + U[yc+xp] + U[ym+x] + U[yp+x]) * 0.2 + (U[ym+xm] + U[ym+xp] + U[yp+xm] + U[yp+xp]) * 0.05 - u;
+        const lv = (V[yc+xm] + V[yc+xp] + V[ym+x] + V[yp+x]) * 0.2 + (V[ym+xm] + V[ym+xp] + V[yp+xm] + V[yp+xp]) * 0.05 - v;
+        const uvv = u * v * v;
+        U2[i] = u + lu - uvv + F[i] * (1 - u);
+        V2[i] = v + 0.5 * lv + uvv - (F[i] + K[i]) * v;
+      }
+    }
+    s.U = U2; s.U2 = U; s.V = V2; s.V2 = V; s.steps++; totalSteps++;
+  }
+  function seed(s, cx, cy, r, keep = 0.65) {
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+      if (dx * dx + dy * dy > r * r || Math.random() > keep) continue;
+      const y = cy + dy; if (y < 0 || y >= s.H) continue;
+      const i = y * s.W + ((cx + dx) % s.W + s.W) % s.W;
+      s.U[i] = 0.5; s.V[i] = 0.25 + Math.random() * 0.1;
+    }
+  }
+  function paintZone(s, cx, cy, r, f, k) {
+    const r2 = r * r, ri = Math.ceil(r);
+    for (let dy = -ri; dy <= ri; dy++) {
+      const y = cy + dy; if (y < 0 || y >= s.H) continue;
+      for (let dx = -ri; dx <= ri; dx++) { if (dx * dx + dy * dy > r2) continue; const i = y * s.W + ((cx + dx) % s.W + s.W) % s.W; s.F[i] = f; s.K[i] = k; }
+    }
+  }
+  function mass(s) { let m = 0; const V = s.V; for (let i = 0; i < s.N; i += 4) m += V[i]; return m * 4; }
+  // tones by psychobiological factor
+  const COL = { EQ: [236, 32, 52], WF: [255, 116, 34], TC: [80, 124, 255], WAR: [204, 24, 96], HEAT: [255, 178, 52], AIR: [176, 196, 74], NOISE: [236, 231, 220], LIGHT: [150, 100, 255], BODY: [236, 231, 220] };
+  const COLNAME = { EQ: "vermelho", WF: "laranja", TC: "azul", WAR: "carmim", HEAT: "âmbar", AIR: "oliva", NOISE: "osso", LIGHT: "violeta", BODY: "osso" };
+
+  // ================= chemistry: stress mediators. Color = the mediator's hue. Hz = molecular mass folded by octaves into 100..1100 =================
+  // Simplified correspondences from the psychobiology of stress literature. They describe tendencies in populations, never a measurement of anyone's body.
+  const MED = {
+    ADR:  { nome: "adrenalina",     massa: 183.20, cor: [255, 45, 30],   papel: "alarme agudo: coração e respiração aceleram em segundos" },
+    NOR:  { nome: "noradrenalina",  massa: 169.18, cor: [255, 138, 30],  papel: "vigilância e hiperalerta; sono leve, sobressalto" },
+    COR:  { nome: "cortisol",       massa: 362.46, cor: [242, 194, 48],  papel: "estresse prolongado (eixo HPA); desgaste que se acumula" },
+    GLU:  { nome: "glutamato",      massa: 147.13, cor: [232, 32, 126],  papel: "excitação neural intensa; memória do trauma, medo condicionado" },
+    IL6:  { nome: "interleucina-6", massa: 21000,  cor: [166, 200, 50],  papel: "inflamação; ligada a sintomas depressivos e fadiga" },
+    SER:  { nome: "serotonina",     massa: 176.22, cor: [46, 196, 182],  papel: "humor e saciedade; cai com a falta de triptofano na fome" },
+    GRE:  { nome: "grelina",        massa: 3370.9, cor: [201, 180, 138], papel: "sinal de fome; eleva ansiedade e alerta" },
+    MEL:  { nome: "melatonina",     massa: 232.28, cor: [91, 61, 240],   papel: "ritmo do sono; alterada por luz, calor e ruído à noite" },
+    OXT:  { nome: "ocitocina",      massa: 1007.19, cor: [245, 140, 184], papel: "vínculo e pertencimento; abalada pela perda de lugar e de laços" },
+    GABA: { nome: "GABA",           massa: 103.12, cor: [111, 168, 255], papel: "repouso e calma; o estado de base quando pouco pesa" },
+  };
+  const medHz = m => { let f = MED[m].massa; while (f > 1100) f /= 2; while (f < 100) f *= 2; return f; };
+  // which mediators each factor mobilizes (weights add to 1)
+  const FMED = {
+    EQ:   { ADR: .45, NOR: .35, COR: .20 },
+    WF:   { IL6: .40, ADR: .30, COR: .30 },
+    TC:   { NOR: .40, COR: .40, ADR: .20 },
+    HEAT: { COR: .40, MEL: .30, SER: .30 },
+    AIR:  { IL6: .70, GLU: .30 },
+    NOISE:{ NOR: .40, COR: .30, MEL: .30 },
+    LIGHT:{ MEL: .70, SER: .30 },
+    WAR:  { NOR: .35, GLU: .30, COR: .20, ADR: .15 },
+    VIOL: { COR: .45, NOR: .30, GLU: .25 },
+    FOME: { SER: .40, GRE: .35, COR: .25 },
+    DESL: { OXT: .50, COR: .50 },
+  };
+  for (const [k, m] of Object.entries(MED)) { COL[k] = m.cor; COLNAME[k] = m.nome; }
+  function chemProfile(factors) {
+    const prof = {};
+    for (const f of factors) { const w = FMED[f.key]; if (!w || !(f.i > 0)) continue; for (const [m, x] of Object.entries(w)) prof[m] = (prof[m] || 0) + f.i * x; }
+    return Object.entries(prof).map(([m, v]) => [m, clamp(v * 1.5, 0, 1)]).sort((a, b) => b[1] - a[1]);
+  }
+  function colorize(img, layers, gain = 3.4) {
+    const d = img.data, n = layers[0][0].N, L = layers.length;
+    for (let i = 0, p = 0; i < n; i++, p += 4) {
+      let r = 0, g = 0, b = 0, sum = 0;
+      for (let k = 0; k < L; k++) {
+        let a = layers[k][0].V[i] * gain; if (a <= 0.002) continue; a = a > 1 ? 1 : a; a = a * a * (3 - 2 * a);
+        const c = layers[k][1]; r += c[0] * a; g += c[1] * a; b += c[2] * a; sum += a;
+      }
+      const hi = Math.max(0, sum - 0.7) * 1.8;
+      d[p] = aces((r + 150 * hi) / 255 * 1.15); d[p+1] = aces((g + 135 * hi) / 255 * 1.15); d[p+2] = aces((b + 125 * hi) / 255 * 1.15); d[p+3] = 255;
+    }
+  }
+  // filmic tone map shared with the nebula (ACES approximation), returns 0..255
+  function aces(x) { const v = (x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14); return v <= 0 ? 0 : v >= 1 ? 255 : v * 255; }
+  // nebula-like finish for retratos and rede: deep haze, stars with halos, vignette, grain
+  const GRAIN = (() => { const c = document.createElement("canvas"); c.width = c.height = 256; const x = c.getContext("2d"), im = x.createImageData(256, 256); for (let i = 0; i < im.data.length; i += 4) { const v = Math.random() * 255; im.data[i] = im.data[i+1] = im.data[i+2] = v; im.data[i+3] = 255; } x.putImageData(im, 0, 0); return c; })();
+  function finish(ctx, w, h, off, seedKey) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter"; ctx.filter = `blur(${Math.max(6, Math.round(w / 18))}px)`; ctx.globalAlpha = 0.55; ctx.drawImage(off, 0, 0, w, h);
+    ctx.filter = "none"; ctx.globalAlpha = 1;
+    let sd = 0; for (const ch of String(seedKey || "x")) sd = (sd * 31 + ch.charCodeAt(0)) >>> 0;
+    const rnd = () => { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; };
+    const t = performance.now() / 1000, n = Math.round(w * h / 9000);
+    for (let k = 0; k < n; k++) {
+      const x = rnd() * w, y = rnd() * h, big = rnd() < 0.12, ph = rnd() * 60, tw = 0.7 + 0.3 * Math.sin(t * 0.45 + ph), rr = (big ? 2.2 : 1.1) * (w / 720 + 0.4);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, rr * (big ? 7 : 4));
+      g.addColorStop(0, `rgba(245,247,255,${0.9 * tw})`); g.addColorStop(0.18, `rgba(240,242,255,${0.35 * tw})`); g.addColorStop(1, "rgba(240,242,255,0)");
+      ctx.fillStyle = g; ctx.fillRect(x - rr * 7, y - rr * 7, rr * 14, rr * 14);
+    }
+    ctx.globalCompositeOperation = "source-over";
+    const v = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.32, w / 2, h / 2, Math.max(w, h) * 0.72);
+    v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,0.6)"); ctx.fillStyle = v; ctx.fillRect(0, 0, w, h);
+    ctx.globalCompositeOperation = "overlay"; ctx.globalAlpha = 0.07; ctx.fillStyle = ctx.createPattern(GRAIN, "repeat"); ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+  }
+  function compose(ctx, w, h, off, base) {
+    ctx.globalCompositeOperation = "source-over"; ctx.filter = "none"; ctx.globalAlpha = 1;
+    if (base) ctx.drawImage(base, 0, 0, w, h); else { ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h); }
+    ctx.globalCompositeOperation = "lighter"; ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+    ctx.filter = `blur(${Math.max(2, Math.round(w / 90))}px)`; ctx.globalAlpha = 0.9; ctx.drawImage(off, 0, 0, w, h);
+    ctx.filter = "none"; ctx.globalAlpha = 1; ctx.drawImage(off, 0, 0, w, h);
+    ctx.globalCompositeOperation = "source-over";
+  }
+  let totalSteps = 0;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const FONT = () => getComputedStyle(document.body).fontFamily;
+
+  // ================= view: mapa =================
+  const ROWS = [[75,[[-120,-70],[-60,-20],[15,25],[60,140]]],[70,[[-165,-140],[-140,-70],[-55,-20],[15,30],[30,180]]],[65,[[-165,-140],[-140,-65],[-50,-25],[-20,-15],[5,30],[30,180]]],[60,[[-160,-140],[-135,-65],[-45,-42],[5,30],[30,165]]],[55,[[-130,-60],[-5,0],[5,40],[40,160]]],[50,[[-125,-55],[-5,40],[40,140],[142,144]]],[45,[[-125,-65],[-5,40],[45,140],[140,145]]],[40,[[-125,-75],[-10,5],[10,45],[50,120],[125,128],[138,142]]],[35,[[-120,-80],[-5,10],[30,50],[50,120],[133,140]]],[30,[[-115,-80],[-10,35],[35,60],[65,120]]],[25,[[-110,-98],[-82,-78],[-15,35],[40,55],[65,120]]],[20,[[-105,-90],[-80,-75],[-15,40],[40,55],[70,85],[95,110]]],[15,[[-92,-84],[-15,40],[43,50],[74,80],[98,108],[120,123]]],[10,[[-85,-62],[-15,50],[76,80],[98,106],[120,125]]],[5,[[-77,-52],[-10,45],[100,118]]],[0,[[-80,-50],[10,42],[100,140]]],[-5,[[-80,-35],[12,40],[105,150]]],[-10,[[-78,-37],[13,40],[120,125],[142,150]]],[-15,[[-75,-40],[12,40],[45,50],[125,145]]],[-20,[[-70,-40],[13,35],[44,48],[115,150]]],[-25,[[-70,-47],[15,33],[113,153]]],[-30,[[-72,-50],[17,30],[115,153]]],[-35,[[-72,-57],[137,150],[173,176]]],[-40,[[-73,-62],[145,148],[174,177]]],[-45,[[-74,-66],[168,172]]],[-50,[[-74,-68]]]];
+  const MW = 320, MH = 160, CPD = MW / 360, T0 = LIVE ? Date.parse(LIVE.inicio) : Date.parse("2026-10-20T00:00Z"), T1 = LIVE ? Date.parse(LIVE.atualizado) : Date.parse("2026-10-24T02:00Z"), HOUR = 3600e3;
+  for (const e of EV) { e.cx = Math.round((e.lon + 180) / 360 * MW) % MW; e.cy = Math.round((90 - e.lat) / 180 * MH); }
+  const M = { cv: document.getElementById("mCv"), off: document.createElement("canvas"), dots: document.createElement("canvas"), speed: 1, hist: [] };
+  M.ctx = M.cv.getContext("2d"); M.off.width = MW; M.off.height = MH; M.octx = M.off.getContext("2d"); M.img = M.octx.createImageData(MW, MH);
+  const mLog = document.getElementById("mLog");
+  function mLogLine(html) { const li = document.createElement("li"); li.innerHTML = html; if (mLog.firstChild && mLog.firstChild.textContent.startsWith("aguardando")) mLog.innerHTML = ""; mLog.prepend(li); while (mLog.children.length > 7) mLog.lastChild.remove(); }
+  function mReset() { M.S = { EQ: createSim(MW, MH), WF: createSim(MW, MH), TC: createSim(MW, MH), BODY: createSim(MW, MH) }; M.t = T0; M.fired = 0; M.touches = []; M.labels = []; M.hold = 0; M.hist = []; M.bodies = 0; mLog.innerHTML = "<li>aguardando o primeiro alerta…</li>"; }
+  function mResize() {
+    const r = M.cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    M.w = Math.max(1, Math.round(r.width * dpr)); M.h = Math.max(1, Math.round(r.height * dpr)); M.dpr = dpr;
+    M.cv.width = M.w; M.cv.height = M.h; M.dots.width = M.w; M.dots.height = M.h;
+    const d = M.dots.getContext("2d"); d.fillStyle = "#070609"; d.fillRect(0, 0, M.w, M.h);
+    d.strokeStyle = "#16151B"; d.lineWidth = 1;
+    for (let lon = -150; lon < 180; lon += 30) { const x = (lon + 180) / 360 * M.w; d.beginPath(); d.moveTo(x, 0); d.lineTo(x, M.h); d.stroke(); }
+    for (let lat = -60; lat <= 60; lat += 30) { const y = (90 - lat) / 180 * M.h; d.beginPath(); d.moveTo(0, y); d.lineTo(M.w, y); d.stroke(); }
+    d.fillStyle = "#34313A"; const rad = Math.max(0.8, M.w / 360 * 2.5 * 0.2);
+    for (let lat = 77.5; lat > -55; lat -= 2.5) {
+      let best = ROWS[0]; for (const row of ROWS) if (Math.abs(row[0] - lat) < Math.abs(best[0] - lat)) best = row;
+      for (let lon = -178.75; lon < 180; lon += 2.5) { if (!best[1].some(([a, b]) => lon >= a && lon <= b)) continue; d.beginPath(); d.arc((lon + 180) / 360 * M.w, (90 - lat) / 180 * M.h, rad, 0, Math.PI * 2); d.fill(); }
+    }
+  }
+  function mZones() {
+    for (const s of Object.values(M.S)) { s.F.fill(0.02); s.K.fill(0.075); }
+    for (let k = 0; k < M.fired; k++) {
+      const e = EV[k], age = (M.t - e.t) / HOUR, r = e.deg * CPD * Math.sqrt(clamp(age / 24, 0.08, 1)), g = regime(e);
+      paintZone(M.S[e.type], e.cx, e.cy, r, g.F, g.K);
+    }
+    const now = performance.now(); M.touches = M.touches.filter(t => now - t.born < 25000);
+    for (const t of M.touches) paintZone(M.S.BODY, t.x, t.y, 9, 0.0367, 0.0649);
+  }
+  function mFire(e) {
+    seed(M.S[e.type], e.cx, e.cy, Math.max(3, Math.round(e.deg * CPD * 0.35)));
+    M.labels.push({ x: e.cx, y: e.cy, born: performance.now(), color: hex(COL[e.type]), text: `${TYPE[e.type]} · ${e.country} · ${valueText(e)}` });
+    mLogLine(`${fmt(e.t)}  <span class="${e.red ? "r" : "b"}">${e.type}</span>  ${e.country.toUpperCase()}  ${valueText(e)}  ${e.level === "Red" ? '<span class="r">ALERTA VERMELHO</span>' : "alerta verde"}  F=${regime(e).F.toFixed(4)} k=${regime(e).K.toFixed(4)}`);
+    playEvent(e);
+  }
+  let frame = 0;
+  function mTick(dt) {
+    if (M.t < T1) {
+      M.t = Math.min(T1, M.t + dt * 1.5 * HOUR * M.speed);
+      while (M.fired < EV.length && EV[M.fired].t <= M.t) { mFire(EV[M.fired]); M.fired++; }
+      if (M.t >= T1) { M.hold = performance.now() + 10000; mLogLine("24.10 02:00  fim da leitura · recomeça em 10 s"); }
+    } else if (performance.now() > M.hold) mReset();
+    if (frame % 4 === 0) mZones();
+    const n = reduce ? 3 : Math.round(6 * Math.min(2, M.speed));
+    const sims = Object.values(M.S); for (let k = 0; k < n; k++) for (const s of sims) step(s);
+    colorize(M.img, Object.entries(M.S).map(([k, s]) => [s, COL[k]])); M.octx.putImageData(M.img, 0, 0);
+    compose(M.ctx, M.w, M.h, M.off, M.dots);
+    const ctx = M.ctx, now = performance.now(), fs = Math.max(10, Math.round(M.w / 120));
+    ctx.font = `400 ${fs}px ${FONT()}`; M.labels = M.labels.filter(l => now - l.born < 5000);
+    for (const l of M.labels) {
+      const a = 1 - (now - l.born) / 5000, x = l.x / MW * M.w, y = l.y / MH * M.h, right = x > M.w * 0.72;
+      ctx.globalAlpha = a; ctx.strokeStyle = ctx.fillStyle = l.color; ctx.lineWidth = Math.max(1, M.dpr);
+      ctx.beginPath(); ctx.moveTo(x - fs, y); ctx.lineTo(x + fs, y); ctx.moveTo(x, y - fs); ctx.lineTo(x, y + fs); ctx.stroke();
+      ctx.textAlign = right ? "right" : "left"; ctx.fillText(l.text, x + (right ? -fs * 1.4 : fs * 1.4), y - fs * 0.6);
+    }
+    ctx.globalAlpha = 1;
+    document.getElementById("mClock").textContent = fmt(M.t);
+    if (frame % 10 === 0) {
+      const me = mass(M.S.EQ), mw = mass(M.S.WF), mt = mass(M.S.TC); M.hist.push([me, mw, mt]); if (M.hist.length > 140) M.hist.shift();
+      document.getElementById("mFired").textContent = `${M.fired} / ${EV.length}`;
+      document.getElementById("mMassE").textContent = me.toFixed(1);
+      document.getElementById("mMassW").textContent = mw.toFixed(1);
+      document.getElementById("mMassT").textContent = mt.toFixed(1);
+      document.getElementById("mBodies").textContent = M.bodies;
+      drawSpark();
+    }
+  }
+  function drawSpark() {
+    const c = document.getElementById("mSpark"), x = c.getContext("2d"), w = c.width, h = c.height;
+    x.clearRect(0, 0, w, h); x.strokeStyle = "#26242C"; x.lineWidth = 1; x.beginPath(); x.moveTo(0, h - 1); x.lineTo(w, h - 1); x.stroke();
+    const mx = Math.max(1, ...M.hist.map(p => Math.max(p[0], p[1], p[2])));
+    for (const [k, col] of [[0, hex(COL.EQ)], [1, hex(COL.WF)], [2, hex(COL.TC)]]) {
+      x.strokeStyle = col; x.lineWidth = 2; x.beginPath();
+      M.hist.forEach((p, i) => { const px = i / 139 * w, py = h - 2 - p[k] / mx * (h - 6); i ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke();
+    }
+  }
+  document.getElementById("mStage").addEventListener("pointerdown", (ev) => {
+    const r = M.cv.getBoundingClientRect(), x = Math.round((ev.clientX - r.left) / r.width * MW), y = Math.round((ev.clientY - r.top) / r.height * MH);
+    M.touches.push({ x, y, born: performance.now() }); M.bodies++;
+    seed(M.S.BODY, x, y, 4);
+    M.labels.push({ x, y, born: performance.now(), color: "#EDE7DC", text: "corpo presente" });
+    mLogLine(`${fmt(M.t)}  TOQUE  um corpo entrou no organismo  x=${x} y=${y}`); playTouch();
+  });
+  document.getElementById("mSpeed").addEventListener("click", (ev) => { M.speed = M.speed === 1 ? 3 : M.speed === 3 ? 0.5 : 1; ev.currentTarget.textContent = `velocidade ${String(M.speed).replace(".", ",")}×`; });
+  document.getElementById("mRestart").addEventListener("click", mReset);
+
+  // ================= view: retratos =================
+  // Environmental sources. Daylight is computed from latitude and today's date (astronomy, real).
+  // Temperature, PM2.5, noise and the armed-conflict sources are EXAMPLE values until live connections are set up.
+  const CITIES = [
+    { name: "São Paulo", lat: -23.55, T: 27, pm: 22, db: 72 },
+    { name: "Nova Délhi", lat: 28.61, T: 31, pm: 110, db: 80 },
+    { name: "Lagos", lat: 6.52, T: 30, pm: 58, db: 78 },
+    { name: "Cairo", lat: 30.04, T: 29, pm: 70, db: 79 },
+    { name: "Jacarta", lat: -6.21, T: 32, pm: 45, db: 75 },
+    { name: "Cidade do México", lat: 19.43, T: 24, pm: 24, db: 73 },
+    { name: "Madri", lat: 40.42, T: 17, pm: 9, db: 66 },
+    { name: "Daca", lat: 23.81, T: 30, pm: 85, db: 82 },
+    { name: "Pequim", lat: 39.90, T: 14, pm: 40, db: 70 },
+    { name: "Tromsø", lat: 69.65, T: 2, pm: 5, db: 52 },
+  ];
+  const CONFLICTS = [{ name: "conflito armado · exemplo A", i: 0.9 }, { name: "conflito armado · exemplo B", i: 0.6 }, { name: "conflito armado · exemplo C", i: 0.35 }];
+  function daylight(lat, date) {
+    const start = Date.UTC(date.getUTCFullYear(), 0, 0), N = Math.floor((date - start) / 864e5);
+    const dec = 23.44 * Math.sin(2 * Math.PI * (284 + N) / 365) * Math.PI / 180, phi = lat * Math.PI / 180;
+    const x = -Math.tan(phi) * Math.tan(dec);
+    if (x >= 1) return 0; if (x <= -1) return 24;
+    return 2 * Math.acos(x) * 180 / Math.PI / 15;
+  }
+  const PS = 180;
+  const hex = c => "#" + c.map(v => v.toString(16).padStart(2, "0")).join("");
+  const sw = (key, txt) => `<span style="color:${hex(COL[key])}">${txt}</span>`;
+  function srcFromEvent(e) {
+    const g = regime(e), i = e.inten, ch = { F: g.F, K: g.K, n: Math.round(30 + 300 * i), R: (0.22 + 0.3 * i) * PS, name: g.name };
+    return {
+      id: "ev" + EV.indexOf(e), kind: "alerta", e, layers: [{ key: e.type, ch }], noise: 0, light: 0, period: 0,
+      target: Math.round(2200 + 2600 * i), label: `${TYPE[e.type]} · ${e.country.split(",")[0]} · ${valueText(e)}`,
+      inRows: [["fonte", "GDACS (real)"], ["evento", TYPE[e.type]], ["local", e.country], ["data UTC", fmt(e.t)], ["valor", valueText(e)], ["nível", e.level === "Red" ? "vermelho" : "verde"]],
+      parRows: [["intensidade i", i.toFixed(3)], ["tom", sw(e.type, COLNAME[e.type])], ["regime", g.name], ["F", g.F.toFixed(4)], ["k", g.K.toFixed(4)], ["sementes", ch.n], ["raio", Math.round(ch.R) + " px"], ["passos", Math.round(2200 + 2600 * i)]],
+    };
+  }
+  function srcFromCity(c) {
+    const dl = daylight(c.lat, new Date()), hi = clamp((c.T - 18) / 22, 0, 1), ai = clamp(c.pm / 90, 0, 1), ni = clamp((c.db - 45) / 40, 0, 1), li = clamp(Math.abs(dl - 12) / 12, 0, 1);
+    const layers = [
+      { key: "HEAT", ch: { F: 0.0367 - 0.008 * hi, K: 0.0649 - 0.005 * hi, n: Math.round(10 + 220 * hi), R: (0.12 + 0.32 * hi) * PS } },
+      { key: "AIR", ch: { F: 0.029, K: 0.057 + 0.004 * (1 - ai), n: Math.round(10 + 220 * ai), R: (0.12 + 0.32 * ai) * PS } },
+      { key: "LIGHT", ch: { F: 0.0545, K: 0.062, n: Math.round(6 + 60 * li), R: 0.46 * PS, ring: true } },
+      { key: "NOISE", ch: { F: 0.0367, K: 0.0649, n: 0, R: 0.46 * PS } },
+    ];
+    return {
+      id: "city" + CITIES.indexOf(c), kind: "ambiente", c, layers, noise: ni, light: li, period: Math.round(300 + 900 * dl / 24), dl,
+      target: Math.round(2600 + 1800 * Math.max(hi, ai)), label: `${c.name} · ambiente`,
+      inRows: [["fonte", "ambiente urbano"], ["cidade", c.name], ["luz do dia hoje", dl.toFixed(1).replace(".", ",") + " h (calculado)"], ["temperatura", c.T + " °C (exemplo)"], ["PM2,5", c.pm + " µg/m³ (exemplo)"], ["ruído", c.db + " dB (exemplo)"]],
+      parRows: [[sw("HEAT", "calor"), `i ${hi.toFixed(2)} · sono, regulação térmica`], [sw("AIR", "ar"), `i ${ai.toFixed(2)} · neuroinflamação`], [sw("NOISE", "ruído"), `i ${ni.toFixed(2)} · cortisol, alerta`], [sw("LIGHT", "luz"), `desvio ${li.toFixed(2)} · ritmo circadiano`], ["passos", Math.round(2600 + 1800 * Math.max(hi, ai))]],
+    };
+  }
+  function srcFromConflict(x, k) {
+    const i = x.i;
+    return {
+      id: "war" + k, kind: "conflito", x, layers: [{ key: "WAR", ch: { F: 0.026 + 0.004 * (1 - i), K: 0.054 + 0.004 * (1 - i), n: Math.round(40 + 320 * i), R: (0.24 + 0.24 * i) * PS } }, { key: "NOISE", ch: { F: 0.0367, K: 0.0649, n: 0, R: 0.46 * PS } }],
+      noise: 0.4 + 0.6 * i, light: 0.25 * i, period: 260, target: Math.round(2600 + 2200 * i), label: x.name,
+      inRows: [["fonte", "UCDP (a conectar, requer chave)"], ["evento", "conflito armado"], ["intensidade", `${i.toFixed(2)} (exemplo)`]],
+      parRows: [[sw("WAR", "guerra"), `labirinto denso · trauma, deslocamento`], [sw("NOISE", "ruído"), `rajadas constantes · explosões, sirenes`], ["sono", "pulsação irregular"], ["passos", Math.round(2600 + 2200 * i)]],
+    };
+  }
+  const SOURCES = [...KEY.map(srcFromEvent), ...CITIES.map(srcFromCity), ...CONFLICTS.map(srcFromConflict)];
+  const QUEUE = [...EV.map(srcFromEvent), ...CITIES.map(srcFromCity), ...CONFLICTS.map(srcFromConflict)].sort(() => Math.random() - 0.5);
+
+  const P = { cv: document.getElementById("pCv"), off: document.createElement("canvas"), src: SOURCES[0], L: [], auto: true, qi: 0, count: 0 };
+  P.ctx = P.cv.getContext("2d"); P.off.width = PS; P.off.height = PS; P.octx = P.off.getContext("2d"); P.img = P.octx.createImageData(PS, PS);
+  const SNAP = [0.08, 0.2, 0.4, 0.7, 1];
+  const strip = document.getElementById("pStrip");
+  const snapCv = SNAP.map(() => { const fig = document.createElement("figure"), c = document.createElement("canvas"), cap = document.createElement("figcaption"); c.width = 180; c.height = 180; fig.append(c, cap); strip.append(fig); return { c, cap }; });
+  function applyMask(sim, ch, factor) {
+    const c = PS / 2, R = ch.R * factor, R2 = R * R;
+    for (let y = 0; y < PS; y++) for (let x = 0; x < PS; x++) {
+      const k = y * PS + x, d2 = (x - c) * (x - c) + (y - c) * (y - c);
+      if (d2 < R2) { sim.F[k] = ch.F; sim.K[k] = ch.K; } else { sim.F[k] = 0.02; sim.K[k] = 0.075; }
+    }
+  }
+  function seedInside(sim, ch, n, r = 2) {
+    const c = PS / 2;
+    for (let k = 0; k < n; k++) {
+      const a = Math.random() * Math.PI * 2, rr = ch.ring ? ch.R * (0.78 + Math.random() * 0.12) : Math.sqrt(Math.random()) * ch.R * 0.9;
+      seed(sim, Math.round(c + Math.cos(a) * rr), Math.round(c + Math.sin(a) * rr), r, 1);
+    }
+  }
+  const rows = r => r.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+  function pStart(src) {
+    P.src = src; P.n = 0; P.done = false; P.nextSnap = 0; P.target = Math.round(src.target * (RG.ok ? 2.6 : 1)); P.saved = false;
+    P.L = src.layers.map(l => { const sim = createSim(PS, PS); if (!RG.ok) { applyMask(sim, l.ch, 1); seedInside(sim, l.ch, l.ch.n); } return { key: l.key, ch: l.ch, sim }; });
+    if (RG.ok) rgReset(src);
+    snapCv.forEach(({ c, cap }, k) => { const x = c.getContext("2d"); x.fillStyle = "#000"; x.fillRect(0, 0, 180, 180); cap.textContent = `passo ${Math.round(SNAP[k] * P.target)}`; });
+    document.getElementById("pIn").innerHTML = rows(src.inRows);
+    document.getElementById("pParams").innerHTML = rows(src.parRows);
+    document.querySelectorAll(".chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === src.id)));
+    renderChain();
+  }
+  const covCv = document.createElement("canvas"); covCv.width = covCv.height = 48;
+  function pPaint(ctx, w, h) { if (RG.ok) { rgRender(); ctx.drawImage(RG.cv, 0, 0, w, h); return; } colorize(P.img, P.L.map(l => [l.sim, COL[l.key]]), 3.2); P.octx.putImageData(P.img, 0, 0); compose(ctx, w, h, P.off, null); finish(ctx, w, h, P.off, P.src.id); }
+  function pRender(ctx, w, h) { pPaint(ctx, w, h); }
+  function saveToGallery() {
+    const g = document.getElementById("pGallery"), empty = document.getElementById("pEmpty"); if (empty) empty.remove();
+    const fig = document.createElement("figure"), c = document.createElement("canvas"), cap = document.createElement("figcaption");
+    c.width = 200; c.height = 200; pPaint(c.getContext("2d"), 200, 200);
+    cap.textContent = `${P.src.label} · ${P.n} passos`; fig.append(c, cap); g.prepend(fig);
+    while (g.children.length > 36) g.lastChild.remove();
+    P.count++; document.getElementById("pCount").textContent = P.count;
+  }
+  function pTick() {
+    if (!P.L.length) pStart(P.src);
+    const src = P.src;
+    if (RG.ok) rgStep(); // the ink keeps moving all the time, also after a portrait is archived
+    // real time: every minute the place is recalculated (local hour, night, age of each alert) and the colors follow
+    if (src.kind === "lugar" && performance.now() - (P.refreshAt || 0) > 60000) {
+      P.refreshAt = performance.now();
+      const fresh = srcFromPlace(src.place.pl); src.place = fresh;
+      src.inRows = fresh.factors.slice().sort((a, b) => b.i - a.i).map(f => [`<span style="color:${f.i > 0 ? hex(COL[f.key]) : "var(--dim)"}">${f.name}</span>`, `${f.i.toFixed(2)} · <span class="dim">${f.tag}</span>`]);
+      document.getElementById("pIn").innerHTML = rows(src.inRows) + `<dt>atualizado</dt><dd>${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</dd>`;
+      if (RG.ok) for (const e of RG.em) { const f = fresh.factors.find(x => x.key === e.key); if (f) e.i = f.i; }
+      src.light = fresh.light;
+    }
+    if (!P.done) {
+      if (RG.ok) {
+        const it = reduce ? 8 : 24, f = src.light ? 1 - 0.35 * src.light * (0.5 + 0.5 * Math.sin(2 * Math.PI * P.n / (src.period * 2.6))) : 1;
+        P.n = Math.min(P.target, P.n + it * 0.22 * (1 + 3 * Math.exp(-P.n / 900)));
+        if (src.noise && Math.random() < src.noise * 0.008) { const k0 = RG.layers.findIndex(l => l.key === "NOISE"), kk = k0 >= 0 ? k0 : 0; rgSeeds(kk); if (view === "som") playBurst(src.noise); }
+      }
+      const n = RG.ok ? 0 : (reduce ? 5 : Math.max(6, Math.round(28 / P.L.length)));
+      for (let k = 0; k < n && P.n < P.target; k++) {
+        for (const l of P.L) step(l.sim); P.n++;
+        if (src.light && P.n % 30 === 0) {
+          const f = 1 - 0.35 * src.light * (0.5 + 0.5 * Math.sin(2 * Math.PI * P.n / src.period));
+          for (const l of P.L) if (l.key !== "NOISE") applyMask(l.sim, l.ch, f);
+        }
+        if (src.noise && P.n % 90 === 0 && Math.random() < src.noise) {
+          const target = P.L.find(l => l.key === "NOISE") || P.L[0];
+          seedInside(target.sim, target.ch, Math.round(3 + 14 * src.noise), 1);
+          if (view === "som") playBurst(src.noise);
+        }
+      }
+      while (P.nextSnap < SNAP.length && P.n >= Math.round(SNAP[P.nextSnap] * P.target)) { pPaint(snapCv[P.nextSnap].c.getContext("2d"), 180, 180); P.nextSnap++; }
+      if (P.n >= P.target) { P.done = true; P.doneAt = performance.now(); }
+    } else {
+      if (!P.saved) { saveToGallery(); P.saved = true; }
+      if (P.auto && view === "retratos" && performance.now() - P.doneAt > 6000) { pStart(portraitFromPlace(PSRC[P.qi % PSRC.length])); P.qi++; }
+    }
+    if (frame % 15 === 0) {
+      let cov = 0;
+      if (RG.ok) { const c = covCv.getContext("2d"); c.drawImage(P.cv, 0, 0, 48, 48); const d = c.getImageData(0, 0, 48, 48).data; for (let i = 0; i < d.length; i += 4) if (d[i] + d[i+1] + d[i+2] > 200) cov++; cov = cov / 2304 * PS * PS / 3; }
+      else for (let i = 0; i < PS * PS; i += 3) if (P.L.some(l => l.sim.V[i] > 0.2)) cov++;
+      document.getElementById("pCover").textContent = (cov * 3 / (PS * PS) * 100).toFixed(1) + "%";
+    }
+    document.getElementById("pStep").textContent = `${P.n} / ${P.target}`;
+    document.getElementById("pState").textContent = P.done ? (P.auto ? "concluído · próximo em instantes" : "concluído") : "crescendo";
+  }
+  function portraitV() { const out = new Float32Array(PS * PS); for (const l of P.L) { const V = l.sim.V; for (let i = 0; i < out.length; i++) out[i] += V[i]; } return out; }
+  function buildChips(el) {
+    const head = t => { const d = document.createElement("div"); d.className = "chiphead"; d.textContent = t; el.append(d); };
+    head("alertas de desastre · GDACS");
+    SOURCES.forEach((s, k) => {
+      if (k === KEY.length) head("ambiente urbano · calor, ar, ruído, luz");
+      if (k === KEY.length + CITIES.length) head("guerra · exemplo até conectar UCDP");
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.id = s.id;
+      const dots = s.layers.map(l => `<i style="color:${hex(COL[l.key])}">●</i>`).join("");
+      b.innerHTML = s.kind === "alerta" ? `${dots} ${s.e.country.split(",")[0]} · ${valueText(s.e)}` : s.kind === "ambiente" ? `${dots} ${s.c.name}` : `${dots} ${s.x.name.replace("conflito armado · ", "")}`;
+      b.addEventListener("click", () => { setAuto(false); pStart(s); }); el.append(b);
+    });
+  }
+  function setAuto(on) { P.auto = on; const b = document.getElementById("pAuto"); b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "automático: ligado" : "automático: desligado"; }
+  document.getElementById("pAuto").addEventListener("click", () => { setAuto(!P.auto); if (P.auto && P.done) P.doneAt = 0; });
+  document.getElementById("pAgain").addEventListener("click", () => pStart(P.src));
+  document.getElementById("pToSound").addEventListener("click", () => { setAuto(false); show("som"); sStart(); });
+
+  // ================= audio =================
+  let ac = null, master = null, analyser = null;
+  function audio() {
+    if (ac) { if (ac.state !== "running") ac.resume(); return true; }
+    try {
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      const comp = ac.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 8;
+      master = ac.createGain(); master.gain.value = 0.22; analyser = ac.createAnalyser(); analyser.fftSize = 2048;
+      master.connect(analyser); analyser.connect(comp); comp.connect(ac.destination);
+      return true;
+    } catch (err) { return false; }
+  }
+  const live = () => ac && ac.state === "running";
+  function noise(dur) { const b = ac.createBuffer(1, Math.ceil(ac.sampleRate * dur), ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const s = ac.createBufferSource(); s.buffer = b; return s; }
+  function playEvent(e) {
+    if (!live()) return;
+    const t = ac.currentTime;
+    if (e.level === "Red") {
+      const o = ac.createOscillator(); o.type = "sawtooth"; const lp = ac.createBiquadFilter(); lp.frequency.value = 1600; const g = ac.createGain();
+      o.connect(lp); lp.connect(g); g.connect(master);
+      for (let c = 0; c < 3; c++) { o.frequency.setValueAtTime(380, t + c * 1.6); o.frequency.linearRampToValueAtTime(880, t + c * 1.6 + 0.9); o.frequency.linearRampToValueAtTime(380, t + c * 1.6 + 1.6); }
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.35, t + 0.3); g.gain.setValueAtTime(0.35, t + 4.4); g.gain.linearRampToValueAtTime(0, t + 4.8); o.start(t); o.stop(t + 4.9);
+    } else if (e.type === "WF") {
+      const s = noise(0.5), bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 2400 + e.inten * 1500; bp.Q.value = 4; const g = ac.createGain();
+      s.connect(bp); bp.connect(g); g.connect(master); g.gain.setValueAtTime(0.15 + 0.2 * e.inten, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.45); s.start(t);
+    } else if (e.type === "EQ") {
+      const o = ac.createOscillator(); o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(32, t + 1.2); const g = ac.createGain();
+      o.connect(g); g.connect(master); g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.001, t + 1.4); o.start(t); o.stop(t + 1.5);
+    } else {
+      const s = noise(2.4), bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 2; const g = ac.createGain();
+      bp.frequency.setValueAtTime(300, t); bp.frequency.exponentialRampToValueAtTime(600 + 1200 * e.inten, t + 1.2); bp.frequency.exponentialRampToValueAtTime(400, t + 2.3);
+      s.connect(bp); bp.connect(g); g.connect(master); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.5, t + 0.6); g.gain.linearRampToValueAtTime(0, t + 2.3); s.start(t);
+    }
+  }
+  function playBurst(ni) {
+    if (!live()) return; const t = ac.currentTime, s = noise(0.25), hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 1200; const g = ac.createGain();
+    s.connect(hp); hp.connect(g); g.connect(master); g.gain.setValueAtTime(0.1 + 0.25 * ni, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.22); s.start(t);
+  }
+  function playEnv(src) {
+    if (!live()) return; const c = src.c, t = ac.currentTime, dur = 5;
+    const o = ac.createOscillator(); o.frequency.value = 55 + 4 * c.T; const trem = ac.createOscillator(); trem.frequency.value = 0.5 + src.dl / 6; const tg = ac.createGain(); tg.gain.value = 0.25;
+    const g = ac.createGain(); g.gain.value = 0; trem.connect(tg); tg.connect(g.gain); o.connect(g); g.connect(master);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.4, t + 0.8); g.gain.setValueAtTime(0.4, t + dur - 1); g.gain.linearRampToValueAtTime(0, t + dur);
+    const s = noise(dur), bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 400; bp.Q.value = 1.2; const ng = ac.createGain(); ng.gain.value = 0.35 * clamp(c.pm / 90, 0, 1);
+    s.connect(bp); bp.connect(ng); ng.connect(master);
+    o.start(t); trem.start(t); s.start(t); o.stop(t + dur); trem.stop(t + dur);
+    for (let k = 0; k < Math.round(clamp((c.db - 45) / 40, 0, 1) * 6); k++) setTimeout(() => playBurst(clamp((c.db - 45) / 40, 0, 1)), 400 + Math.random() * 4000);
+  }
+  function playConflict(src) {
+    if (!live()) return; const t = ac.currentTime, dur = 5;
+    const s = noise(dur), lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 90; const g = ac.createGain();
+    s.connect(lp); lp.connect(g); g.connect(master); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1.2, t + 0.6); g.gain.linearRampToValueAtTime(0, t + dur); s.start(t);
+    const o = ac.createOscillator(); o.type = "sawtooth"; const f = ac.createBiquadFilter(); f.frequency.value = 1400; const og = ac.createGain();
+    o.connect(f); f.connect(og); og.connect(master); o.frequency.setValueAtTime(520, t + 1); o.frequency.linearRampToValueAtTime(760, t + 1.8); o.frequency.linearRampToValueAtTime(520, t + 2.6);
+    og.gain.setValueAtTime(0, t + 1); og.gain.linearRampToValueAtTime(0.25, t + 1.2); og.gain.linearRampToValueAtTime(0, t + 2.7); o.start(t + 1); o.stop(t + 2.8);
+    for (let k = 0; k < 5; k++) setTimeout(() => playBurst(src.noise), 300 + Math.random() * 4200);
+  }
+  function playTouch() {
+    if (!live()) return; const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.value = 220; o.connect(g); g.connect(master); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.3, t + 0.05); g.gain.exponentialRampToValueAtTime(0.001, t + 1.6); o.start(t); o.stop(t + 1.7);
+  }
+  function chainFor(src) {
+    if (src.kind === "lugar") return chainPlace(src);
+    if (src.kind === "conflito") return ["ruído grave filtrado em 90 Hz, contínuo (rumor)", `rajadas de ruído agudo, chance ${Math.round(src.noise * 100)}% a cada 90 passos`, "sirene curta em dente de serra, 520 → 760 Hz", "compressor −18 dB → saída"];
+    if (src.kind === "ambiente") { const c = src.c; return [`senoide grave: 55 + 4·T Hz = ${55 + 4 * c.T} Hz (calor)`, `ruído filtrado em 400 Hz, volume ∝ PM2,5 (${c.pm} µg/m³)`, `tremolo no ritmo da luz do dia (${src.dl.toFixed(1).replace(".", ",")} h)`, `rajadas de ruído ∝ ${c.db} dB durante o crescimento`, "compressor −18 dB → saída"]; }
+    const e = src.e;
+    if (e.level === "Red") return ["oscilador dente de serra", "frequência 380 → 880 → 380 Hz, 3 ciclos de 1,6 s", "filtro passa-baixa 1600 Hz", "envelope: sobe 0,3 s, sustenta, cai 0,4 s", "compressor −18 dB → saída"];
+    if (e.type === "WF") return ["ruído branco, 0,5 s", `filtro passa-banda ${Math.round(2400 + e.inten * 1500)} Hz, Q 4`, `volume ${(0.15 + 0.2 * e.inten).toFixed(2)}, queda exponencial`, "compressor −18 dB → saída"];
+    if (e.type === "EQ") return ["senoide", "frequência 70 → 32 Hz em 1,2 s", "volume 0,9, queda exponencial 1,4 s", "compressor −18 dB → saída"];
+    return ["ruído branco, 2,4 s", `filtro passa-banda varrendo 300 → ${Math.round(600 + 1200 * e.inten)} → 400 Hz`, "envelope: sobe 0,6 s, cai 1,7 s", "compressor −18 dB → saída"];
+  }
+  function renderChain() { document.getElementById("sChain").innerHTML = chainFor(P.src).map(x => `<li>${x}</li>`).join(""); }
+
+  // ================= view: som =================
+  const S = { cv: document.getElementById("sCv"), on: false, oscs: [], x: 0 };
+  S.ctx = S.cv.getContext("2d");
+  const BANDS = 32;
+  function sStart() {
+    if (!audio()) return;
+    if (S.on) return;
+    S.bus = ac.createGain(); S.bus.gain.value = 0.9; S.bus.connect(master); S.oscs = [];
+    for (let b = 0; b < BANDS; b++) {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = P.L.length > 1 ? "triangle" : "sine"; o.frequency.value = 110 * Math.pow(2, (BANDS - 1 - b) / (BANDS - 1) * 4); g.gain.value = 0;
+      o.connect(g); g.connect(S.bus); o.start(); S.oscs.push({ o, g });
+    }
+    S.on = true; S.t0 = performance.now();
+    const btn = document.getElementById("sSonify"); btn.setAttribute("aria-pressed", "true"); btn.textContent = "parar leitura";
+  }
+  function sStop() {
+    if (!S.on) return;
+    const t = ac.currentTime; for (const { o, g } of S.oscs) { g.gain.setTargetAtTime(0, t, 0.05); o.stop(t + 0.3); }
+    S.on = false; S.oscs = [];
+    const btn = document.getElementById("sSonify"); btn.setAttribute("aria-pressed", "false"); btn.textContent = "ler retrato como som";
+  }
+  document.getElementById("sSonify").addEventListener("click", () => S.on ? sStop() : sStart());
+
+  function sTick() {
+    pTick();
+    pRender(S.ctx, S.cv.width, S.cv.height);
+    const w = S.cv.width, h = S.cv.height;
+    if (S.on) {
+      S.x = ((performance.now() - S.t0) / 12000) % 1;
+      // the sound reads the picture itself: one column of pixels, 32 bands, brightness → volume
+      const W = S.cv.width, Hh = S.cv.height, t = ac.currentTime, px = S.ctx.getImageData(Math.min(W - 1, Math.floor(S.x * W)), 0, 1, Hh).data, rows = Hh / BANDS;
+      for (let b = 0; b < BANDS; b++) {
+        let m = 0; const y0 = Math.floor(b * rows), y1 = Math.floor((b + 1) * rows);
+        for (let y = y0; y < y1; y++) m += (px[y * 4] + px[y * 4 + 1] + px[y * 4 + 2]) / 765;
+        m = clamp((m / (y1 - y0) - 0.06) * 1.8, 0, 1);
+        S.oscs[b].g.gain.setTargetAtTime(m * 0.05, t, 0.03);
+      }
+      const x = S.x * w;
+      S.ctx.fillStyle = "rgba(237,231,220,0.95)"; S.ctx.fillRect(x - 1, 0, 2, h);
+      S.ctx.fillStyle = "rgba(237,231,220,0.08)"; S.ctx.fillRect(x - 12, 0, 24, h);
+    }
+    drawScope(); cyTick();
+  }
+  const HG = { st: null };
+  function drawScope() {
+    const sc = document.getElementById("sScope"), sp = document.getElementById("sSpec"), a = sc.getContext("2d"), b = sp.getContext("2d");
+    const font = `20px ${FONT()}`;
+    const lay = (P.src && P.src.layers) || [], c0 = lay[0] ? COL[lay[0].key] : [237, 231, 220], c1 = lay[1] ? COL[lay[1].key] : c0;
+    // Score of the place: one row per factor. Wave width follows the Hz (wide = low, tight = high),
+    // wave height follows how much the factor weighs in the place. With sound on, the real loudness lifts the waves.
+    const T = P.src && P.src.place ? P.src.place.pl.T : 20, now = performance.now() / 1000;
+    const rowsL = lay.length ? lay : [];
+    let level = 0; if (analyser) { const td = new Float32Array(512); analyser.getFloatTimeDomainData(td); for (const v of td) level += v * v; level = Math.min(1, Math.sqrt(level / 512) * 6); }
+    a.globalCompositeOperation = "source-over"; a.fillStyle = "#050407"; a.fillRect(0, 0, sc.width, sc.height);
+    const top = 2, rh = (sc.height - top - 2) / Math.max(1, rowsL.length), labW = 150, x0 = labW, x1 = sc.width - 6;
+    const DESC = { ADR: "adrenalina", NOR: "noradrenalina", COR: "cortisol", GLU: "glutamato", IL6: "interleucina-6", SER: "serotonina", GRE: "grelina", MEL: "melatonina", OXT: "ocitocina", GABA: "GABA", EQ: "terremoto", WF: "incêndio", TC: "tempestade", HEAT: "calor", AIR: "ar", NOISE: "ruído", LIGHT: "luz e escuridão", WAR: "guerra" };
+    rowsL.forEach((l, k) => {
+      const col = COL[l.key], f = HZ[l.key] ? HZ[l.key](l.i ?? 0.5, T) : 220, i = l.i ?? 0.5, yc = top + rh * (k + 0.5);
+      
+      a.fillStyle = `rgb(${col.join(",")})`; a.font = `600 12px ${FONT()}`; a.fillText(`${DESC[l.key] || l.key}`, 4, yc + 4);
+      a.fillStyle = "#8F8980"; a.font = `11px ${FONT()}`; a.fillText(`${Math.round(f)} Hz`, 100, yc + 4);
+      const cycles = 1.5 + Math.log2(Math.max(20, f) / 20) * 4, amp = (rh * 0.36) * (0.25 + 0.75 * i) * (0.85 + 0.3 * level), ph = now * (0.25 + 0.05 * k);
+      a.shadowBlur = 2; a.shadowColor = `rgb(${col.join(",")})`; a.strokeStyle = `rgba(${col.join(",")},0.85)`; a.lineWidth = 1.2;
+      a.beginPath();
+      for (let x = x0; x <= x1; x += 1) { const u = (x - x0) / (x1 - x0), env = Math.sin(Math.PI * u); const y = yc - Math.sin(u * cycles * Math.PI * 2 - ph) * amp * (0.35 + 0.65 * env); x === x0 ? a.moveTo(x, y) : a.lineTo(x, y); }
+      a.stroke(); a.shadowBlur = 0;
+    });
+    if (!rowsL.length) { a.fillStyle = "#8F8980"; a.fillText("escolha um lugar", 24, 70); }
+    if (frame % 30 === 0) { const el = document.getElementById("sLisInfo"); if (el) el.innerHTML = ""; }
+    if (!analyser) { b.fillStyle = "#000"; b.fillRect(0, 0, sp.width, sp.height); b.fillStyle = "#8F8980"; b.font = font; b.fillText("cascata espectral · ligue o som", 16, 32); return; }
+    // waterfall spectrogram: previous rows slide down, the new row is painted on top in the layer colors
+    b.globalCompositeOperation = "source-over"; b.drawImage(sp, 0, 3); b.fillStyle = "#000"; b.fillRect(0, 0, sp.width, 3);
+    const fd = new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(fd);
+    const bins = 300, bw = sp.width / bins;
+    for (let k = 0; k < bins; k++) {
+      const idx = Math.floor(Math.pow(k / bins, 2) * fd.length * 0.5), v = fd[idx] / 255, t = k / bins;
+      const r = c0[0] * (1 - t) + c1[0] * t, g = c0[1] * (1 - t) + c1[1] * t, bb = c0[2] * (1 - t) + c1[2] * t, w = v > 0.8 ? (v - 0.8) * 5 : 0;
+      b.fillStyle = `rgb(${Math.round(Math.min(255, r * v + 255 * w))},${Math.round(Math.min(255, g * v + 240 * w))},${Math.round(Math.min(255, bb * v + 230 * w))})`; b.fillRect(k * bw, 0, Math.ceil(bw), 3);
+    }
+    b.fillStyle = "rgba(0,0,0,0.6)"; b.fillRect(8, sp.height - 34, 230, 26); b.fillStyle = "#8F8980"; b.font = font; b.fillText("cascata espectral", 16, sp.height - 14);
+  }
+
+  // ================= view: metodo =================
+  { const el = document.getElementById("mChem"); if (el) el.innerHTML = Object.entries(MED).map(([k, m]) => `<dt style="color:${hex(m.cor)}">● ${m.nome}</dt><dd>${m.massa.toLocaleString("pt-BR")} g/mol → ${medHz(k).toFixed(1)} Hz<br><span class="dim" style="font-size:10px">${m.papel}</span></dd>`).join("");
+    const FN = { EQ: "terremoto", WF: "incêndio", TC: "tempestade, inundação", HEAT: "calor", AIR: "poluição do ar", NOISE: "ruído", LIGHT: "luz e escuridão", WAR: "guerra", VIOL: "violência, crise política", FOME: "fome", DESL: "deslocamento forçado" };
+    const el2 = document.getElementById("mFmed"); if (el2) el2.innerHTML = Object.entries(FMED).map(([f, w]) => `<dt>${FN[f]}</dt><dd>${Object.entries(w).map(([m, x]) => `<span style="color:${hex(MED[m].cor)}">${MED[m].nome} ${Math.round(x * 100)}%</span>`).join(" · ")}</dd>`).join(""); }
+  document.querySelector("#tData tbody").innerHTML = EV.slice().reverse().map(e => `<tr><td>${fmt(e.t)}</td><td class="${e.red ? "r" : "b"}">${e.type}</td><td>${e.level === "Red" ? '<span class="r">vermelho</span>' : "verde"}</td><td>${e.country}</td><td>${e.lat.toFixed(2)}</td><td>${e.lon.toFixed(2)}</td><td>${valueText(e)}</td><td>${Math.round(e.deg)}°</td></tr>`).join("");
+
+  // ================= view: agora (continuous organism) =================
+  const AW = 240, AH = 120, ACPD = AW / 360;
+  const CITY_LON = { "São Paulo": -46.63, "Nova Délhi": 77.21, "Lagos": 3.38, "Cairo": 31.24, "Jacarta": 106.85, "Cidade do México": -99.13, "Madri": -3.70, "Daca": 90.41, "Pequim": 116.40, "Tromsø": 18.96 };
+  const A = { cv: document.getElementById("aCv"), off: document.createElement("canvas"), nightCv: document.createElement("canvas"), dots: document.createElement("canvas"),
+    t: T0, synced: false, fired: 0, touches: [], labels: [], hist: [], bodies: 0, lastSnap: 0, lastNight: 0, night: new Float32Array(AW * AH), nightFrac: 0, load: 0, scars: 0, active: 0 };
+  A.ctx = A.cv.getContext("2d"); A.off.width = AW; A.off.height = AH; A.octx = A.off.getContext("2d"); A.img = A.octx.createImageData(AW, AH);
+  A.nightCv.width = AW; A.nightCv.height = AH; A.nctx = A.nightCv.getContext("2d"); A.nimg = A.nctx.createImageData(AW, AH);
+  A.S = { EQ: createSim(AW, AH), WF: createSim(AW, AH), TC: createSim(AW, AH), HEAT: createSim(AW, AH), AIR: createSim(AW, AH), BODY: createSim(AW, AH) };
+  const ACOL = { EQ: COL.EQ, WF: COL.WF, TC: COL.TC, HEAT: COL.HEAT, AIR: COL.AIR, BODY: COL.NOISE };
+  const aEV = EV.map(e => ({ e, x: Math.round((e.lon + 180) / 360 * AW) % AW, y: Math.round((90 - e.lat) / 180 * AH) }));
+  const aCities = CITIES.map(c => {
+    const lon = CITY_LON[c.name];
+    return { c, lon, x: Math.round((lon + 180) / 360 * AW) % AW, y: Math.round((90 - c.lat) / 180 * AH),
+      hi: clamp((c.T - 18) / 22, 0, 1), ai: clamp(c.pm / 90, 0, 1), ni: clamp((c.db - 45) / 40, 0, 1) };
+  });
+  for (const k of aCities) { seed(A.S.HEAT, k.x, k.y, 2, 1); seed(A.S.AIR, k.x, k.y, 2, 1); }
+  const aLog = document.getElementById("aLog");
+  function aLogLine(html) { const li = document.createElement("li"); li.innerHTML = html; if (aLog.firstChild && aLog.firstChild.textContent.startsWith("sincronizando")) aLog.innerHTML = ""; aLog.prepend(li); while (aLog.children.length > 7) aLog.lastChild.remove(); }
+  function aResize() {
+    const r = A.cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    A.w = Math.max(1, Math.round(r.width * dpr)); A.h = Math.max(1, Math.round(r.height * dpr)); A.dpr = dpr;
+    A.cv.width = A.w; A.cv.height = A.h; A.dots.width = A.w; A.dots.height = A.h;
+    const d = A.dots.getContext("2d"); d.fillStyle = "#070609"; d.fillRect(0, 0, A.w, A.h);
+    d.fillStyle = "#34313A"; const rad = Math.max(0.8, A.w / 360 * 2.5 * 0.2);
+    for (let lat = 77.5; lat > -55; lat -= 2.5) {
+      let best = ROWS[0]; for (const row of ROWS) if (Math.abs(row[0] - lat) < Math.abs(best[0] - lat)) best = row;
+      for (let lon = -178.75; lon < 180; lon += 2.5) { if (!best[1].some(([a, b]) => lon >= a && lon <= b)) continue; d.beginPath(); d.arc((lon + 180) / 360 * A.w, (90 - lat) / 180 * A.h, rad, 0, Math.PI * 2); d.fill(); }
+    }
+  }
+  function aNightUpdate(t) {
+    const d = new Date(t), start = Date.UTC(d.getUTCFullYear(), 0, 0), N = Math.floor((t - start) / 864e5);
+    const dec = 23.44 * Math.sin(2 * Math.PI * (284 + N) / 365) * Math.PI / 180;
+    const hours = d.getUTCHours() + d.getUTCMinutes() / 60, subLon = (12 - hours) * 15;
+    let sum = 0; const px = A.nimg.data;
+    for (let y = 0; y < AH; y++) {
+      const phi = (90 - (y + 0.5) * 180 / AH) * Math.PI / 180;
+      for (let x = 0; x < AW; x++) {
+        const lon = (x + 0.5) * 360 / AW - 180, cz = Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos((lon - subLon) * Math.PI / 180);
+        const n = clamp(0.5 - cz * 4, 0, 1), i = y * AW + x; A.night[i] = n; sum += n;
+        const p = i * 4; px[p] = 150; px[p+1] = 100; px[p+2] = 255; px[p+3] = Math.round(n * 46);
+      }
+    }
+    A.nctx.putImageData(A.nimg, 0, 0); A.nightFrac = sum / (AW * AH);
+  }
+  function paintAcc(s, cx, cy, r, f, k) {
+    const r2 = r * r, ri = Math.ceil(r);
+    for (let dy = -ri; dy <= ri; dy++) {
+      const y = cy + dy; if (y < 0 || y >= AH) continue;
+      for (let dx = -ri; dx <= ri; dx++) {
+        if (dx * dx + dy * dy > r2) continue;
+        const i = y * AW + ((cx + dx) % AW + AW) % AW;
+        if (++s.cnt[i] > 1) { s.F[i] = 0.029; s.K[i] = 0.057; } else { s.F[i] = f; s.K[i] = k; }
+      }
+    }
+  }
+  function aZones() {
+    for (const s of Object.values(A.S)) { s.F.fill(0.02); s.K.fill(0.075); if (!s.cnt) s.cnt = new Uint8Array(s.N); s.cnt.fill(0); }
+    let load = 0, active = 0, scars = 0;
+    for (let k = 0; k < A.fired; k++) {
+      const { e, x, y } = aEV[k], age = (A.t - e.t) / HOUR, decay = Math.exp(-age / 72), full = e.deg * ACPD, s = A.S[e.type];
+      if (decay > 0.25) {
+        const g = regime(e); paintAcc(s, x, y, full * Math.sqrt(clamp(age / 24, 0.08, 1)), g.F, g.K);
+        active++; load += decay * (e.inten + 0.3);
+      } else { paintZone(s, x, y, Math.max(2, full * 0.35), 0.03, 0.0625); scars++; load += 0.05; }
+    }
+    const d = new Date(A.t), utcH = d.getUTCHours() + d.getUTCMinutes() / 60;
+    for (const k of aCities) {
+      const solar = (utcH + k.lon / 15 + 24) % 24, di = 0.5 + 0.5 * Math.cos(2 * Math.PI * (solar - 15) / 24);
+      paintZone(A.S.HEAT, k.x, k.y, (1.5 + 7 * k.hi * di) * ACPD * 1.6, 0.0367 - 0.008 * k.hi, 0.0649 - 0.005 * k.hi);
+      paintZone(A.S.AIR, k.x, k.y, (1.5 + 6 * k.ai) * ACPD * 1.6, 0.029, 0.057 + 0.004 * (1 - k.ai));
+      if (Math.random() < 0.04) { seed(A.S.HEAT, k.x, k.y, 1, 1); seed(A.S.AIR, k.x, k.y, 1, 1); }
+      load += (k.hi * di + k.ai + k.ni) / 3 * 0.12;
+    }
+    const now = performance.now(); A.touches = A.touches.filter(t => now - t.born < 25000);
+    for (const t of A.touches) paintZone(A.S.BODY, t.x, t.y, 6, 0.0367, 0.0649);
+    for (const k of aCities) paintZone(A.S.BODY, k.x, k.y, 3, 0.0367, 0.0649);
+    for (const s of Object.values(A.S)) { const F = s.F, K = s.K, Nn = A.night; for (let i = 0; i < F.length; i++) if (F[i] > 0.0201) K[i] += 0.0016 * Nn[i]; }
+    A.load = load; A.active = active; A.scars = scars;
+  }
+  function aFire(k) {
+    const { e, x, y } = aEV[k];
+    seed(A.S[e.type], x, y, Math.max(2, Math.round(e.deg * ACPD * 0.35)));
+    A.labels.push({ x, y, born: performance.now(), color: hex(COL[e.type]), text: `${TYPE[e.type]} · ${e.country.split(",")[0]} · ${valueText(e)}` });
+    aLogLine(`${fmt(e.t)}  <span style="color:${hex(COL[e.type])}">${e.type}</span>  ${e.country.toUpperCase()}  ${valueText(e)}  ${e.level === "Red" ? '<span class="r">ALERTA VERMELHO</span>' : "alerta verde"}`);
+    if (A.synced) playEvent(e);
+  }
+  function aSnap() {
+    const g = document.getElementById("aArchive"), empty = document.getElementById("aArchEmpty"); if (empty) empty.remove();
+    const fig = document.createElement("figure"), c = document.createElement("canvas"), cap = document.createElement("figcaption");
+    c.width = 360; c.height = 180; c.style.aspectRatio = "2 / 1";
+    const x = c.getContext("2d"); x.drawImage(A.dots, 0, 0, 360, 180); x.drawImage(A.nightCv, 0, 0, 360, 180);
+    x.globalCompositeOperation = "lighter"; x.filter = "blur(3px)"; x.drawImage(A.off, 0, 0, 360, 180); x.filter = "none"; x.drawImage(A.off, 0, 0, 360, 180);
+    cap.textContent = `${fmt(A.t)} UTC · carga ${A.load.toFixed(2).replace(".", ",")}`; fig.append(c, cap); g.prepend(fig);
+    while (g.children.length > 24) g.lastChild.remove();
+  }
+  let aDrone = null;
+  function aDroneStart() {
+    if (!audio() || aDrone) return;
+    const bus = ac.createGain(); bus.gain.value = 0; const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 900; bus.connect(lp); lp.connect(master);
+    const oscs = [[55, 0.5, "sine"], [82.4, 0.25, "sine"], [110.3, 0.12, "triangle"], [164.8, 0.05, "triangle"]].map(([f, g, ty]) => { const o = ac.createOscillator(); o.type = ty; o.frequency.value = f; const gg = ac.createGain(); gg.gain.value = g; o.connect(gg); gg.connect(bus); o.start(); return o; });
+    aDrone = { bus, lp, oscs };
+  }
+  function aDroneStop() { if (!aDrone) return; const t = ac.currentTime; aDrone.bus.gain.setTargetAtTime(0, t, 0.2); aDrone.oscs.forEach(o => o.stop(t + 1)); aDrone = null; }
+  document.getElementById("aSound").addEventListener("click", (ev) => {
+    const b = ev.currentTarget;
+    if (aDrone) { aDroneStop(); b.textContent = "ligar som"; b.setAttribute("aria-pressed", "false"); }
+    else { aDroneStart(); b.textContent = "som ligado"; b.setAttribute("aria-pressed", "true"); }
+  });
+  document.getElementById("aStage").addEventListener("pointerdown", (ev) => {
+    const r = A.cv.getBoundingClientRect(), x = Math.round((ev.clientX - r.left) / r.width * AW), y = Math.round((ev.clientY - r.top) / r.height * AH);
+    A.touches.push({ x, y, born: performance.now() }); A.bodies++; seed(A.S.BODY, x, y, 3);
+    A.labels.push({ x, y, born: performance.now(), color: "#EDE7DC", text: "corpo presente" });
+    aLogLine(`${fmt(A.t)}  TOQUE  um corpo entrou no organismo`); playTouch();
+  });
+  let aFrame = 0;
+  function aTick(dt, visible) {
+    aFrame++;
+    const now = Date.now();
+    if (!A.synced) {
+      A.t = Math.min(now, A.t + dt * (now - T0) / 22);
+      if (A.t >= now) { A.synced = true; aLogLine(`${fmt(now)}  memória sincronizada · ao vivo`); aSnap(); A.lastSnap = performance.now(); }
+    } else A.t = now;
+    while (A.fired < aEV.length && aEV[A.fired].e.t <= A.t) { aFire(A.fired); A.fired++; }
+    if (A.t - A.lastNight > 60e3 || aFrame === 1) { aNightUpdate(A.t); A.lastNight = A.t; }
+    if (aFrame % 6 === 0) aZones();
+    if (A.synced && Math.random() < 0.01) { const k = aCities[Math.floor(Math.random() * aCities.length)]; if (Math.random() < k.ni) { seed(A.S.BODY, k.x, k.y, 1, 1); if (aDrone) playBurst(k.ni * 0.6); } }
+    const sims = Object.values(A.S), n = visible ? (A.synced ? (reduce ? 2 : 4) : 6) : 1;
+    for (let k = 0; k < n; k++) for (const s of sims) step(s);
+    if (aDrone) { const t = ac.currentTime; aDrone.bus.gain.setTargetAtTime(clamp(0.15 + A.load * 0.12, 0, 0.9), t, 0.8); aDrone.lp.frequency.setTargetAtTime(250 + 1400 * (1 - A.nightFrac) + 300 * Math.min(A.load, 3), t, 1); }
+    if (A.synced && performance.now() - A.lastSnap > 60000) { aSnap(); A.lastSnap = performance.now(); }
+    if (aFrame % 60 === 0) { A.hist.push(A.load); if (A.hist.length > 150) A.hist.shift(); }
+    if (!visible) return;
+    colorize(A.img, Object.entries(A.S).map(([k, s]) => [s, ACOL[k]])); A.octx.putImageData(A.img, 0, 0);
+    const ctx = A.ctx; ctx.globalCompositeOperation = "source-over"; ctx.filter = "none"; ctx.globalAlpha = 1;
+    ctx.drawImage(A.dots, 0, 0); ctx.imageSmoothingEnabled = true; ctx.drawImage(A.nightCv, 0, 0, A.w, A.h);
+    ctx.globalCompositeOperation = "lighter"; ctx.filter = `blur(${Math.max(2, Math.round(A.w / 110))}px)`; ctx.globalAlpha = 0.9; ctx.drawImage(A.off, 0, 0, A.w, A.h);
+    ctx.filter = "none"; ctx.globalAlpha = 1; ctx.drawImage(A.off, 0, 0, A.w, A.h); ctx.globalCompositeOperation = "source-over";
+    const pnow = performance.now(), fs = Math.max(10, Math.round(A.w / 120)); ctx.font = `400 ${fs}px ${FONT()}`;
+    A.labels = A.labels.filter(l => pnow - l.born < 5000);
+    for (const l of A.labels) {
+      const a = 1 - (pnow - l.born) / 5000, x = l.x / AW * A.w, y = l.y / AH * A.h, right = x > A.w * 0.72;
+      ctx.globalAlpha = a; ctx.strokeStyle = ctx.fillStyle = l.color; ctx.lineWidth = Math.max(1, A.dpr);
+      ctx.beginPath(); ctx.moveTo(x - fs, y); ctx.lineTo(x + fs, y); ctx.moveTo(x, y - fs); ctx.lineTo(x, y + fs); ctx.stroke();
+      ctx.textAlign = right ? "right" : "left"; ctx.fillText(l.text, x + (right ? -fs * 1.4 : fs * 1.4), y - fs * 0.6);
+    }
+    ctx.globalAlpha = 1;
+    const d = new Date(A.t);
+    document.getElementById("aClock").textContent = A.synced ? `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}` : fmt(A.t);
+    if (aFrame % 10 === 0) {
+      document.getElementById("aLoad").textContent = A.load.toFixed(2).replace(".", ",");
+      document.getElementById("aState").textContent = A.synced ? "ao vivo · UTC" : `sincronizando · ${fmt(A.t)}`;
+      document.getElementById("aActive").textContent = A.active;
+      document.getElementById("aScars").textContent = A.scars;
+      document.getElementById("aNight").textContent = Math.round(A.nightFrac * 100) + "% do planeta";
+      document.getElementById("aBodies").textContent = A.bodies;
+      const c = document.getElementById("aSpark"), x = c.getContext("2d"), w = c.width, h = c.height; x.clearRect(0, 0, w, h);
+      x.strokeStyle = "#26242C"; x.beginPath(); x.moveTo(0, h - 1); x.lineTo(w, h - 1); x.stroke();
+      const mx = Math.max(0.5, ...A.hist); x.strokeStyle = "#EDE7DC"; x.lineWidth = 2; x.beginPath();
+      A.hist.forEach((v, i) => { const px = i / 149 * w, py = h - 2 - v / mx * (h - 6); i ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke();
+    }
+  }
+
+  // ================= places: every factor that can weigh on mental health in one place =================
+  // Disasters: real (GDACS), weighted by distance and age. Daylight and night: computed for today and now.
+  // Heat, air and noise: example values until live sources are connected; fire smoke from real alerts adds to air.
+  // Armed conflict: pending (UCDP requires an access key), so it stays at zero instead of an invented value.
+  const PLACES = [
+    { name: "Planalto Tibetano, China", lat: 32.4, lon: 93.8, T: 2, pm: 8, db: 45 },
+    { name: "Norte da Austrália", lat: -19.5, lon: 128.5, T: 36, pm: 14, db: 45 },
+    { name: "Okavango, Botsuana", lat: -20.5, lon: 24.8, T: 33, pm: 12, db: 45 },
+    { name: "Sudão do Sul", lat: 9.7, lon: 26.0, T: 35, pm: 30, db: 50, ex: { VIOL: 0.55, WAR: 0.6, FOME: 0.85, DESL: 0.8 } },
+    { name: "Costa do Pacífico, México", lat: 17.0, lon: -100.5, T: 30, pm: 15, db: 60 },
+    { name: "Vanuatu", lat: -15.4, lon: 167.0, T: 27, pm: 6, db: 50 },
+    { name: "Nova Escócia, Canadá", lat: 44.6, lon: -63.6, T: 12, pm: 6, db: 58 },
+    ...CITIES.map(c => ({ name: c.name, lat: c.lat, lon: CITY_LON[c.name], T: c.T, pm: c.pm, db: c.db, ex: ({ "São Paulo": { VIOL: 0.35 }, "Lagos": { VIOL: 0.45, FOME: 0.3 }, "Cidade do México": { VIOL: 0.45 }, "Daca": { DESL: 0.35, FOME: 0.2 }, "Cairo": { VIOL: 0.2 }, "Nova Délhi": { VIOL: 0.25 } })[c.name] || {} })),
+  ];
+  if (LIVE && LIVE.lugares) for (const p of PLACES) {
+    const r = LIVE.lugares.find(x => x.nome === p.name); if (!r) continue;
+    if (r.T != null) { p.T = Math.round(r.T); p.realT = true; }
+    if (r.pm != null) { p.pm = Math.round(r.pm); p.realPM = true; }
+    p.ex = {}; p.live = {};
+    for (const [k, f] of [["VIOL", "violencia"], ["WAR", "guerra"], ["FOME", "fome"], ["DESL", "deslocamento"]]) if (r[f] && r[f].i != null) p.live[k] = r[f];
+  }
+  function liveFac(pl, k, fonte) {
+    const r = pl.live && pl.live[k];
+    if (r) return { i: r.i, tag: `real · ${fonte}${r.nota ? " · " + r.nota : ""}` };
+    const e = pl.ex && pl.ex[k];
+    return { i: e || 0, tag: e ? `exemplo · a coletar (${fonte})` : `a coletar (${fonte})` };
+  }
+  function kmBetween(a1, o1, a2, o2) { const r = Math.PI / 180, dA = (a2 - a1) * r, dO = (o2 - o1) * r; const x = Math.sin(dA / 2) ** 2 + Math.cos(a1 * r) * Math.cos(a2 * r) * Math.sin(dO / 2) ** 2; return 12742 * Math.asin(Math.sqrt(x)); }
+  function srcFromPlace(pl) {
+    const now = Date.now(), d = new Date(now);
+    const dis = { EQ: 0, WF: 0, TC: 0 }; let nearest = null;
+    for (const e of EV) {
+      const km = kmBetween(pl.lat, pl.lon, e.lat, e.lon), w = Math.exp(-((km / 700) ** 2)), decay = Math.exp(-Math.max(0, (now - e.t) / HOUR) / 72);
+      const c = clamp(e.inten * (e.level === "Red" ? 1.5 : 1), 0, 1) * w * decay;
+      if (c > 0.01) { dis[e.type] = 1 - (1 - dis[e.type]) * (1 - c); if (!nearest || km < nearest.km) nearest = { e, km }; }
+    }
+    const dKey = Object.keys(dis).sort((a, b) => dis[b] - dis[a])[0], dI = clamp(dis[dKey] * 2.2, 0, 1);
+    const solar = (d.getUTCHours() + d.getUTCMinutes() / 60 + pl.lon / 15 + 24) % 24, diurnal = 0.5 + 0.5 * Math.cos(2 * Math.PI * (solar - 15) / 24);
+    const dl = daylight(pl.lat, d), night = solar < 12 - dl / 2 || solar > 12 + dl / 2;
+    const hi = clamp((pl.T - 18) / 22, 0, 1) * (0.6 + 0.4 * diurnal);
+    const ai = clamp(pl.pm / 90 + 0.6 * dis.WF, 0, 1);
+    const ni = clamp((pl.db - 45) / 40, 0, 1);
+    const li = clamp(Math.abs(dl - 12) / 12 + (night ? 0.25 : 0), 0, 1);
+    const DNAME = { EQ: "terremoto", WF: "incêndio", TC: "tempestade" };
+    const factors = [
+      { key: dKey, name: `desastre · ${DNAME[dKey]}`, i: dI, tag: nearest ? `real · GDACS · ${Math.round(nearest.km)} km` : "real · GDACS · nenhum perto" },
+      { key: "HEAT", name: "calor", i: hi, tag: `${pl.realT ? "real · Open-Meteo" : "exemplo"} · ${pl.T} °C · hora local ${pad(Math.floor(solar))}h` },
+      { key: "AIR", name: "ar", i: ai, tag: `${pl.realPM ? "real · Open-Meteo" : "exemplo"} · ${pl.pm} µg/m³${dis.WF > 0.02 ? " + fumaça real" : ""}` },
+      { key: "NOISE", name: "ruído", i: ni, tag: `estimado · ${pl.db} dB` },
+      { key: "LIGHT", name: "luz e escuridão", i: li, tag: `calculado · ${dl.toFixed(1).replace(".", ",")} h de luz${night ? " · noite agora" : ""}` },
+      { key: "WAR", name: "guerra e conflito armado", ...liveFac(pl, "WAR", "HDX · ACLED") },
+      { key: "VIOL", name: "violência e crise política", ...liveFac(pl, "VIOL", "GDELT") },
+      { key: "FOME", name: "fome", ...liveFac(pl, "FOME", "HDX · IPC") },
+      { key: "DESL", name: "deslocamento forçado", ...liveFac(pl, "DESL", "HDX") },
+    ];
+    return { id: "pl" + PLACES.indexOf(pl), kind: "lugar", pl, factors, light: li, label: pl.name, lat: pl.lat, lon: pl.lon };
+  }
+  const PSRC = PLACES.map(srcFromPlace);
+
+  // retratos built from places: the three heaviest factors of a place, each with its own color and reaction-diffusion regime
+  // regimes chosen to avoid isolated round dots: filaments, branching coral and wandering lines read as living tissue
+  const RDREG = { EQ: () => ({ F: 0.029, K: 0.057 }), WF: i => ({ F: 0.054 - 0.004 * i, K: 0.0625 - 0.001 * i }), TC: () => ({ F: 0.0545, K: 0.062 }),
+    ADR: () => ({ F: 0.039, K: 0.058 }), NOR: i => ({ F: 0.052 - 0.003 * i, K: 0.0622 }), COR: i => ({ F: 0.03 - 0.003 * i, K: 0.0565 - 0.001 * i }), GLU: i => ({ F: 0.026 + 0.003 * (1 - i), K: 0.055 + 0.003 * (1 - i) }),
+    IL6: i => ({ F: 0.029, K: 0.058 + 0.002 * (1 - i) }), SER: () => ({ F: 0.0545, K: 0.062 }), GRE: () => ({ F: 0.028, K: 0.056 }), MEL: () => ({ F: 0.0545, K: 0.062 }), OXT: () => ({ F: 0.0545, K: 0.062 }), GABA: () => ({ F: 0.05, K: 0.0615 }),
+    HEAT: i => ({ F: 0.03 - 0.003 * i, K: 0.0565 - 0.001 * i }), AIR: i => ({ F: 0.029, K: 0.057 + 0.003 * (1 - i) }), NOISE: () => ({ F: 0.039, K: 0.058 }),
+    LIGHT: () => ({ F: 0.0545, K: 0.062 }), WAR: i => ({ F: 0.026 + 0.004 * (1 - i), K: 0.054 + 0.004 * (1 - i) }) };
+  const RDNAME = { ADR: "fibras curtas", NOR: "coral ramificado", COR: "filamentos errantes", GLU: "labirinto denso", IL6: "labirinto aberto", SER: "coral", GRE: "filamentos", MEL: "anel pulsante", OXT: "coral", GABA: "coral ramificado", EQ: "labirinto", WF: "coral ramificado", TC: "coral", HEAT: "filamentos errantes", AIR: "labirinto aberto", NOISE: "fibras curtas", LIGHT: "anel pulsante", WAR: "labirinto denso" };
+  function portraitFromPlace(ps) {
+    const src = srcFromPlace(ps.pl), top = speciesFor(src);
+    const layers = top.map(([key, i]) => ({ key, i, ch: { ...RDREG[key](i), n: Math.round(16 + 200 * i), R: (0.18 + 0.28 * i) * PS, ring: key === "LIGHT" || key === "MEL" } }));
+    const nz = (src.factors.find(f => f.key === "NOISE") || { i: 0 }).i, mx = Math.max(...top.map(x => x[1]));
+    return { id: "rp" + PLACES.indexOf(ps.pl), kind: "lugar", place: src, layers, noise: nz, light: src.light, period: 600,
+      target: Math.round(2400 + 2000 * mx), label: ps.pl.name,
+      inRows: src.factors.slice().sort((a, b) => b.i - a.i).map(f => [`<span style="color:${f.i > 0 ? hex(COL[f.key]) : "var(--dim)"}">${f.name}</span>`, `${f.i.toFixed(2)} · <span class="dim">${f.tag}</span>`]),
+      parRows: layers.map(l => [`<span style="color:${hex(COL[l.key])}">${COLNAME[l.key]}</span>`, `${MED[l.key] ? `${MED[l.key].massa.toLocaleString("pt-BR")} g/mol → ${Math.round(medHz(l.key))} Hz · ` : ""}${RDNAME[l.key] || ""}`]).concat([["passos", Math.round(2400 + 2000 * mx)]]) };
+  }
+  function buildPlaceChips(el) {
+    const d = document.createElement("div"); d.className = "chiphead"; d.textContent = "lugares · tudo o que pesa ali"; el.append(d);
+    PSRC.forEach(ps => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.id = "rp" + PLACES.indexOf(ps.pl);
+      b.innerHTML = speciesFor(ps).map(x => `<i style="color:${hex(COL[x[0]])}">●</i>`).join("") + " " + ps.label;
+      b.addEventListener("click", () => { setAuto(false); pStart(portraitFromPlace(ps)); }); el.append(b);
+    });
+  }
+  // sound rules (parameter-mapping sonification)
+  const HZ = { ADR: () => medHz("ADR"), NOR: () => medHz("NOR"), COR: () => medHz("COR"), GLU: () => medHz("GLU"), IL6: () => medHz("IL6"), SER: () => medHz("SER"), GRE: () => medHz("GRE"), MEL: () => medHz("MEL"), OXT: () => medHz("OXT"), GABA: () => medHz("GABA"), EQ: i => 120 / Math.pow(2, 2 * i), WF: i => 2000 + 4000 * i, TC: i => 150 + 6 * (200 * i), HEAT: (i, T) => 55 * Math.pow(2, ((T ?? 10 + 24 * i) - 10) / 24), AIR: () => 500, NOISE: () => 1200, LIGHT: () => 82.4, WAR: () => 70 };
+  function chainPlace(src) {
+    const T = src.place.pl.T;
+    return src.layers.map(l => {
+      const i = l.i, f = HZ[l.key](i, T);
+      if (MED[l.key]) return `${MED[l.key].nome}: ${MED[l.key].massa.toLocaleString("pt-BR")} g/mol → ${f.toFixed(1)} Hz (massa em oitavas) · volume ${Math.round(i * 100)}%`;
+      if (l.key === "EQ") return `terremoto: senoide ${f.toFixed(0)} Hz (120 ÷ 2^(2i))`;
+      if (l.key === "WF") return `incêndio: estalos centrados em ${Math.round(f)} Hz, ${Math.round(2 + 18 * i)} por segundo`;
+      if (l.key === "TC") return `tempestade: vento filtrado em ${Math.round(f)} Hz`;
+      if (l.key === "HEAT") return `calor: drone ${f.toFixed(1)} Hz (55 × 2^((T − 10) ÷ 24), T = ${T} °C)`;
+      if (l.key === "AIR") return `ar: sopro em 500 Hz, ${Math.round(i * 100)}% de chiado`;
+      if (l.key === "NOISE") return `ruído: ${Math.round(2 + 30 * i)} rajadas por minuto`;
+      if (l.key === "LIGHT") return `luz: pulsação de ${(4 + 8 * i).toFixed(1)} s, uma oitava abaixo à noite`;
+      return `guerra: rumor em 70 Hz e sirene 500 → 900 Hz`;
+    }).concat(["compressor −18 dB → saída"]);
+  }
+  function playPlace(src) {
+    if (!live()) return; const t = ac.currentTime, dur = 6, T = src.place.pl.T;
+    for (const l of src.layers) {
+      const i = l.i, f = HZ[l.key](i, T), g = ac.createGain(); g.connect(master);
+      if (l.key === "EQ" || l.key === "HEAT" || l.key === "LIGHT" || l.key === "WAR") {
+        const o = ac.createOscillator(); o.type = l.key === "HEAT" ? "triangle" : "sine"; o.frequency.value = f; o.connect(g);
+        if (l.key === "LIGHT") { const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = 1 / (4 + 8 * i); lg.gain.value = 0.25; lfo.connect(lg); lg.connect(g.gain); lfo.start(t); lfo.stop(t + dur); }
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.25 + 0.4 * i, t + 0.8); g.gain.linearRampToValueAtTime(0, t + dur); o.start(t); o.stop(t + dur);
+      } else if (l.key === "WF" || l.key === "NOISE") {
+        const count = l.key === "WF" ? Math.round((2 + 18 * i) * dur * 0.4) : Math.round((2 + 30 * i) / 10);
+        for (let k = 0; k < count; k++) { const s2 = noise(0.06), bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = l.key === "WF" ? f : 1200 + Math.random() * 2000; bp.Q.value = 5; const gg = ac.createGain(); s2.connect(bp); bp.connect(gg); gg.connect(master); const st = t + Math.random() * dur * 0.9; gg.gain.setValueAtTime(0.2 + 0.2 * i, st); gg.gain.exponentialRampToValueAtTime(0.001, st + 0.05); s2.start(st); }
+      } else {
+        const s2 = noise(dur), bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = f; bp.Q.value = l.key === "AIR" ? 0.8 : 2; s2.connect(bp); bp.connect(g);
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.2 + 0.35 * i, t + 1); g.gain.linearRampToValueAtTime(0, t + dur); s2.start(t);
+      }
+    }
+  }
+  function placeRows(src) {
+    const chem = chemProfile(src.factors).slice(0, 5).map(([m, v]) => `<dt style="color:${hex(COL[m])}">${MED[m].nome}</dt><dd>${v.toFixed(2)} · ${Math.round(medHz(m))} Hz<br><span class="dim" style="font-size:10px">${MED[m].papel}</span></dd>`).join("");
+    return `<dt style="grid-column:1/-1;color:var(--dim);font-size:10px;letter-spacing:.14em">QUÍMICA DO LUGAR</dt>` + chem + `<dt style="grid-column:1/-1;color:var(--dim);font-size:10px;letter-spacing:.14em;margin-top:8px">O QUE PESA AQUI</dt>` + src.factors.slice().sort((a, b) => b.i - a.i).map(f => `<dt style="color:${f.i > 0 ? hex(COL[f.key]) : "var(--dim)"}">${f.name}</dt><dd><span style="display:inline-block;width:${Math.round(f.i * 70)}px;height:6px;background:${hex(COL[f.key])};vertical-align:middle;margin-right:6px"></span>${f.i.toFixed(2)}<br><span class="dim" style="font-size:10px">${f.tag}</span></dd>`).join("");
+  }
+
+  // ================= figuras: nebula engine (WebGL fragment shader, data-driven uniforms) =================
+  const NB = { cv: document.getElementById("gGl"), ok: false, t0: performance.now(), mode: "neb" };
+  (function nbInit() {
+    const gl = NB.cv.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
+    if (!gl) return;
+    const vs = "attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}";
+    const fs = `precision highp float;
+uniform vec2 uRes,uOff;uniform float uT;uniform vec3 uC1,uC2,uC3;uniform float uW1,uW2,uWarp,uFil,uPts;
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*f*(f*(f*6.-15.)+10.);return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),f.x),f.y);}
+float fbm(vec2 p){float v=0.,a=.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<7;i++){v+=a*n(p);p=m*p;a*=.5;}return v;}
+vec3 stars(vec2 uv,float sc,float dens,float t){vec2 gp=uv*sc;vec2 id=floor(gp);vec2 fp=fract(gp)-.5;float rnd=h(id);
+ float on=step(1.-dens,rnd);vec2 off=vec2(h(id+3.)-.5,h(id+7.)-.5)*.7;float d=length(fp-off);float tw=.7+.3*sin(t*.45+rnd*60.);
+ float core=smoothstep(.07,0.,d);float halo=smoothstep(.45,0.,d)*.18;return vec3(.95,.96,1.)*on*(core+halo)*tw;}
+void main(){
+ vec2 uv=(gl_FragCoord.xy-.5*uRes)/min(uRes.x,uRes.y);
+ vec2 p=uv*1.9+uOff;float t=uT*.012;
+ vec2 q=vec2(fbm(p+vec2(0.,t)),fbm(p+vec2(5.2,1.3)-t*.8));
+ vec2 r=vec2(fbm(p+uWarp*q+vec2(1.7,9.2)+t),fbm(p+uWarp*q+vec2(8.3,2.8)-t*.7));
+ vec2 pw=p+uWarp*r;float f=fbm(pw);
+ float fx=fbm(pw+vec2(.012,0.)),fy=fbm(pw+vec2(0.,.012));
+ vec3 nr=normalize(vec3((f-fx)*30.,(f-fy)*30.,1.));float lit=clamp(dot(nr,normalize(vec3(-.5,.6,.7))),0.,1.);
+ float d=smoothstep(.36,.96,f)*uW1;
+ vec3 deep=uC1*.16+vec3(.015,.01,.025),hot=mix(uC1,vec3(1.,.94,.88),.55);
+ vec3 cc=mix(deep,uC1,smoothstep(0.,.55,d));cc=mix(cc,hot,smoothstep(.6,1.05,d));
+ float fib=fbm(vec2(dot(p,r)*7.,length(q)*5.)+vec2(t*2.,0.));cc*=.72+.56*fib;
+ vec3 col=vec3(.012,.01,.018)+uC3*.025*(1.-length(uv));
+ col=mix(col,cc*(.5+.85*lit),smoothstep(.0,.3,d+.12*f*uW1));
+ float g=fbm(p*1.25+3.*q+vec2(t*1.4,0.));float pt=smoothstep(.6,.84,g)*uW2;
+ vec3 pc=mix(uC2*.45,uC2,smoothstep(.66,.9,g));col=mix(col,pc*(.65+.55*lit),pt*.85);
+ float r1=clamp(1.-abs(r.x-.5)*2.,0.,1.),r2=clamp(1.-abs(fbm(p*2.6+4.*r+t)-.5)*2.,0.,1.);
+ float fil=pow(r1,36.)*1.3+pow(r2,48.)*.8,glw=pow(r1,8.)*.22+pow(r2,12.)*.1;
+ col+=(uC3*(fil+glw)+vec3(1.)*pow(r1,90.)*.6)*uFil;
+ col+=stars(uv,34.,uPts*.10,uT)+stars(uv+7.3,78.,uPts*.07,uT*1.3)*.7;
+ col=(col*(2.51*col+.03))/(col*(2.43*col+.59)+.14);
+ col*=1.-.55*smoothstep(.5,1.15,length(uv));
+ col+=(h(gl_FragCoord.xy+fract(uT))-.5)*.03;
+ gl_FragColor=vec4(clamp(col,0.,1.),1.);
+}`;
+    const mk = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; };
+    const v = mk(gl.VERTEX_SHADER, vs), f = mk(gl.FRAGMENT_SHADER, fs); if (!v || !f) return;
+    const pr = gl.createProgram(); gl.attachShader(pr, v); gl.attachShader(pr, f); gl.linkProgram(pr); if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return;
+    gl.useProgram(pr);
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(pr, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    NB.gl = gl; NB.u = {}; for (const k of ["uRes", "uOff", "uT", "uC1", "uC2", "uC3", "uW1", "uW2", "uWarp", "uFil", "uPts"]) NB.u[k] = gl.getUniformLocation(pr, k);
+    NB.ok = true;
+  })();
+  NB.cur = { c1: [0.9, 0.2, 0.15], c2: [0.92, 0.9, 0.86], c3: [0.35, 0.5, 1], w1: 0.8, w2: 0.4, warp: 4, fil: 0.8, pts: 0.5, off: [0, 0] };
+  NB.tgt = JSON.parse(JSON.stringify(NB.cur));
+  function nbTarget(src) {
+    const L = speciesFor(src), s0 = L[0], s1 = L[1] || s0, s2 = L[2] || ["NOISE", 0.3, 0.2];
+    const noise = (L.find(x => x[0] === "NOISE") || [0, 0.25])[1];
+    NB.tgt = { c1: COL[s0[0]].map(v => v / 255), c3: COL[s1[0]].map(v => v / 255), c2: COL[s2[0]].map(v => v / 255),
+      w1: 0.6 + 0.6 * s0[1], w2: 0.2 + 0.55 * s2[1], warp: 2.5 + 3 * s0[1], fil: 0.3 + 0.9 * s1[1], pts: 0.15 + 0.8 * noise, off: [(src.lon || 0) / 25, (src.lat || 0) / 25] };
+    const row = (key, what, v) => `<dt style="color:${hex(COL[key])}">${COLNAME[key]}</dt><dd>${what} · ${v}</dd>`;
+    document.getElementById("gNebRows").innerHTML = NB.mode === "neb" ?
+      row(s0[0], "nuvem principal", `densidade ${NB.tgt.w1.toFixed(2)} · torção ${NB.tgt.warp.toFixed(1)}`) +
+      row(s1[0], "filamentos", `brilho ${NB.tgt.fil.toFixed(2)}`) +
+      row(s2[0], "manchas", `área ${NB.tgt.w2.toFixed(2)}`) +
+      `<dt>pontos de luz</dt><dd>densidade ${NB.tgt.pts.toFixed(2)} (ruído)</dd>` : "";
+  }
+  function nbResize() {
+    const r = NB.cv.getBoundingClientRect(), dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    NB.cv.width = Math.max(2, Math.round(r.width * dpr)); NB.cv.height = Math.max(2, Math.round(r.height * dpr));
+  }
+  function nbTick(dt) {
+    if (!NB.ok) return;
+    const k = Math.min(1, dt * (0.1 + 1.4 * Math.exp(-(performance.now() - (G.lastSwitch || 0)) / 1800))), c = NB.cur, t = NB.tgt;
+    for (let i = 0; i < 2; i++) c.off[i] += (t.off[i] - c.off[i]) * k * 0.35;
+    for (const key of ["c1", "c2", "c3"]) for (let i = 0; i < 3; i++) c[key][i] += (t[key][i] - c[key][i]) * k;
+    for (const key of ["w1", "w2", "warp", "fil", "pts"]) c[key] += (t[key] - c[key]) * k;
+    const gl = NB.gl, u = NB.u; if (NB.cv.width < 3) nbResize();
+    gl.viewport(0, 0, NB.cv.width, NB.cv.height);
+    gl.uniform2f(u.uRes, NB.cv.width, NB.cv.height); gl.uniform2f(u.uOff, c.off[0], c.off[1]); gl.uniform1f(u.uT, (performance.now() - NB.t0) / 1000);
+    gl.uniform3fv(u.uC1, c.c1); gl.uniform3fv(u.uC2, c.c2); gl.uniform3fv(u.uC3, c.c3);
+    gl.uniform1f(u.uW1, c.w1); gl.uniform1f(u.uW2, c.w2); gl.uniform1f(u.uWarp, c.warp); gl.uniform1f(u.uFil, c.fil); gl.uniform1f(u.uPts, c.pts);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  function gMode(m) {
+    if (m === "neb" && !NB.ok) m = "net";
+    NB.mode = m;
+    document.getElementById("gGl").hidden = m !== "neb"; document.getElementById("gCv").hidden = m !== "net";
+    document.getElementById("gModeNeb").setAttribute("aria-pressed", String(m === "neb")); document.getElementById("gModeNet").setAttribute("aria-pressed", String(m === "net"));
+    if (G.src) nbTarget(G.src);
+    if (m === "neb") requestAnimationFrame(nbResize);
+  }
+  document.getElementById("gModeNeb").addEventListener("click", () => gMode("neb"));
+  document.getElementById("gModeNet").addEventListener("click", () => gMode("net"));
+
+  // ================= view: figuras (continuous agent-based organism, Physarum model) =================
+  const FW = 360, FN = FW * FW, NA = reduce ? 30000 : 70000, MAXSP = 3;
+  const PRESET = {
+    ADR:  { SA: 1.20, RA: 0.60, SD: 4,  sp: 1.5, dec: 0.82, form: "grão rápido" },
+    NOR:  { SA: 0.55, RA: 0.28, SD: 6,  sp: 1.6, dec: 0.86, form: "filamentos" },
+    COR:  { SA: 0.50, RA: 0.45, SD: 12, sp: 1.0, dec: 0.90, form: "células lentas" },
+    GLU:  { SA: 1.00, RA: 1.10, SD: 3,  sp: 1.4, dec: 0.80, form: "fragmentos" },
+    IL6:  { SA: 0.30, RA: 0.20, SD: 24, sp: 0.9, dec: 0.95, form: "névoa em rede" },
+    SER:  { SA: 0.22, RA: 0.95, SD: 18, sp: 1.2, dec: 0.93, form: "vórtices" },
+    GRE:  { SA: 0.40, RA: 0.78, SD: 10, sp: 1.1, dec: 0.90, form: "anéis" },
+    MEL:  { SA: 0.35, RA: 0.50, SD: 16, sp: 1.0, dec: 0.92, form: "órbitas" },
+    OXT:  { SA: 0.25, RA: 0.70, SD: 20, sp: 0.9, dec: 0.94, form: "laços" },
+    GABA: { SA: 0.30, RA: 0.35, SD: 22, sp: 0.8, dec: 0.95, form: "rede calma" },
+    EQ:   { SA: 0.40, RA: 0.78, SD: 10, sp: 1.1, dec: 0.90, form: "rede com anéis" },
+    WF:   { SA: 0.55, RA: 0.28, SD: 6,  sp: 1.6, dec: 0.86, form: "filamentos" },
+    TC:   { SA: 0.22, RA: 0.95, SD: 18, sp: 1.2, dec: 0.93, form: "vórtices" },
+    WAR:  { SA: 1.00, RA: 1.10, SD: 3,  sp: 1.4, dec: 0.80, form: "fragmentos" },
+    HEAT: { SA: 0.50, RA: 0.45, SD: 12, sp: 1.0, dec: 0.90, form: "células" },
+    AIR:  { SA: 0.30, RA: 0.20, SD: 24, sp: 0.9, dec: 0.95, form: "névoa em rede" },
+    NOISE:{ SA: 1.20, RA: 0.60, SD: 4,  sp: 1.5, dec: 0.82, form: "grão" },
+    LIGHT:{ SA: 0.35, RA: 0.50, SD: 16, sp: 1.0, dec: 0.92, form: "órbitas" },
+  };
+  function speciesFor(src) {
+    if (src.kind === "lugar") { const top = chemProfile(src.factors).filter(x => x[1] > 0.03).slice(0, 3); if (!top.find(x => x[0] === "GABA") && top.length < 3) top.push(["GABA", 0.18]); while (top.length < 3) top.push(["MEL", Math.max(0.15, src.light * 0.6)]); const tot = top.reduce((a, x) => a + 0.3 + x[1], 0); return top.map(([m, i]) => [m, i, (0.3 + i) / tot]); }
+    if (src.kind === "alerta") { const e = src.e, l = [[e.type, e.inten, 1]]; if (e.level === "Red") l.push(["NOISE", 0.7, 0.45]); else l.push(["LIGHT", 0.3, 0.25]); return l; }
+    if (src.kind === "ambiente") {
+      const c = src.c, hi = clamp((c.T - 18) / 22, 0, 1), ai = clamp(c.pm / 90, 0, 1), ni = clamp((c.db - 45) / 40, 0, 1), li = src.light;
+      return [["HEAT", hi, 0.3 + hi], ["AIR", ai, 0.3 + ai], ni >= li ? ["NOISE", ni, 0.2 + ni * 0.6] : ["LIGHT", li, 0.2 + li * 0.6]];
+    }
+    return [["WAR", src.x.i, 1], ["NOISE", src.x.i, 0.5]];
+  }
+  function paramsFor(key, i) { const p = PRESET[key]; return { SA: p.SA, RA: p.RA * (0.85 + 0.3 * i), SD: p.SD * (0.7 + 0.8 * i), sp: p.sp * (0.8 + 0.5 * i), dec: p.dec, dep: 4 + 4 * i }; }
+  const G = { cv: document.getElementById("gCv"), off: document.createElement("canvas"), qi: 0, auto: true, hold: 75000, lastSwitch: 0, lastSnap: 0, count: 0 };
+  G.ctx = G.cv.getContext("2d"); G.off.width = FW; G.off.height = FW; G.octx = G.off.getContext("2d"); G.img = G.octx.createImageData(FW, FW);
+  G.T = Array.from({ length: MAXSP }, () => new Float32Array(FN)); G.tmp = new Float32Array(FN);
+  G.ax = new Float32Array(NA); G.ay = new Float32Array(NA); G.aa = new Float32Array(NA); G.as = new Uint8Array(NA);
+  G.sp = Array.from({ length: MAXSP }, () => ({ key: "NOISE", cur: paramsFor("NOISE", 0.5), tgt: paramsFor("NOISE", 0.5), col: [0, 0, 0], tcol: [0, 0, 0], share: 0 }));
+  const R0 = FW * 0.46, C0 = FW / 2;
+  for (let k = 0; k < NA; k++) { const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * R0; G.ax[k] = C0 + Math.cos(a) * r; G.ay[k] = C0 + Math.sin(a) * r; G.aa[k] = Math.random() * Math.PI * 2; G.as[k] = k % MAXSP; }
+  function gSet(src) {
+    G.src = src; G.lastSwitch = performance.now();
+    const list = speciesFor(src), tot = list.reduce((s, x) => s + x[2], 0);
+    for (let s = 0; s < MAXSP; s++) {
+      const it = list[s], sp = G.sp[s];
+      if (it) { sp.key = it[0]; sp.tgt = paramsFor(it[0], it[1]); sp.tcol = COL[it[0]].slice(); sp.share = it[2] / tot; sp.i = it[1]; }
+      else { sp.share = 0; sp.tcol = [0, 0, 0]; }
+    }
+    G.cum = []; let acc = 0; for (let s = 0; s < MAXSP; s++) { acc += G.sp[s].share; G.cum.push(acc); }
+    document.getElementById("gSrc").textContent = src.label;
+    document.getElementById("gParams").innerHTML = G.sp.filter(s => s.share > 0).map(s => `<dt style="color:${hex(COL[s.key])}">${COLNAME[s.key]} · ${PRESET[s.key].form}</dt><dd>${Math.round(s.share * 100)}% · ângulo ${(s.tgt.SA * 57.3).toFixed(0)}° · giro ${(s.tgt.RA * 57.3).toFixed(0)}° · alcance ${s.tgt.SD.toFixed(1)}</dd>`).join("");
+    document.querySelectorAll("#gChips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === src.id)));
+    if (src.kind === "lugar") document.getElementById("gParams").innerHTML = placeRows(src);
+    nbTarget(src);
+  }
+  function gLerp(dt) {
+    const k = Math.min(1, dt * 0.12);
+    for (const s of G.sp) { for (const p of ["SA", "RA", "SD", "sp", "dec", "dep"]) s.cur[p] += (s.tgt[p] - s.cur[p]) * k; for (let c = 0; c < 3; c++) s.col[c] += (s.tcol[c] - s.col[c]) * k; }
+    // reassign a small fraction of agents per frame so the population drifts toward the new mix
+    for (let n = 0; n < 500; n++) { const a = (Math.random() * NA) | 0, r = Math.random(); let s = 0; while (s < MAXSP - 1 && r > G.cum[s]) s++; G.as[a] = s; }
+  }
+  function gStep() {
+    const T = G.T, ax = G.ax, ay = G.ay, aa = G.aa, as = G.as, R2 = R0 * R0;
+    for (let k = 0; k < NA; k++) {
+      const s = as[k], p = G.sp[s].cur, own = T[s];
+      let x = ax[k], y = ay[k], a = aa[k];
+      const sense = (ang) => {
+        const sx = (x + Math.cos(ang) * p.SD) | 0, sy = (y + Math.sin(ang) * p.SD) | 0;
+        if (sx < 0 || sy < 0 || sx >= FW || sy >= FW) return -1;
+        const i = sy * FW + sx; let v = own[i];
+        for (let o = 0; o < MAXSP; o++) if (o !== s) v -= 0.6 * T[o][i];
+        return v;
+      };
+      const f = sense(a), l = sense(a - p.SA), r = sense(a + p.SA);
+      if (f >= l && f >= r) {} else if (l > r) a -= p.RA * (0.6 + 0.4 * Math.random()); else if (r > l) a += p.RA * (0.6 + 0.4 * Math.random()); else a += (Math.random() - 0.5) * 2 * p.RA;
+      x += Math.cos(a) * p.sp * 0.45; y += Math.sin(a) * p.sp * 0.45;
+      const dx = x - C0, dy = y - C0;
+      if (dx * dx + dy * dy > R2) { a = Math.atan2(-dy, -dx) + (Math.random() - 0.5); x = C0 + dx * 0.98; y = C0 + dy * 0.98; }
+      ax[k] = x; ay[k] = y; aa[k] = a;
+      own[((y | 0) * FW + (x | 0))] += p.dep;
+    }
+    for (let s = 0; s < MAXSP; s++) {
+      const src = G.T[s], dst = G.tmp, dec = G.sp[s].cur.dec;
+      for (let y = 1; y < FW - 1; y++) for (let x = 1; x < FW - 1; x++) {
+        const i = y * FW + x;
+        dst[i] = (src[i] + src[i-1] + src[i+1] + src[i-FW] + src[i+FW] + src[i-FW-1] + src[i-FW+1] + src[i+FW-1] + src[i+FW+1]) / 9 * dec;
+      }
+      G.T[s] = dst; G.tmp = src;
+    }
+  }
+  function gPaint(ctx, w, h) {
+    const d = G.img.data, T = G.T, sp = G.sp;
+    for (let i = 0, p = 0; i < FN; i++, p += 4) {
+      let r = 0, g = 0, b = 0, sum = 0;
+      for (let s = 0; s < MAXSP; s++) { const v = 1 - Math.exp(-T[s][i] * 0.09); if (v < 0.004) continue; const c = sp[s].col; r += c[0] * v; g += c[1] * v; b += c[2] * v; sum += v; }
+      const hi = Math.max(0, sum - 0.75) * 1.7;
+      d[p] = aces((r + 150 * hi) / 255 * 1.2); d[p+1] = aces((g + 135 * hi) / 255 * 1.2); d[p+2] = aces((b + 125 * hi) / 255 * 1.2); d[p+3] = 255;
+    }
+    G.octx.putImageData(G.img, 0, 0); compose(ctx, w, h, G.off, null); finish(ctx, w, h, G.off, G.src ? G.src.id : "x");
+  }
+  function gSnap() {
+    const g = document.getElementById("gArchive"), empty = document.getElementById("gArchEmpty"); if (empty) empty.remove();
+    const fig = document.createElement("figure"), c = document.createElement("canvas"), cap = document.createElement("figcaption");
+    c.width = 240; c.height = 240; if (NB.mode === "neb") c.getContext("2d").drawImage(NB.cv, 0, 0, 240, 240); else gPaint(c.getContext("2d"), 240, 240);
+    const d = new Date(); cap.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} · ${G.src.label}`;
+    fig.append(c, cap); g.prepend(fig); while (g.children.length > 36) g.lastChild.remove();
+    G.count++; document.getElementById("gCount").textContent = G.count;
+  }
+  let gFrame = 0;
+  function gTick(dt) {
+    gFrame++;
+    const now = performance.now();
+    if (G.auto && now - G.lastSwitch > G.hold) { const ps = PSRC[G.qi % PSRC.length]; gSet(srcFromPlace(ps.pl)); G.qi++; }
+    if (G.src && G.src.kind === "lugar" && now - (G.refreshAt || now) > 60000) { const fresh = srcFromPlace(G.src.pl); G.src = fresh; nbTarget(fresh); document.getElementById("gParams").innerHTML = placeRows(fresh); G.refreshAt = now; }
+    if (!G.refreshAt) G.refreshAt = now;
+    if (NB.mode === "neb") nbTick(dt);
+    else { gLerp(dt); gStep(); gPaint(G.ctx, G.cv.width, G.cv.height); }
+    if (now - G.lastSnap > 30000 && now - G.lastSwitch > 12000) { gSnap(); G.lastSnap = now; }
+    if (gFrame % 10 === 0) {
+      const left = Math.max(0, G.hold - (now - G.lastSwitch));
+      document.getElementById("gNext").textContent = G.auto ? `próxima fonte em ${Math.ceil(left / 1000)} s` : "parado nesta fonte";
+    }
+  }
+  (function gChips() {
+    const el = document.getElementById("gChips");
+    const head = t => { const d = document.createElement("div"); d.className = "chiphead"; d.textContent = t; el.append(d); };
+    head("lugares · tudo o que pesa ali");
+    PSRC.forEach((s) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.id = s.id;
+      b.innerHTML = speciesFor(s).map(x => `<i style="color:${hex(COL[x[0]])}">●</i>`).join("") + " " + s.label;
+      b.addEventListener("click", () => { gAuto(false); gSet(srcFromPlace(s.pl)); }); el.append(b);
+    });
+  })();
+  function gAuto(on) { G.auto = on; const b = document.getElementById("gAuto"); b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "automático: ligado" : "automático: desligado"; if (on) G.lastSwitch = performance.now() - G.hold; }
+  document.getElementById("gAuto").addEventListener("click", () => gAuto(!G.auto));
+  gSet(PSRC[0]); G.qi = 1;
+
+  // ================= retratos on the GPU: ink in water (advected dye that blooms and dissipates) =================
+  const RG = { cv: document.createElement("canvas"), N: 512, ok: false, layers: [], em: [], bursts: [], first: true };
+  (function rgInit() {
+    RG.cv.width = RG.cv.height = 900;
+    const gl = RG.cv.getContext("webgl2", { preserveDrawingBuffer: true, antialias: false });
+    if (!gl || !gl.getExtension("EXT_color_buffer_float")) return;
+    const VS = "#version 300 es\nin vec2 a;out vec2 vUv;void main(){vUv=a*.5+.5;gl_Position=vec4(a,0.,1.);}";
+    const NOISE = `float hs(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float ns(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hs(i),hs(i+vec2(1.,0.)),f.x),mix(hs(i+vec2(0.,1.)),hs(i+vec2(1.,1.)),f.x),f.y);}
+float fs(vec2 p){return .5*ns(p)+.25*ns(p*2.1+3.1)+.125*ns(p*4.3+7.7);}`;
+    const SIM = `#version 300 es
+precision highp float;in vec2 vUv;out vec4 o;
+uniform sampler2D uS;uniform vec2 uPx;uniform float uT,uDecay,uCym;uniform vec4 uE[12];uniform vec3 uEC[12];uniform int uNE;uniform vec2 uM0,uM1,uM2;uniform vec3 uMW;
+${NOISE}
+const float PI=3.14159265;
+float chl(vec2 p,vec2 m){return cos(m.x*PI*p.x)*cos(m.y*PI*p.y)-cos(m.y*PI*p.x)*cos(m.x*PI*p.y);}
+float CS(vec2 p){float w=sin(p.y*5.3+uT*.05)*.035,z=sin(p.x*4.7-uT*.04)*.035;p+=vec2(w,z);float S=uMW.x*chl(p,uM0)+uMW.y*chl(p,uM1)+uMW.z*chl(p,uM2);return S*S;}
+void main(){
+ float t=uT*.008;vec2 cp=vUv*1.8+vec2(t,-t*.6);float e=.02;
+ vec2 flow=vec2(fs(cp+vec2(0.,e))-fs(cp-vec2(0.,e)),-(fs(cp+vec2(e,0.))-fs(cp-vec2(e,0.))))/(2.*e);
+ float ce=.004;vec2 cg=vec2(CS(vUv+vec2(ce,0.))-CS(vUv-vec2(ce,0.)),CS(vUv+vec2(0.,ce))-CS(vUv-vec2(0.,ce)))/(2.*ce);
+ vec2 src=vUv-flow*uPx*.45-(vUv-.5)*.00025+cg*uPx*.35*uCym/(1.+length(cg)*.15);
+ vec3 c=texture(uS,src).rgb*.6+.1*(texture(uS,src+vec2(uPx.x,0.)).rgb+texture(uS,src-vec2(uPx.x,0.)).rgb+texture(uS,src+vec2(0.,uPx.y)).rgb+texture(uS,src-vec2(0.,uPx.y)).rgb);
+ c*=uDecay;
+ for(int i=0;i<12;i++){if(i>=uNE)break;vec4 E=uE[i];vec2 d=vUv-E.xy;c+=uEC[i]*E.w*exp(-dot(d,d)/(E.z*E.z))*.0028;}
+ o=vec4(c,1.);
+}`;
+    const REN = `#version 300 es
+precision highp float;in vec2 vUv;out vec4 o;
+uniform sampler2D uS;uniform vec2 uPx;uniform float uT;
+float hs(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+void main(){
+ vec3 c=texture(uS,vUv).rgb;vec3 g1=vec3(0.),g2=vec3(0.);
+ for(int k=0;k<12;k++){float a=float(k)*.5236;vec2 dir=vec2(cos(a),sin(a));g1+=texture(uS,vUv+dir*uPx*16.).rgb;g2+=texture(uS,vUv+dir*uPx*42.).rgb;}
+ g1/=12.;g2/=12.;
+ vec3 col=vec3(.012,.01,.016)+c*.95+g1*.35+g2*.25;
+ col=(col*(2.51*col+.03))/(col*(2.43*col+.59)+.14);
+ vec2 uv=vUv-.5;col*=1.-.35*smoothstep(.35,.75,length(uv));
+ col+=(hs(gl_FragCoord.xy+fract(uT))-.5)*.012;
+ o=vec4(clamp(col,0.,1.),1.);
+}`;
+    const mk = (t, src) => { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; };
+    const prog = (fs) => { const v = mk(gl.VERTEX_SHADER, VS), f = mk(gl.FRAGMENT_SHADER, fs); if (!v || !f) return null; const p = gl.createProgram(); gl.attachShader(p, v); gl.attachShader(p, f); gl.bindAttribLocation(p, 0, "a"); gl.linkProgram(p); return gl.getProgramParameter(p, gl.LINK_STATUS) ? p : null; };
+    const ps = prog(SIM), pr = prog(REN); if (!ps || !pr) return;
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    const N = RG.N, tex = () => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, N, N, 0, gl.RGBA, gl.FLOAT, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0); return { t, fb }; };
+    RG.tex = [tex(), tex()]; RG.cur = 0;
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) return;
+    const U = (p, names) => Object.fromEntries(names.map(n => [n, gl.getUniformLocation(p, n)]));
+    RG.gl = gl; RG.ps = ps; RG.pr = pr;
+    RG.us = U(ps, ["uS", "uPx", "uT", "uDecay", "uCym", "uE", "uEC", "uNE", "uM0", "uM1", "uM2", "uMW"]); RG.ur = U(pr, ["uS", "uPx", "uT"]);
+    RG.eBuf = new Float32Array(48); RG.cBuf = new Float32Array(36);
+    RG.ok = true;
+  })();
+  const softCol = key => { const v = COL[key].map(x => x / 255), g = (v[0] + v[1] + v[2]) / 3; return v.map(x => (x * 0.8 + g * 0.2) * 0.9); };
+  function rgReset(src) {
+    const gl = RG.gl, N = RG.N;
+    if (RG.first) { for (const b of RG.tex) { gl.bindTexture(gl.TEXTURE_2D, b.t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, N, N, 0, gl.RGBA, gl.FLOAT, null); } RG.first = false; }
+    RG.layers = src.layers.slice(0, 3);
+    RG.em = []; RG.bornAt = performance.now();
+    RG.layers.forEach((l, k) => {
+      const i = l.i ?? 0.5, cnt = 3;
+      for (let j = 0; j < cnt; j++) RG.em.push({ key: l.key, i, ang: (k / 3 + j / cnt) * Math.PI * 2 + Math.random() * 0.6, rad: 0.08 + Math.random() * (0.12 + 0.12 * i), sp: (Math.random() < 0.5 ? -1 : 1) * (0.04 + 0.08 * Math.random()), ph: Math.random() * 6.28, r: 0.035 + 0.05 * i, col: softCol(l.key) });
+    });
+  }
+  function rgSeeds(k) {
+    const l = RG.layers[k] || RG.layers[0]; if (!l) return;
+    const a = Math.random() * Math.PI * 2, rr = Math.random() * 0.3;
+    RG.bursts.push({ x: 0.5 + Math.cos(a) * rr, y: 0.5 + Math.sin(a) * rr, r: 0.03 + Math.random() * 0.03, w: 0.5, born: performance.now(), col: softCol(l.key) });
+  }
+  function rgStep() {
+    const gl = RG.gl, N = RG.N, u = RG.us, t = performance.now() / 1000, since = (performance.now() - (RG.bornAt || 0)) / 1000, boost = 1 + 5 * Math.exp(-since / 1.6);
+    RG.bursts = RG.bursts.filter(b => performance.now() - b.born < 2500);
+    const list = [];
+    for (const e of RG.em) {
+      e.ang += e.sp * 0.004;
+      const wob = 0.025 * Math.sin(t * 0.09 + e.ph);
+      list.push([0.5 + Math.cos(e.ang) * (e.rad + wob), 0.5 + Math.sin(e.ang) * (e.rad + wob), e.r, (0.3 + 0.7 * e.i) * (0.55 + 0.45 * Math.sin(t * 0.1 + e.ph)) * boost, e.col]);
+    }
+    for (const b of RG.bursts) list.push([b.x, b.y, b.r, b.w, b.col]);
+    const L = list.slice(0, 12); RG.eBuf.fill(0); RG.cBuf.fill(0);
+    L.forEach((e, j) => { RG.eBuf.set([e[0], e[1], e[2], e[3]], j * 4); RG.cBuf.set(e[4], j * 3); });
+    gl.useProgram(RG.ps); gl.viewport(0, 0, N, N); gl.activeTexture(gl.TEXTURE0);
+    gl.uniform1i(u.uS, 0); gl.uniform2f(u.uPx, 1 / N, 1 / N); gl.uniform1f(u.uT, t); gl.uniform1f(u.uDecay, 0.9993);
+    gl.uniform4fv(u.uE, RG.eBuf); gl.uniform3fv(u.uEC, RG.cBuf); gl.uniform1i(u.uNE, L.length);
+    gl.uniform1f(u.uCym, 0);
+    const iters = since < 4 ? 5 : 2;
+    for (let it = 0; it < iters; it++) {
+      const a = RG.tex[RG.cur], b = RG.tex[1 - RG.cur];
+      gl.bindFramebuffer(gl.FRAMEBUFFER, b.fb); gl.bindTexture(gl.TEXTURE_2D, a.t); gl.drawArrays(gl.TRIANGLES, 0, 3); RG.cur = 1 - RG.cur;
+    }
+  }
+  function rgRender() {
+    const gl = RG.gl, u = RG.ur; gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.useProgram(RG.pr); gl.viewport(0, 0, RG.cv.width, RG.cv.height);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, RG.tex[RG.cur].t);
+    gl.uniform1i(u.uS, 0); gl.uniform2f(u.uPx, 1 / RG.N, 1 / RG.N); gl.uniform1f(u.uT, performance.now() / 1000);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+
+  // ================= cymatics (Chladni figures from the computed frequencies) =================
+  const CY = { cv: document.getElementById("sCym"), ok: false };
+  (function cyInit() {
+    if (!CY.cv) return; const gl = CY.cv.getContext("webgl", { preserveDrawingBuffer: true }); if (!gl) return;
+    const vs = "attribute vec2 a;varying vec2 v;void main(){v=a*.5+.5;gl_Position=vec4(a,0.,1.);}";
+    const fs = `precision highp float;varying vec2 v;uniform vec2 uM0,uM1,uM2;uniform vec3 uW,uC0,uC1,uC2;uniform float uT;
+const float PI=3.14159265;
+float ch(vec2 p,vec2 m){return cos(m.x*PI*p.x)*cos(m.y*PI*p.y)-cos(m.y*PI*p.x)*cos(m.x*PI*p.y);}
+float hh(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
+void main(){
+ float wx=sin(v.y*5.3+uT*.05)*.035+sin(v.x*11.+v.y*4.+uT*.03)*.018,wy=sin(v.x*4.7-uT*.04)*.035+sin(v.y*9.+v.x*3.-uT*.025)*.018;
+ vec2 p=v+vec2(wx,wy);float a0=ch(p,uM0),a1=ch(p,uM1),a2=ch(p,uM2);
+ vec3 w=uW*(.8+.2*vec3(sin(uT*.06),sin(uT*.045+2.),sin(uT*.035+4.)));
+ float S=a0*w.x+a1*w.y+a2*w.z;
+ vec3 col=vec3(.01,.008,.014);
+ col+=uC0*exp(-abs(a0)*5.)*w.x*.45+uC1*exp(-abs(a1)*5.)*w.y*.45+uC2*exp(-abs(a2)*5.)*w.z*.45;
+ float sand=exp(-abs(S)*4.);col+=mix(vec3(1.,.95,.88),uC0,.5)*sand*.35;col+=mix(uC0,uC1,.5)*exp(-abs(S)*1.6)*.2;
+ float g=hh(floor(p*420.)+floor(uT*1.));col*=.97+.06*g*sand;
+ vec2 uv=p-.5;col*=1.-.55*smoothstep(.3,.72,length(uv));
+ col=(col*(2.51*col+.03))/(col*(2.43*col+.59)+.14);
+ gl_FragColor=vec4(col,1.);
+}`;
+    const mk = (t, s) => { const x = gl.createShader(t); gl.shaderSource(x, s); gl.compileShader(x); return gl.getShaderParameter(x, gl.COMPILE_STATUS) ? x : null; };
+    const v = mk(gl.VERTEX_SHADER, vs), f = mk(gl.FRAGMENT_SHADER, fs); if (!v || !f) return;
+    const p = gl.createProgram(); gl.attachShader(p, v); gl.attachShader(p, f); gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) return; gl.useProgram(p);
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const l = gl.getAttribLocation(p, "a"); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, 2, gl.FLOAT, false, 0, 0);
+    CY.gl = gl; CY.u = Object.fromEntries(["uM0", "uM1", "uM2", "uW", "uC0", "uC1", "uC2", "uT"].map(n => [n, gl.getUniformLocation(p, n)])); CY.ok = true;
+  })();
+  function cyModes(src) {
+    const T = src.place ? src.place.pl.T : 20;
+    return (src.layers || []).slice(0, 3).map(l => {
+      const f = HZ[l.key] ? HZ[l.key](l.i ?? 0.5, T) : 220, k = Math.log2(Math.max(30, f) / 20);
+      const n = 1 + Math.floor(k), m = n + 1 + Math.floor((k - Math.floor(k)) * 3);
+      return { key: l.key, f, n, m, w: 0.4 + 0.6 * (l.i ?? 0.5) };
+    });
+  }
+  function cyTick() {
+    if (!CY.ok) { if (frame % 20 === 0) { const el = document.getElementById("sCymInfo"); if (el) el.innerHTML = cyModes(P.src).map(x => `<dt style="color:${hex(COL[x.key])}">${COLNAME[x.key]}</dt><dd>${Math.round(x.f)} Hz → modo (${x.n}, ${x.m})</dd>`).join(""); } return; }
+    const gl = CY.gl, u = CY.u, md = cyModes(P.src);
+    while (md.length < 3) md.push({ key: md[0] ? md[0].key : "LIGHT", n: 2, m: 3, w: 0 });
+    const r = CY.cv.getBoundingClientRect(); const s = Math.max(2, Math.round(r.width * Math.min(1.5, window.devicePixelRatio || 1)));
+    if (CY.cv.width !== s) { CY.cv.width = s; CY.cv.height = s; }
+    gl.viewport(0, 0, CY.cv.width, CY.cv.height);
+    gl.uniform2f(u.uM0, md[0].n, md[0].m); gl.uniform2f(u.uM1, md[1].n, md[1].m); gl.uniform2f(u.uM2, md[2].n, md[2].m);
+    gl.uniform3f(u.uW, md[0].w, md[1].w, md[2].w);
+    gl.uniform3fv(u.uC0, COL[md[0].key].map(x => x / 255)); gl.uniform3fv(u.uC1, COL[md[1].key].map(x => x / 255)); gl.uniform3fv(u.uC2, COL[md[2].key].map(x => x / 255));
+    gl.uniform1f(u.uT, performance.now() / 1000); gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (frame % 20 === 0) document.getElementById("sCymInfo").innerHTML = md.filter(x => x.w > 0).map(x => `<dt style="color:${hex(COL[x.key])}">${COLNAME[x.key]}</dt><dd>${x.f ? Math.round(x.f) + " Hz" : ""} → modo (${x.n}, ${x.m})</dd>`).join("");
+  }
+
+
+  // ================= continuous sound of the place: never stops unless the person stops it =================
+  const PSND = { on: false, slots: [] };
+  function currentPlace() { return view === "figuras" && G.src ? G.src : P.src; }
+  function psndButtons() { document.querySelectorAll(".psndBtn").forEach(b => { b.setAttribute("aria-pressed", String(PSND.on)); b.textContent = PSND.on ? "som do lugar: ligado" : "som do lugar: desligado"; }); }
+  function psndStart() {
+    if (!audio() || PSND.on) return;
+    PSND.bus = ac.createGain(); PSND.bus.gain.value = 0; PSND.bus.connect(master); PSND.bus.gain.setTargetAtTime(0.9, ac.currentTime, 1.2);
+    const nbuf = ac.createBuffer(1, ac.sampleRate * 4, ac.sampleRate), d = nbuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    PSND.slots = [0, 1, 2].map(() => {
+      const osc = ac.createOscillator(), og = ac.createGain(); og.gain.value = 0; osc.connect(og); og.connect(PSND.bus); osc.start();
+      const ns = ac.createBufferSource(); ns.buffer = nbuf; ns.loop = true; const bp = ac.createBiquadFilter(); bp.type = "bandpass"; const ng = ac.createGain(); ng.gain.value = 0; ns.connect(bp); bp.connect(ng); ng.connect(PSND.bus); ns.start();
+      const lfo = ac.createOscillator(), lg = ac.createGain(); lg.gain.value = 0; lfo.frequency.value = 0.1; lfo.connect(lg); lg.connect(og.gain); lfo.start();
+      return { osc, og, ns, bp, ng, lfo, lg, key: null, nBase: 0 };
+    });
+    PSND.on = true; psndButtons(); psndUpdate(currentPlace());
+  }
+  function psndStop() {
+    if (!PSND.on) return; const t = ac.currentTime; PSND.bus.gain.setTargetAtTime(0, t, 0.6);
+    const sl = PSND.slots; setTimeout(() => sl.forEach(x => { try { x.osc.stop(); x.ns.stop(); x.lfo.stop(); } catch (e) {} }), 3000);
+    PSND.on = false; psndButtons(); document.querySelectorAll(".psndMon").forEach(el => { el.hidden = true; });
+  }
+  function psndUpdate(src) {
+    if (!PSND.on || !src) return;
+    const T = src.place ? src.place.pl.T : src.pl ? src.pl.T : 20;
+    const layers = src.layers || speciesFor(src).map(([key, i]) => ({ key, i }));
+    const t = ac.currentTime, tau = 1.6;
+    PSND.slots.forEach((sl, k) => {
+      const l = layers[k];
+      if (!l) { sl.og.gain.setTargetAtTime(0, t, tau); sl.ng.gain.setTargetAtTime(0, t, tau); sl.nBase = 0; sl.key = null; return; }
+      const i = l.i ?? 0.5, f = HZ[l.key] ? HZ[l.key](i, T) : 220; sl.key = l.key;
+      let oA = 0, nA = 0, type = "sine", bf = f, Q = 1, lr = 0.1, ld = 0;
+      if (MED[l.key]) {
+        oA = 0.14 + 0.26 * i; type = l.key === "COR" || l.key === "GRE" ? "triangle" : "sine";
+        if (l.key === "ADR") { lr = 3.5; ld = 0.06 + 0.08 * i; }
+        else if (l.key === "MEL") { lr = 0.08; ld = 0.12; }
+        else if (l.key === "NOR") { nA = 0.04 + 0.06 * i; Q = 6; }
+        else if (l.key === "IL6") { nA = 0.08 + 0.16 * i; Q = 1.2; oA *= 0.5; }
+        else if (l.key === "GLU") { lr = 0.7; ld = 0.08 * i; }
+      }
+      else if (l.key === "EQ") { oA = 0.3 + 0.3 * i; }
+      else if (l.key === "HEAT") { oA = 0.16 + 0.2 * i; type = "triangle"; }
+      else if (l.key === "LIGHT") { oA = 0.14 + 0.18 * i; lr = 1 / (4 + 8 * i); ld = 0.12; }
+      else if (l.key === "WAR") { oA = 0.25 + 0.25 * i; bf = 90; Q = 0.7; nA = 0.4 * i; }
+      else if (l.key === "WF") { nA = 0.05 + 0.08 * i; Q = 5; }
+      else if (l.key === "TC") { nA = 0.18 + 0.28 * i; Q = 1.5; }
+      else if (l.key === "AIR") { nA = 0.14 + 0.28 * i; bf = 500; Q = 0.8; }
+      else if (l.key === "NOISE") { nA = 0.04 + 0.08 * i; bf = 2000; Q = 0.6; }
+      sl.osc.type = type; sl.osc.frequency.setTargetAtTime(l.key === "WAR" ? 70 : f, t, tau);
+      sl.og.gain.setTargetAtTime(oA * 0.5, t, tau); sl.bp.frequency.setTargetAtTime(bf, t, tau); sl.bp.Q.setTargetAtTime(Q, t, tau);
+      sl.ng.gain.setTargetAtTime(nA, t, tau); sl.nBase = nA; sl.lfo.frequency.setTargetAtTime(lr, t, tau); sl.lg.gain.setTargetAtTime(ld, t, tau);
+    });
+  }
+  function psndTick() {
+    if (!PSND.on) return;
+    if (frame % 30 === 0) psndUpdate(currentPlace());
+    if (frame % 6 === 0) {
+      const src = currentPlace(), name = src ? (src.label || (src.pl && src.pl.name) || "") : "";
+      const html = `<div style="font-size:10px;letter-spacing:.14em;color:var(--dim)">TOCANDO AGORA · ${name.toUpperCase()}</div>` + PSND.slots.filter(sl => sl.key).map(sl => {
+        const lvl = Math.min(1, (sl.og.gain.value * 2 + sl.ng.gain.value) * 2.2), c = COL[sl.key] || [237, 231, 220];
+        return `<div style="display:grid;grid-template-columns:110px 70px minmax(0,1fr);gap:8px;align-items:center;font-variant-numeric:tabular-nums"><span style="color:${hex(c)}">${MED[sl.key] ? MED[sl.key].nome : sl.key}</span><span>${Math.round(sl.osc.frequency.value)} Hz</span><span style="height:6px;background:#1A1920;position:relative"><span style="position:absolute;left:0;top:0;bottom:0;width:${Math.round(lvl * 100)}%;background:${hex(c)}"></span></span></div>`;
+      }).join("");
+      document.querySelectorAll(".psndMon").forEach(el => { el.hidden = false; el.innerHTML = html; });
+    }
+    const t = ac.currentTime;
+    for (const sl of PSND.slots) {
+      const pr = sl.key === "WF" ? 0.05 : sl.key === "NOISE" ? 0.015 : 0;
+      if (pr && Math.random() < pr) { sl.ng.gain.cancelScheduledValues(t); sl.ng.gain.setTargetAtTime(sl.nBase * 4, t, 0.008); sl.ng.gain.setTargetAtTime(sl.nBase, t + 0.04, 0.08); }
+    }
+  }
+  document.addEventListener("click", (ev) => { const b = ev.target.closest && ev.target.closest(".psndBtn"); if (!b) return; PSND.on ? psndStop() : psndStart(); });
+  // ================= navigation =================
+  const VIEWS = ["agora", "figuras", "mapa", "retratos", "som", "metodo"];
+  let view = "agora";
+  function show(v) {
+    if (!VIEWS.includes(v)) v = "agora"; view = v;
+    document.querySelectorAll(".view").forEach(s => s.hidden = s.dataset.view !== v);
+    document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-current", b.dataset.v === v ? "page" : "false"));
+    document.getElementById("stView").textContent = v === "som" ? "imagem → som" : v === "mapa" ? "reprise 72 h" : v;
+    if (v === "mapa") requestAnimationFrame(mResize);
+    if (v === "agora") requestAnimationFrame(aResize);
+    if (v === "figuras" && NB.mode === "neb") requestAnimationFrame(nbResize);
+    try { history.replaceState(null, "", "#" + v); } catch (err) {}
+  }
+  document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.v)));
+  document.addEventListener("keydown", (ev) => {
+    if (ev.target.closest && ev.target.closest("input, textarea")) return;
+    if (["1", "2", "3", "4", "5", "6"].includes(ev.key)) show(VIEWS[+ev.key - 1]);
+    if (ev.key === " " && ev.target === document.body) { ev.preventDefault(); toggleSound(); }
+  });
+  function toggleSound() {
+    if (live()) { sStop(); ac.suspend(); } else audio();
+    setTimeout(() => document.getElementById("stAudio").textContent = live() ? "ligado" : "desligado", 60);
+  }
+  document.getElementById("status").addEventListener("click", (ev) => { if (ev.target.id === "stAudio") toggleSound(); });
+
+  // ================= loop =================
+  let last = performance.now(), fpsAcc = 0, fpsN = 0;
+  function tick(now) {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now; frame++; fpsAcc += dt; fpsN++;
+    aTick(dt, view === "agora");
+    psndTick();
+    if (view === "figuras") gTick(dt);
+    if (view === "mapa") mTick(dt);
+    else if (view === "retratos") { pTick(); pRender(P.ctx, P.cv.width, P.cv.height); }
+    else if (view === "som") sTick();
+    if (fpsAcc > 0.5) { document.getElementById("stFps").textContent = Math.round(fpsN / fpsAcc); fpsAcc = 0; fpsN = 0; document.getElementById("stSteps").textContent = totalSteps.toLocaleString("pt-BR"); document.getElementById("stAudio").textContent = live() ? "ligado" : "desligado"; }
+    requestAnimationFrame(tick);
+  }
+  buildPlaceChips(document.getElementById("pChips")); buildPlaceChips(document.getElementById("sChips"));
+  mReset(); P.qi = 1; pStart(portraitFromPlace(PSRC[0])); gMode("neb");
+  const start = (location.hash || "").slice(1);
+  show(VIEWS.includes(start) ? start : "agora");
+  if (LIVE) { const el = document.getElementById("fonteData"); if (el) el.textContent = `Coleta automática a cada hora. Última: ${LIVE.atualizado.replace("T", " ").replace("Z", " UTC")}. ${Object.entries(LIVE.fontes || {}).map(([k, v]) => `${k}: ${v}`).join(" · ")}.`; }
+  mResize(); aResize(); new ResizeObserver(() => { if (view === "mapa") mResize(); }).observe(M.cv); new ResizeObserver(() => { if (view === "agora") aResize(); }).observe(A.cv); new ResizeObserver(() => { if (view === "figuras" && NB.mode === "neb") nbResize(); }).observe(NB.cv);
+  requestAnimationFrame(tick);
+})();
+</script>
+
+</body>
+</html>

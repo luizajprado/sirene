@@ -1,0 +1,36 @@
+name: coletar dados
+
+on:
+  schedule:
+    - cron: "7 * * * *"   # a cada hora, no minuto 7 (UTC)
+  workflow_dispatch:       # permite rodar na hora pelo botão "Run workflow"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coleta
+  cancel-in-progress: false
+
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: coletar
+        run: python coletor/coletar.py
+        env:
+          UCDP_TOKEN: ${{ secrets.UCDP_TOKEN }}
+          HAPI_EMAIL: ${{ secrets.HAPI_EMAIL }}
+          HAPI_APP_IDENTIFIER: ${{ secrets.HAPI_APP_IDENTIFIER }}
+      - name: salvar
+        run: |
+          git config user.name "sirene-coletor"
+          git config user.email "sirene-coletor@users.noreply.github.com"
+          git add data docs/dados.js
+          git diff --cached --quiet || git commit -m "coleta $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push
