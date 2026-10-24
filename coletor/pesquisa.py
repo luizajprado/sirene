@@ -85,6 +85,23 @@ def ensaios():
     return {"total": d.get("totalCount"), "amostra": len(estudos), "industria": industria, "recentes": recentes}
 
 
+def ensaios_por_ano(anos=range(2017, AGORA.year + 1)):
+    """Quantos ensaios começaram a cada ano: saúde mental ligada à COVID-19, e antidepressivos para depressão.
+    Mostra para onde a pesquisa (e o investimento) se move depois de uma crise."""
+    base = "https://clinicaltrials.gov/api/v2/studies?"
+    series = {
+        "covid_saude_mental": {"query.cond": "depression OR anxiety OR PTSD OR stress", "query.term": "COVID-19"},
+        "antidepressivos": {"query.cond": "depression", "query.intr": "antidepressant OR SSRI OR sertraline OR escitalopram OR fluoxetine OR esketamine"},
+    }
+    out = {}
+    for nome, q in series.items():
+        out[nome] = {}
+        for a in anos:
+            d = baixar(base + urllib.parse.urlencode({**q, "filter.advanced": f"AREA[StartDate]RANGE[{a}-01-01,{a}-12-31]", "countTotal": "true", "pageSize": 1}), timeout=60)
+            out[nome][str(a)] = d.get("totalCount", 0)
+    return out
+
+
 def farmaco():
     base = "https://api.fda.gov/drug/event.json?"
     out = {}
@@ -129,6 +146,8 @@ def coletar():
         fontes["Europe PMC"] = f"falhou ({type(e).__name__}) · mantido o último"
     try:
         out["ensaios"] = ensaios(); fontes["ClinicalTrials.gov"] = "ok"
+        if not antes.get("por_ano_em") or antes["por_ano_em"][:10] != AGORA.strftime("%Y-%m-%d"):   # uma vez por dia
+            out["ensaios_por_ano"] = ensaios_por_ano(); out["por_ano_em"] = AGORA.strftime("%Y-%m-%dT%H:%MZ")
     except Exception as e:
         fontes["ClinicalTrials.gov"] = f"falhou ({type(e).__name__}) · mantido o último"
     ultimo_fda = antes.get("farmaco_em", "")
