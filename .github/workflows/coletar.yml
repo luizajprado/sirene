@@ -15,12 +15,14 @@ concurrency:
 jobs:
   coletar:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: preparar
+        run: pip install websockets==13.1
       - name: coletar
         run: python coletor/coletar.py
         env:

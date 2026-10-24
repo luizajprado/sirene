@@ -120,20 +120,93 @@ def open_meteo(lugares):
     return saida
 
 
-# ---------------------------------------------------------------- atenção coletiva · Wikimedia (acessos à Wikipédia)
-ARTIGOS = [("en.wikipedia", "Anxiety"), ("en.wikipedia", "Panic_attack"), ("en.wikipedia", "Insomnia"),
-           ("pt.wikipedia", "Ansiedade"), ("es.wikipedia", "Ansiedad")]
+# ---------------------------------------------------------------- o que as pessoas procuram · Wikipédia, por idioma
+# O Google não oferece acesso livre às buscas; os acessos à Wikipédia são o melhor indicador aberto do que se procura.
+# Compara o último dia com a média da semana anterior, para temas de aflição e de cuidado. Os títulos em outros
+# idiomas são obtidos a partir do inglês pelos links entre idiomas da própria Wikipédia.
+AFLICAO = ["Anxiety", "Panic_attack", "Insomnia", "Depression_(mood)", "Loneliness", "Fear", "War", "Famine"]
+CUIDADO = ["Hope", "Gratitude", "Solidarity", "Love", "Friendship", "Meditation", "Happiness", "Mutual_aid_(organization_theory)"]
+IDIOMAS = ["en", "pt", "es", "ar", "hi", "id", "bn", "zh", "no"]
+
+
+def titulos(art):
+    d = json.loads(baixar(f"https://en.wikipedia.org/w/api.php?action=query&titles={art}&prop=langlinks&lllimit=500&format=json&redirects=1"))
+    pg = next(iter(d["query"]["pages"].values()))
+    out = {"en": art}
+    for ll in pg.get("langlinks", []):
+        if ll["lang"] in IDIOMAS:
+            out[ll["lang"]] = ll["*"].replace(" ", "_")
+    return out
 
 
 def wikimedia():
     fim = (AGORA - timedelta(days=1)).strftime("%Y%m%d")
     ini = (AGORA - timedelta(days=8)).strftime("%Y%m%d")
+    por_lingua = {}
+    for grupo, lista in (("aflicao", AFLICAO), ("cuidado", CUIDADO)):
+        for art in lista:
+            try:
+                t = titulos(art)
+            except Exception:
+                t = {"en": art}
+            for lang, tit in t.items():
+                try:
+                    d = json.loads(baixar(
+                        f"https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/{lang}.wikipedia/all-access/user/{urllib.parse.quote(tit, safe='')}/daily/{ini}00/{fim}00"))
+                except Exception:
+                    continue
+                v = [x["views"] for x in d.get("items", [])]
+                if len(v) < 3:
+                    continue
+                r = por_lingua.setdefault(lang, {"aflicao": [0, 0], "cuidado": [0, 0]})
+                r[grupo][0] += v[-1]
+                r[grupo][1] += sum(v[:-1]) / len(v[:-1])
+    if not por_lingua:
+        raise RuntimeError("nenhum acesso lido da Wikipédia")
     saida = {}
-    for proj, art in ARTIGOS:
-        d = json.loads(baixar(
-            f"https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/{proj}/all-access/user/{art}/daily/{ini}00/{fim}00"))
-        saida[f"{proj}/{art}"] = [[x["timestamp"][:8], x["views"]] for x in d.get("items", [])]
+    for lang, r in por_lingua.items():
+        q = {g: (a / b if b else 1.0) for g, (a, b) in r.items()}
+        saida[lang] = {"aflicao": round(q["aflicao"], 3), "cuidado": round(q["cuidado"], 3),
+                       "acessos_aflicao": r["aflicao"][0], "acessos_cuidado": r["cuidado"][0]}
     return saida
+
+
+# ---------------------------------------------------------------- o que as pessoas escrevem · Bluesky (rede aberta)
+# Escuta por alguns minutos as postagens públicas do Bluesky e conta, por idioma, palavras de aflição e de cuidado.
+# Só contagens: nenhum texto, nome ou conta é guardado.
+PALAVRAS = {
+    "en": {"aflicao": ["anxiety", "anxious", "panic", "depressed", "depression", "lonely", "insomnia", "hopeless", "scared", "afraid", "war", "hunger"],
+           "cuidado": ["hope", "grateful", "gratitude", "love", "peace", "solidarity", "joy", "calm", "together", "kindness", "care"]},
+    "pt": {"aflicao": ["ansiedade", "ansiosa", "ansioso", "pânico", "depressão", "sozinha", "sozinho", "insônia", "medo", "guerra", "fome"],
+           "cuidado": ["esperança", "gratidão", "amor", "paz", "solidariedade", "alegria", "calma", "juntos", "juntas", "cuidado", "afeto"]},
+    "es": {"aflicao": ["ansiedad", "ansioso", "ansiosa", "pánico", "depresión", "soledad", "insomnio", "miedo", "guerra", "hambre"],
+           "cuidado": ["esperanza", "gratitud", "amor", "paz", "solidaridad", "alegría", "calma", "juntos", "cuidado", "cariño"]},
+}
+
+
+def bluesky(segundos=120):
+    from websockets.sync.client import connect
+    import re
+    cont = {l: {"aflicao": 0, "cuidado": 0, "posts": 0} for l in PALAVRAS}
+    padroes = {l: {g: re.compile(r"\b(" + "|".join(map(re.escape, ws)) + r")\b", re.I) for g, ws in grupos.items()} for l, grupos in PALAVRAS.items()}
+    fim = datetime.now(timezone.utc) + timedelta(seconds=segundos)
+    with connect("wss://jetstream2.us-east.bsky.network/subscribe?wantedCollections=app.bsky.feed.post", open_timeout=20) as ws:
+        while datetime.now(timezone.utc) < fim:
+            try:
+                m = json.loads(ws.recv(timeout=10))
+            except TimeoutError:
+                continue
+            rec = (m.get("commit") or {}).get("record") or {}
+            texto = rec.get("text") or ""
+            for l in (rec.get("langs") or [])[:1]:
+                l = l.split("-")[0]
+                if l in cont:
+                    cont[l]["posts"] += 1
+                    for g, rx in padroes[l].items():
+                        if rx.search(texto):
+                            cont[l][g] += 1
+    return {l: {**c, "aflicao_por_mil": round(1000 * c["aflicao"] / c["posts"], 1) if c["posts"] else None,
+                "cuidado_por_mil": round(1000 * c["cuidado"] / c["posts"], 1) if c["posts"] else None} for l, c in cont.items()}
 
 
 # ---------------------------------------------------------------- conflito armado · UCDP (precisa de chave)
@@ -162,6 +235,8 @@ def km_entre(a1, o1, a2, o2):
 # Códigos CAMEO (raiz): 14 protesto · 17 coerção e repressão · 18 agressão · 19 combate · 20 violência em massa.
 # Mede o que a imprensa mundial relata, não tudo o que acontece; locais com menos cobertura aparecem menos.
 GDELT_PESO = {"14": 0.3, "17": 0.6, "18": 0.8, "19": 0.9, "20": 1.0}
+# Contraponto: 03 intenção de cooperar · 04 diálogo · 05 cooperação diplomática · 06 cooperação material · 07 ajuda · 08 concessão (ex.: cessar-fogo)
+GDELT_CUIDADO = {"03": 0.3, "04": 0.2, "05": 0.4, "06": 0.7, "07": 1.0, "08": 0.6}
 
 
 def gdelt(lugares):
@@ -169,6 +244,8 @@ def gdelt(lugares):
     url = next(x for x in ult if x.endswith(".export.CSV.zip"))
     base_t = datetime.strptime(url.rsplit("/", 1)[1][:14], "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
     soma = [0.0] * len(lugares)
+    cuid = [0.0] * len(lugares)
+    ccont = [dict() for _ in lugares]
     cont = [dict() for _ in lugares]
     lidos = 0
     for k in range(4):  # a última hora: quatro arquivos de 15 minutos
@@ -184,7 +261,8 @@ def gdelt(lugares):
                 if len(c) < 58:
                     continue
                 peso = GDELT_PESO.get(c[28])
-                if not peso or not c[56] or not c[57]:
+                pcuid = GDELT_CUIDADO.get(c[28])
+                if not (peso or pcuid) or not c[56] or not c[57]:
                     continue
                 try:
                     lat, lon, men = float(c[56]), float(c[57]), int(c[31] or 1)
@@ -194,17 +272,26 @@ def gdelt(lugares):
                     km = km_entre(p["lat"], p["lon"], lat, lon)
                     if km > 900:
                         continue
-                    soma[j] += peso * math.log1p(men) * math.exp(-((km / 300) ** 2))
-                    if km < 300:
-                        cont[j][c[28]] = cont[j].get(c[28], 0) + 1
+                    w = math.log1p(men) * math.exp(-((km / 300) ** 2))
+                    if peso:
+                        soma[j] += peso * w
+                        if km < 300:
+                            cont[j][c[28]] = cont[j].get(c[28], 0) + 1
+                    else:
+                        cuid[j] += pcuid * w
+                        if km < 300:
+                            ccont[j][c[28]] = ccont[j].get(c[28], 0) + 1
     if not lidos:
         raise RuntimeError("nenhum arquivo GDELT disponível")
     NOMES = {"14": "protestos", "17": "repressão", "18": "agressões", "19": "combates", "20": "violência em massa"}
+    CNOMES = {"03": "intenções de cooperar", "04": "diálogos", "05": "acordos", "06": "cooperação material", "07": "ajuda humanitária", "08": "concessões e cessar-fogo"}
     saida = []
     for j in range(len(lugares)):
         i = 1 - math.exp(-soma[j] / (6 * lidos / 4))
+        ic = 1 - math.exp(-cuid[j] / (10 * lidos / 4))
         nota = ", ".join(f"{n} {NOMES[k]}" for k, n in sorted(cont[j].items(), key=lambda x: -x[1])) or "nada relatado perto"
-        saida.append({"i": round(i, 3), "nota": f"última hora · {nota}"})
+        cnota = ", ".join(f"{n} {CNOMES[k]}" for k, n in sorted(ccont[j].items(), key=lambda x: -x[1])[:3]) or "nada relatado perto"
+        saida.append({"i": round(i, 3), "nota": f"última hora · {nota}", "cuidado": {"i": round(ic, 3), "nota": f"última hora · {cnota}"}})
     return saida
 
 
@@ -310,6 +397,13 @@ def main():
         fontes["Wikimedia"] = f"falhou ({type(e).__name__}) · mantido o último valor"
 
     try:
+        redes = bluesky()
+        fontes["Bluesky"] = "ok · " + ", ".join(f"{l}: {c['posts']} posts" for l, c in redes.items())
+    except Exception as e:
+        redes = anterior.get("redes", {})
+        fontes["Bluesky"] = f"falhou ({type(e).__name__}) · mantido o último valor"
+
+    try:
         conflitos = ucdp()
         fontes["UCDP"] = "sem chave · conflito fica em zero" if conflitos is None else f"ok · {len(conflitos)} eventos"
     except Exception as e:
@@ -321,7 +415,7 @@ def main():
         fontes["GDELT"] = "ok"
     except Exception as e:
         antigos = {p["nome"]: p for p in anterior.get("lugares", [])}
-        violencia = [antigos.get(p["nome"], {}).get("violencia") for p in lugares]
+        violencia = [dict(antigos.get(p["nome"], {}).get("violencia") or {}, cuidado=antigos.get(p["nome"], {}).get("cuidado")) or None for p in lugares]
         fontes["GDELT"] = f"falhou ({type(e).__name__}) · mantido o último valor"
 
     try:
@@ -335,13 +429,24 @@ def main():
     saida_lugares = []
     for p, m, v in zip(lugares, medidas, violencia):
         extra = (pais or {}).get(p["iso3"]) if pais is not None else {k: antigos.get(p["nome"], {}).get(k) for k in ("guerra", "fome", "deslocamento")}
-        saida_lugares.append({"nome": p["nome"], "lat": p["lat"], "lon": p["lon"], "iso3": p["iso3"], "db": p.get("db"), "db_fonte": "estimado",
-                              **m, "violencia": v, **{k: x for k, x in (extra or {}).items() if x}})
+        cuid = (v or {}).pop("cuidado", None) if isinstance(v, dict) else None
+        lang = p.get("lingua", "en")
+        wk = (atencao or {}).get(lang) or (atencao or {}).get("en") or {}
+        rd = (redes or {}).get(lang) or {}
+        afl_i = min(1, max(0, (wk.get("aflicao", 1) - 0.85) / 0.5)) if wk else None
+        esp_i = min(1, max(0, (wk.get("cuidado", 1) - 0.85) / 0.5)) if wk else None
+        if rd.get("posts"):
+            afl_i = min(1, (afl_i or 0) * 0.6 + min(1, (rd["aflicao_por_mil"] or 0) / 60) * 0.4)
+            esp_i = min(1, (esp_i or 0) * 0.6 + min(1, (rd["cuidado_por_mil"] or 0) / 60) * 0.4)
+        atn = None if afl_i is None else {"i": round(afl_i, 3), "nota": f"Wikipédia ({lang}) ontem × semana: {wk.get('aflicao', 1):.2f}" + (f" · Bluesky: {rd['aflicao_por_mil']} por mil posts" if rd.get("posts") else "")}
+        esp = None if esp_i is None else {"i": round(esp_i, 3), "nota": f"Wikipédia ({lang}) ontem × semana: {wk.get('cuidado', 1):.2f}" + (f" · Bluesky: {rd['cuidado_por_mil']} por mil posts" if rd.get("posts") else "")}
+        saida_lugares.append({"nome": p["nome"], "lat": p["lat"], "lon": p["lon"], "iso3": p["iso3"], "lingua": lang, "db": p.get("db"), "db_fonte": "estimado",
+                              **m, "violencia": v, "cuidado": cuid, "aflicao_coletiva": atn, "esperanca": esp, **{k: x for k, x in (extra or {}).items() if x}})
 
     alertas.sort(key=lambda a: a[0])
     inicio = alertas[0][0] if alertas else iso(AGORA - timedelta(hours=72))
     dados = {"atualizado": iso(AGORA), "inicio": inicio, "fontes": fontes, "alertas": alertas,
-             "lugares": saida_lugares, "atencao": atencao, "conflitos": conflitos}
+             "lugares": saida_lugares, "atencao": atencao, "redes": redes, "conflitos": conflitos}
 
     os.makedirs(os.path.join(RAIZ, "data", "historico", AGORA.strftime("%Y-%m-%d")), exist_ok=True)
     os.makedirs(os.path.join(RAIZ, "docs"), exist_ok=True)

@@ -519,7 +519,8 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     SER:  { nome: "serotonina",     massa: 176.22, cor: [46, 196, 182],  papel: "humor e saciedade; cai com a falta de triptofano na fome" },
     GRE:  { nome: "grelina",        massa: 3370.9, cor: [201, 180, 138], papel: "sinal de fome; eleva ansiedade e alerta" },
     MEL:  { nome: "melatonina",     massa: 232.28, cor: [91, 61, 240],   papel: "ritmo do sono; alterada por luz, calor e ruído à noite" },
-    OXT:  { nome: "ocitocina",      massa: 1007.19, cor: [245, 140, 184], papel: "vínculo e pertencimento; abalada pela perda de lugar e de laços" },
+    OXT:  { nome: "ocitocina",      massa: 1007.19, cor: [245, 140, 184], papel: "vínculo e pertencimento; abalada pela perda de lugar, fortalecida pelo cuidado" },
+    DOP:  { nome: "dopamina",       massa: 153.18, cor: [255, 226, 120], papel: "motivação e expectativa; sustenta a esperança e o movimento" },
     GABA: { nome: "GABA",           massa: 103.12, cor: [111, 168, 255], papel: "repouso e calma; o estado de base quando pouco pesa" },
   };
   const medHz = m => { let f = MED[m].massa; while (f > 1100) f /= 2; while (f < 100) f *= 2; return f; };
@@ -536,7 +537,11 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     VIOL: { COR: .45, NOR: .30, GLU: .25 },
     FOME: { SER: .40, GRE: .35, COR: .25 },
     DESL: { OXT: .50, COR: .50 },
+    ATN:  { NOR: .40, COR: .40, MEL: .20 },
+    CUID: { OXT: .50, GABA: .30, SER: .20 },
+    ESP:  { DOP: .40, SER: .30, OXT: .30 },
   };
+  const POSITIVOS = new Set(["CUID", "ESP"]);
   for (const [k, m] of Object.entries(MED)) { COL[k] = m.cor; COLNAME[k] = m.nome; }
   function chemProfile(factors) {
     const prof = {};
@@ -976,7 +981,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     let level = 0; if (analyser) { const td = new Float32Array(512); analyser.getFloatTimeDomainData(td); for (const v of td) level += v * v; level = Math.min(1, Math.sqrt(level / 512) * 6); }
     a.globalCompositeOperation = "source-over"; a.fillStyle = "#050407"; a.fillRect(0, 0, sc.width, sc.height);
     const top = 2, rh = (sc.height - top - 2) / Math.max(1, rowsL.length), labW = 150, x0 = labW, x1 = sc.width - 6;
-    const DESC = { ADR: "adrenalina", NOR: "noradrenalina", COR: "cortisol", GLU: "glutamato", IL6: "interleucina-6", SER: "serotonina", GRE: "grelina", MEL: "melatonina", OXT: "ocitocina", GABA: "GABA", EQ: "terremoto", WF: "incêndio", TC: "tempestade", HEAT: "calor", AIR: "ar", NOISE: "ruído", LIGHT: "luz e escuridão", WAR: "guerra" };
+    const DESC = { DOP: "dopamina", ADR: "adrenalina", NOR: "noradrenalina", COR: "cortisol", GLU: "glutamato", IL6: "interleucina-6", SER: "serotonina", GRE: "grelina", MEL: "melatonina", OXT: "ocitocina", GABA: "GABA", EQ: "terremoto", WF: "incêndio", TC: "tempestade", HEAT: "calor", AIR: "ar", NOISE: "ruído", LIGHT: "luz e escuridão", WAR: "guerra" };
     rowsL.forEach((l, k) => {
       const col = COL[l.key], f = HZ[l.key] ? HZ[l.key](l.i ?? 0.5, T) : 220, i = l.i ?? 0.5, yc = top + rh * (k + 0.5);
       
@@ -1005,7 +1010,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
 
   // ================= view: metodo =================
   { const el = document.getElementById("mChem"); if (el) el.innerHTML = Object.entries(MED).map(([k, m]) => `<dt style="color:${hex(m.cor)}">● ${m.nome}</dt><dd>${m.massa.toLocaleString("pt-BR")} g/mol → ${medHz(k).toFixed(1)} Hz<br><span class="dim" style="font-size:10px">${m.papel}</span></dd>`).join("");
-    const FN = { EQ: "terremoto", WF: "incêndio", TC: "tempestade, inundação", HEAT: "calor", AIR: "poluição do ar", NOISE: "ruído", LIGHT: "luz e escuridão", WAR: "guerra", VIOL: "violência, crise política", FOME: "fome", DESL: "deslocamento forçado" };
+    const FN = { ATN: "aflição coletiva (buscas e posts)", CUID: "cuidado: ajuda, acordos, cooperação (contraponto)", ESP: "esperança e vínculo (contraponto)", EQ: "terremoto", WF: "incêndio", TC: "tempestade, inundação", HEAT: "calor", AIR: "poluição do ar", NOISE: "ruído", LIGHT: "luz e escuridão", WAR: "guerra", VIOL: "violência, crise política", FOME: "fome", DESL: "deslocamento forçado" };
     const el2 = document.getElementById("mFmed"); if (el2) el2.innerHTML = Object.entries(FMED).map(([f, w]) => `<dt>${FN[f]}</dt><dd>${Object.entries(w).map(([m, x]) => `<span style="color:${hex(MED[m].cor)}">${MED[m].nome} ${Math.round(x * 100)}%</span>`).join(" · ")}</dd>`).join(""); }
   document.querySelector("#tData tbody").innerHTML = EV.slice().reverse().map(e => `<tr><td>${fmt(e.t)}</td><td class="${e.red ? "r" : "b"}">${e.type}</td><td>${e.level === "Red" ? '<span class="r">vermelho</span>' : "verde"}</td><td>${e.country}</td><td>${e.lat.toFixed(2)}</td><td>${e.lon.toFixed(2)}</td><td>${valueText(e)}</td><td>${Math.round(e.deg)}°</td></tr>`).join("");
 
@@ -1179,18 +1184,18 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     { name: "Planalto Tibetano, China", lat: 32.4, lon: 93.8, T: 2, pm: 8, db: 45 },
     { name: "Norte da Austrália", lat: -19.5, lon: 128.5, T: 36, pm: 14, db: 45 },
     { name: "Okavango, Botsuana", lat: -20.5, lon: 24.8, T: 33, pm: 12, db: 45 },
-    { name: "Sudão do Sul", lat: 9.7, lon: 26.0, T: 35, pm: 30, db: 50, ex: { VIOL: 0.55, WAR: 0.6, FOME: 0.85, DESL: 0.8 } },
+    { name: "Sudão do Sul", lat: 9.7, lon: 26.0, T: 35, pm: 30, db: 50, ex: { VIOL: 0.55, WAR: 0.6, FOME: 0.85, DESL: 0.8, CUID: 0.45, ATN: 0.3, ESP: 0.1 } },
     { name: "Costa do Pacífico, México", lat: 17.0, lon: -100.5, T: 30, pm: 15, db: 60 },
     { name: "Vanuatu", lat: -15.4, lon: 167.0, T: 27, pm: 6, db: 50 },
     { name: "Nova Escócia, Canadá", lat: 44.6, lon: -63.6, T: 12, pm: 6, db: 58 },
-    ...CITIES.map(c => ({ name: c.name, lat: c.lat, lon: CITY_LON[c.name], T: c.T, pm: c.pm, db: c.db, ex: ({ "São Paulo": { VIOL: 0.35 }, "Lagos": { VIOL: 0.45, FOME: 0.3 }, "Cidade do México": { VIOL: 0.45 }, "Daca": { DESL: 0.35, FOME: 0.2 }, "Cairo": { VIOL: 0.2 }, "Nova Délhi": { VIOL: 0.25 } })[c.name] || {} })),
+    ...CITIES.map(c => ({ name: c.name, lat: c.lat, lon: CITY_LON[c.name], T: c.T, pm: c.pm, db: c.db, ex: ({ "São Paulo": { VIOL: 0.35, ATN: 0.4, CUID: 0.2, ESP: 0.25 }, "Lagos": { VIOL: 0.45, FOME: 0.3, CUID: 0.25 }, "Cidade do México": { VIOL: 0.45, ATN: 0.3, ESP: 0.2 }, "Daca": { DESL: 0.35, FOME: 0.2, CUID: 0.3 }, "Cairo": { VIOL: 0.2, CUID: 0.15 }, "Nova Délhi": { VIOL: 0.25, ATN: 0.25 }, "Madri": { ESP: 0.3, CUID: 0.2 }, "Tromsø": { ESP: 0.2 } })[c.name] || {} })),
   ];
   if (LIVE && LIVE.lugares) for (const p of PLACES) {
     const r = LIVE.lugares.find(x => x.nome === p.name); if (!r) continue;
     if (r.T != null) { p.T = Math.round(r.T); p.realT = true; }
     if (r.pm != null) { p.pm = Math.round(r.pm); p.realPM = true; }
     p.ex = {}; p.live = {};
-    for (const [k, f] of [["VIOL", "violencia"], ["WAR", "guerra"], ["FOME", "fome"], ["DESL", "deslocamento"]]) if (r[f] && r[f].i != null) p.live[k] = r[f];
+    for (const [k, f] of [["VIOL", "violencia"], ["WAR", "guerra"], ["FOME", "fome"], ["DESL", "deslocamento"], ["ATN", "aflicao_coletiva"], ["CUID", "cuidado"], ["ESP", "esperanca"]]) if (r[f] && r[f].i != null) p.live[k] = r[f];
   }
   function liveFac(pl, k, fonte) {
     const r = pl.live && pl.live[k];
@@ -1225,6 +1230,9 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       { key: "VIOL", name: "violência e crise política", ...liveFac(pl, "VIOL", "GDELT") },
       { key: "FOME", name: "fome", ...liveFac(pl, "FOME", "HDX · IPC") },
       { key: "DESL", name: "deslocamento forçado", ...liveFac(pl, "DESL", "HDX") },
+      { key: "ATN", name: "aflição coletiva (buscas e posts)", ...liveFac(pl, "ATN", "Wikipédia · Bluesky") },
+      { key: "CUID", name: "cuidado: ajuda, acordos, cooperação", positivo: true, ...liveFac(pl, "CUID", "GDELT") },
+      { key: "ESP", name: "esperança e vínculo (buscas e posts)", positivo: true, ...liveFac(pl, "ESP", "Wikipédia · Bluesky") },
     ];
     return { id: "pl" + PLACES.indexOf(pl), kind: "lugar", pl, factors, light: li, label: pl.name, lat: pl.lat, lon: pl.lon };
   }
@@ -1233,11 +1241,11 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
   // retratos built from places: the three heaviest factors of a place, each with its own color and reaction-diffusion regime
   // regimes chosen to avoid isolated round dots: filaments, branching coral and wandering lines read as living tissue
   const RDREG = { EQ: () => ({ F: 0.029, K: 0.057 }), WF: i => ({ F: 0.054 - 0.004 * i, K: 0.0625 - 0.001 * i }), TC: () => ({ F: 0.0545, K: 0.062 }),
-    ADR: () => ({ F: 0.039, K: 0.058 }), NOR: i => ({ F: 0.052 - 0.003 * i, K: 0.0622 }), COR: i => ({ F: 0.03 - 0.003 * i, K: 0.0565 - 0.001 * i }), GLU: i => ({ F: 0.026 + 0.003 * (1 - i), K: 0.055 + 0.003 * (1 - i) }),
+    DOP: () => ({ F: 0.0545, K: 0.062 }), ADR: () => ({ F: 0.039, K: 0.058 }), NOR: i => ({ F: 0.052 - 0.003 * i, K: 0.0622 }), COR: i => ({ F: 0.03 - 0.003 * i, K: 0.0565 - 0.001 * i }), GLU: i => ({ F: 0.026 + 0.003 * (1 - i), K: 0.055 + 0.003 * (1 - i) }),
     IL6: i => ({ F: 0.029, K: 0.058 + 0.002 * (1 - i) }), SER: () => ({ F: 0.0545, K: 0.062 }), GRE: () => ({ F: 0.028, K: 0.056 }), MEL: () => ({ F: 0.0545, K: 0.062 }), OXT: () => ({ F: 0.0545, K: 0.062 }), GABA: () => ({ F: 0.05, K: 0.0615 }),
     HEAT: i => ({ F: 0.03 - 0.003 * i, K: 0.0565 - 0.001 * i }), AIR: i => ({ F: 0.029, K: 0.057 + 0.003 * (1 - i) }), NOISE: () => ({ F: 0.039, K: 0.058 }),
     LIGHT: () => ({ F: 0.0545, K: 0.062 }), WAR: i => ({ F: 0.026 + 0.004 * (1 - i), K: 0.054 + 0.004 * (1 - i) }) };
-  const RDNAME = { ADR: "fibras curtas", NOR: "coral ramificado", COR: "filamentos errantes", GLU: "labirinto denso", IL6: "labirinto aberto", SER: "coral", GRE: "filamentos", MEL: "anel pulsante", OXT: "coral", GABA: "coral ramificado", EQ: "labirinto", WF: "coral ramificado", TC: "coral", HEAT: "filamentos errantes", AIR: "labirinto aberto", NOISE: "fibras curtas", LIGHT: "anel pulsante", WAR: "labirinto denso" };
+  const RDNAME = { DOP: "coral", ADR: "fibras curtas", NOR: "coral ramificado", COR: "filamentos errantes", GLU: "labirinto denso", IL6: "labirinto aberto", SER: "coral", GRE: "filamentos", MEL: "anel pulsante", OXT: "coral", GABA: "coral ramificado", EQ: "labirinto", WF: "coral ramificado", TC: "coral", HEAT: "filamentos errantes", AIR: "labirinto aberto", NOISE: "fibras curtas", LIGHT: "anel pulsante", WAR: "labirinto denso" };
   function portraitFromPlace(ps) {
     const src = srcFromPlace(ps.pl), top = speciesFor(src);
     const layers = top.map(([key, i]) => ({ key, i, ch: { ...RDREG[key](i), n: Math.round(16 + 200 * i), R: (0.18 + 0.28 * i) * PS, ring: key === "LIGHT" || key === "MEL" } }));
@@ -1256,7 +1264,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     });
   }
   // sound rules (parameter-mapping sonification)
-  const HZ = { ADR: () => medHz("ADR"), NOR: () => medHz("NOR"), COR: () => medHz("COR"), GLU: () => medHz("GLU"), IL6: () => medHz("IL6"), SER: () => medHz("SER"), GRE: () => medHz("GRE"), MEL: () => medHz("MEL"), OXT: () => medHz("OXT"), GABA: () => medHz("GABA"), EQ: i => 120 / Math.pow(2, 2 * i), WF: i => 2000 + 4000 * i, TC: i => 150 + 6 * (200 * i), HEAT: (i, T) => 55 * Math.pow(2, ((T ?? 10 + 24 * i) - 10) / 24), AIR: () => 500, NOISE: () => 1200, LIGHT: () => 82.4, WAR: () => 70 };
+  const HZ = { DOP: () => medHz("DOP"), ADR: () => medHz("ADR"), NOR: () => medHz("NOR"), COR: () => medHz("COR"), GLU: () => medHz("GLU"), IL6: () => medHz("IL6"), SER: () => medHz("SER"), GRE: () => medHz("GRE"), MEL: () => medHz("MEL"), OXT: () => medHz("OXT"), GABA: () => medHz("GABA"), EQ: i => 120 / Math.pow(2, 2 * i), WF: i => 2000 + 4000 * i, TC: i => 150 + 6 * (200 * i), HEAT: (i, T) => 55 * Math.pow(2, ((T ?? 10 + 24 * i) - 10) / 24), AIR: () => 500, NOISE: () => 1200, LIGHT: () => 82.4, WAR: () => 70 };
   function chainPlace(src) {
     const T = src.place.pl.T;
     return src.layers.map(l => {
@@ -1291,7 +1299,9 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
   }
   function placeRows(src) {
     const chem = chemProfile(src.factors).slice(0, 5).map(([m, v]) => `<dt style="color:${hex(COL[m])}">${MED[m].nome}</dt><dd>${v.toFixed(2)} · ${Math.round(medHz(m))} Hz<br><span class="dim" style="font-size:10px">${MED[m].papel}</span></dd>`).join("");
-    return `<dt style="grid-column:1/-1;color:var(--dim);font-size:10px;letter-spacing:.14em">QUÍMICA DO LUGAR</dt>` + chem + `<dt style="grid-column:1/-1;color:var(--dim);font-size:10px;letter-spacing:.14em;margin-top:8px">O QUE PESA AQUI</dt>` + src.factors.slice().sort((a, b) => b.i - a.i).map(f => `<dt style="color:${f.i > 0 ? hex(COL[f.key]) : "var(--dim)"}">${f.name}</dt><dd><span style="display:inline-block;width:${Math.round(f.i * 70)}px;height:6px;background:${hex(COL[f.key])};vertical-align:middle;margin-right:6px"></span>${f.i.toFixed(2)}<br><span class="dim" style="font-size:10px">${f.tag}</span></dd>`).join("");
+    const neg = src.factors.filter(f => !f.positivo).reduce((a, f) => a + f.i, 0), pos = src.factors.filter(f => f.positivo).reduce((a, f) => a + f.i, 0), tot = neg + pos || 1;
+    const bal = `<dt style="grid-column:1/-1;color:var(--dim);font-size:10px;letter-spacing:.14em">PESO × CONTRAPONTO</dt><dd style="grid-column:1/-1;text-align:left"><div style="display:flex;height:8px;background:#1A1920"><span style="width:${Math.round(neg / tot * 100)}%;background:${hex(COL.COR)}"></span><span style="width:${Math.round(pos / tot * 100)}%;background:${hex(COL.OXT)}"></span></div><span class="dim" style="font-size:10px">peso ${neg.toFixed(2)} · cuidado e esperança ${pos.toFixed(2)}</span></dd>`;
+    return bal + `<dt style="grid-column:1/-1;color:var(--dim);font-size:10px;letter-spacing:.14em">QUÍMICA DO LUGAR</dt>` + chem + `<dt style="grid-column:1/-1;color:var(--dim);font-size:10px;letter-spacing:.14em;margin-top:8px">O QUE PESA AQUI</dt>` + src.factors.slice().sort((a, b) => b.i - a.i).map(f => `<dt style="color:${f.i > 0 ? hex(COL[f.key]) : "var(--dim)"}">${f.name}</dt><dd><span style="display:inline-block;width:${Math.round(f.i * 70)}px;height:6px;background:${hex(COL[f.key])};vertical-align:middle;margin-right:6px"></span>${f.i.toFixed(2)}<br><span class="dim" style="font-size:10px">${f.tag}</span></dd>`).join("");
   }
 
   // ================= figuras: nebula engine (WebGL fragment shader, data-driven uniforms) =================
@@ -1387,6 +1397,7 @@ void main(){
   // ================= view: figuras (continuous agent-based organism, Physarum model) =================
   const FW = 360, FN = FW * FW, NA = reduce ? 30000 : 70000, MAXSP = 3;
   const PRESET = {
+    DOP:  { SA: 0.28, RA: 0.60, SD: 18, sp: 1.0, dec: 0.93, form: "correntes" },
     ADR:  { SA: 1.20, RA: 0.60, SD: 4,  sp: 1.5, dec: 0.82, form: "grão rápido" },
     NOR:  { SA: 0.55, RA: 0.28, SD: 6,  sp: 1.6, dec: 0.86, form: "filamentos" },
     COR:  { SA: 0.50, RA: 0.45, SD: 12, sp: 1.0, dec: 0.90, form: "células lentas" },

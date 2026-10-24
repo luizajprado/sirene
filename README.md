@@ -2,7 +2,7 @@
 
 **O que é a loucura?** Obra de dados, imagem e som de Luiza Jesus do Prado (2026).
 
-Para cada lugar do mundo, a Sirene junta o que pode pesar na saúde mental de quem vive ali (guerra, violência e crise política, fome, deslocamento forçado, desastres, calor, poluição do ar, ruído, luz e escuridão) e converte esses fatores nos mediadores biológicos do estresse que eles mobilizam: adrenalina, noradrenalina, cortisol, glutamato, interleucina-6, serotonina, grelina, melatonina, ocitocina e GABA. Cada mediador tem uma cor, e o seu som vem da massa molecular levada por oitavas até a faixa audível. As imagens e os sons mudam o tempo todo, conforme os dados.
+Para cada lugar do mundo, a Sirene junta o que pode pesar na saúde mental de quem vive ali (guerra, violência e crise política, fome, deslocamento forçado, desastres, calor, poluição do ar, ruído, luz e escuridão) e converte esses fatores nos mediadores biológicos do estresse que eles mobilizam: adrenalina, noradrenalina, cortisol, glutamato, interleucina-6, serotonina, grelina, melatonina, ocitocina GABA e dopamina. O contraponto (ajuda, cooperação, esperança) entra na mesma química, pela ocitocina, GABA, serotonina e dopamina. Cada mediador tem uma cor, e o seu som vem da massa molecular levada por oitavas até a faixa audível. As imagens e os sons mudam o tempo todo, conforme os dados.
 
 As correspondências entre fatores e mediadores simplificam a literatura de psicobiologia do estresse. Elas descrevem tendências em populações, nunca a medida do corpo de alguém. A obra não faz diagnóstico.
 
@@ -24,7 +24,9 @@ As correspondências entre fatores e mediadores simplificam a literatura de psic
 | Calor | Open-Meteo · CC BY 4.0 | real, automático |
 | Poluição do ar (PM2,5, NO₂, ozônio) | Open-Meteo Air Quality (dados Copernicus CAMS) · CC BY 4.0 | real, automático |
 | Luz do dia e noite | calculado (astronomia) | real |
-| Atenção coletiva (ansiedade, pânico, insônia) | Wikimedia, acessos à Wikipédia | real, automático; ainda não usado nas imagens |
+| Aflição coletiva e esperança: o que se procura | Wikipédia, acessos por idioma (aflição × cuidado, ontem comparado à semana) | real, automático; o Google não oferece acesso livre às buscas |
+| Aflição coletiva e esperança: o que se escreve | Bluesky, postagens públicas (só contagens de palavras, nada é guardado) | real, automático |
+| Contraponto: ajuda humanitária, acordos, cooperação | GDELT | real, automático |
 | Ruído | estimativa por lugar | estimado; mapas de ruído oficiais existem só para algumas regiões |
 | Violência e crise política (protestos, repressão, agressões, combates) | GDELT · aberto, a cada 15 min | real, automático; mede o que a imprensa relata |
 | Guerra (mortes em conflitos, por país) | HDX HAPI (OCHA/ONU), dados ACLED | precisa do secret `HAPI_EMAIL` |
