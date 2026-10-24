@@ -1,5 +1,5 @@
 """
-Robô da Bolsa da Aflição · Sirene (Luiza Jesus do Prado, 2026)
+Robô da Bolsa da Aflição · Carga Alostática (Luiza Jesus do Prado, 2026)
 
 Depois de cada coleta, procura o ativo de aflição que mais se moveu em 24 horas e,
 se o movimento for forte, publica um boletim no Bluesky na língua do mercado,

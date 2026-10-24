@@ -1,8 +1,8 @@
-# Sirene
+# Carga Alostática
 
 **O que é a loucura?** Obra de dados, imagem e som de Luiza Jesus do Prado (2026).
 
-Para cada lugar do mundo, a Sirene junta o que pode pesar na saúde mental de quem vive ali (guerra, violência e crise política, fome, deslocamento forçado, desastres, calor, poluição do ar, ruído, luz e escuridão) e converte esses fatores nos mediadores biológicos do estresse que eles mobilizam: adrenalina, noradrenalina, cortisol, glutamato, interleucina-6, serotonina, grelina, melatonina, ocitocina GABA e dopamina. O contraponto (ajuda, cooperação, esperança) entra na mesma química, pela ocitocina, GABA, serotonina e dopamina. Cada mediador tem uma cor, e o seu som vem da massa molecular levada por oitavas até a faixa audível. As imagens e os sons mudam o tempo todo, conforme os dados.
+Para cada lugar do mundo, a Carga Alostática junta o que pode pesar na saúde mental de quem vive ali (guerra, violência e crise política, fome, deslocamento forçado, desastres, calor, poluição do ar, ruído, luz e escuridão) e converte esses fatores nos mediadores biológicos do estresse que eles mobilizam: adrenalina, noradrenalina, cortisol, glutamato, interleucina-6, serotonina, grelina, melatonina, ocitocina GABA e dopamina. O contraponto (ajuda, cooperação, esperança) entra na mesma química, pela ocitocina, GABA, serotonina e dopamina. Cada mediador tem uma cor, e o seu som vem da massa molecular levada por oitavas até a faixa audível. As imagens e os sons mudam o tempo todo, conforme os dados.
 
 As correspondências entre fatores e mediadores simplificam a literatura de psicobiologia do estresse. Elas descrevem tendências em populações, nunca a medida do corpo de alguém. A obra não faz diagnóstico.
 
@@ -20,7 +20,7 @@ As correspondências entre fatores e mediadores simplificam a literatura de psic
 
 Obra paralela, em `docs/observatorio/`: saúde mental, ciência e dinheiro lidos no mesmo dia. Fica em `https://luizajprado.github.io/sirene/observatorio/`.
 
-- **Onde pesa mais:** os lugares da Sirene, do maior peso para o menor, com os mediadores, a resposta que ajuda e quem trabalha nisso. Os países de maior risco humanitário entram sozinhos, pelo índice INFORM (precisa do secret `HAPI_EMAIL`).
+- **Onde pesa mais:** os lugares da Carga Alostática, do maior peso para o menor, com os mediadores, a resposta que ajuda e quem trabalha nisso. Os países de maior risco humanitário entram sozinhos, pelo índice INFORM (precisa do secret `HAPI_EMAIL`).
 - **Bancos de pesquisa ao vivo** (`coletor/pesquisa.py`): artigos da semana por tema (Europe PMC), ensaios clínicos em saúde mental recrutando e quem os financia (ClinicalTrials.gov), notificações de efeitos adversos de remédios psiquiátricos (openFDA, uma vez por dia) e dados químicos das moléculas (PubChem).
 - **O que pouco chega ao público:** achados com fonte, como ISRS e fraturas, sintomas ao parar antidepressivos, disfunção sexual persistente, benzodiazepínicos e dependência. Sempre com o aviso de não mudar remédio sem quem prescreveu.
 - **Bolsa da Aflição:** S&P 500, Ibovespa e VIX ao lado de quem lucrou nas crises que pesam na saúde mental.

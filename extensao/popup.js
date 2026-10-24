@@ -6,6 +6,6 @@
   const indices = await indicesSirene();
   const lista = document.getElementById("lista");
   lista.textContent = "";
-  if (!indices) { lista.innerHTML = "<li>sem conexão com a Sirene</li>"; return; }
+  if (!indices) { lista.innerHTML = "<li>sem conexão com a Carga Alostática</li>"; return; }
   for (const x of indices) { const li = document.createElement("li"); li.textContent = textoIndice(x); lista.append(li); }
 })();

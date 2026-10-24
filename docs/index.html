@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<title>Sirene</title>
+<title>Carga Alostática</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>html,body{margin:0}[hidden]{display:none!important}</style>
@@ -115,7 +115,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
 <body>
 <div class="app">
   <nav aria-label="Seções">
-    <div class="brand"><b>Sirene</b><span>O que é a loucura? · laboratório</span></div>
+    <div class="brand"><b>Carga Alostática</b><span>O que é a loucura? · laboratório</span></div>
     <div class="tabs" role="tablist">
       <button type="button" data-v="agora"><span>agora</span><kbd>1</kbd></button>
       <button type="button" data-v="figuras"><span>figuras</span><kbd>2</kbd></button>
@@ -529,25 +529,32 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     OXT:  { nome: "ocitocina",      massa: 1007.19, cor: [245, 140, 184], papel: "vínculo e pertencimento; abalada pela perda de lugar, fortalecida pelo cuidado" },
     DOP:  { nome: "dopamina",       massa: 153.18, cor: [255, 226, 120], papel: "motivação e expectativa; sustenta a esperança e o movimento" },
     GABA: { nome: "GABA",           massa: 103.12, cor: [111, 168, 255], papel: "repouso e calma; o estado de base quando pouco pesa" },
+    ACH:  { nome: "acetilcolina",   massa: 146.21, cor: [180, 255, 236], papel: "atenção e vigília; mantém o cérebro em alerta diante de ruído e estímulo" },
+    HIS:  { nome: "histamina",      massa: 111.15, cor: [205, 130, 255], papel: "vigília e inflamação; sobe com ar ruim, calor e noites mal dormidas" },
+    CRH:  { nome: "CRH",            massa: 4757.5, cor: [196, 128, 52],  papel: "o comando do estresse no hipotálamo; dispara a cascata que termina no cortisol" },
+    SUBP: { nome: "substância P",   massa: 1347.6, cor: [200, 64, 64],   papel: "dor e inflamação; ligada à ansiedade e ao trauma" },
+    AVP:  { nome: "vasopressina",   massa: 1084.2, cor: [150, 172, 205], papel: "água do corpo e vigilância social; sobe com calor e desidratação" },
+    END:  { nome: "beta-endorfina", massa: 3465.0, cor: [255, 192, 150], papel: "alívio da dor; sobe no trauma e também no toque, no riso e no movimento" },
+    ANA:  { nome: "anandamida",     massa: 347.5,  cor: [134, 226, 140], papel: "endocanabinoide do corpo; amortece o estresse e acompanha o bem-estar" },
   };
   const medHz = m => { let f = MED[m].massa; while (f > 1100) f /= 2; while (f < 100) f *= 2; return f; };
   // which mediators each factor mobilizes (weights add to 1)
   const FMED = {
-    EQ:   { ADR: .45, NOR: .35, COR: .20 },
-    WF:   { IL6: .40, ADR: .30, COR: .30 },
-    TC:   { NOR: .40, COR: .40, ADR: .20 },
-    HEAT: { COR: .40, MEL: .30, SER: .30 },
-    AIR:  { IL6: .70, GLU: .30 },
-    NOISE:{ NOR: .40, COR: .30, MEL: .30 },
-    LIGHT:{ MEL: .70, SER: .30 },
-    WAR:  { NOR: .35, GLU: .30, COR: .20, ADR: .15 },
-    VIOL: { COR: .45, NOR: .30, GLU: .25 },
-    FOME: { SER: .40, GRE: .35, COR: .25 },
-    DESL: { OXT: .50, COR: .50 },
-    ATN:  { NOR: .40, COR: .40, MEL: .20 },
-    ECON: { COR: .60, NOR: .25, SER: .15 },
-    CUID: { OXT: .50, GABA: .30, SER: .20 },
-    ESP:  { DOP: .40, SER: .30, OXT: .30 },
+    EQ:   { ADR: .40, NOR: .30, CRH: .15, COR: .15 },
+    WF:   { IL6: .35, ADR: .25, COR: .25, HIS: .15 },
+    TC:   { NOR: .35, COR: .35, ADR: .15, CRH: .15 },
+    HEAT: { COR: .30, MEL: .20, SER: .20, AVP: .20, HIS: .10 },
+    AIR:  { IL6: .55, GLU: .20, HIS: .15, SUBP: .10 },
+    NOISE:{ NOR: .35, COR: .25, MEL: .20, ACH: .20 },
+    LIGHT:{ MEL: .55, SER: .20, HIS: .15, ACH: .10 },
+    WAR:  { NOR: .25, GLU: .20, CRH: .20, COR: .15, END: .10, SUBP: .10 },
+    VIOL: { COR: .35, NOR: .25, GLU: .15, CRH: .15, SUBP: .10 },
+    FOME: { SER: .35, GRE: .35, COR: .20, CRH: .10 },
+    DESL: { OXT: .40, COR: .35, CRH: .15, AVP: .10 },
+    ATN:  { NOR: .35, COR: .30, ACH: .20, MEL: .15 },
+    ECON: { COR: .50, NOR: .20, CRH: .15, SER: .15 },
+    CUID: { OXT: .40, GABA: .25, END: .20, ANA: .15 },
+    ESP:  { DOP: .35, ANA: .25, SER: .20, END: .20 },
   };
   const POSITIVOS = new Set(["CUID", "ESP"]);
   // every factor also gets a color: the color of the mediator it mobilizes most
@@ -1276,9 +1283,10 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     IL6: i => ({ F: 0.029, K: 0.058 + 0.002 * (1 - i) }), SER: () => ({ F: 0.0545, K: 0.062 }), GRE: () => ({ F: 0.028, K: 0.056 }), MEL: () => ({ F: 0.0545, K: 0.062 }), OXT: () => ({ F: 0.0545, K: 0.062 }), GABA: () => ({ F: 0.05, K: 0.0615 }),
     HEAT: i => ({ F: 0.03 - 0.003 * i, K: 0.0565 - 0.001 * i }), AIR: i => ({ F: 0.029, K: 0.057 + 0.003 * (1 - i) }), NOISE: () => ({ F: 0.039, K: 0.058 }),
     LIGHT: () => ({ F: 0.0545, K: 0.062 }), WAR: i => ({ F: 0.026 + 0.004 * (1 - i), K: 0.054 + 0.004 * (1 - i) }) };
-  const RDNAME = { DOP: "coral", ADR: "fibras curtas", NOR: "coral ramificado", COR: "filamentos errantes", GLU: "labirinto denso", IL6: "labirinto aberto", SER: "coral", GRE: "filamentos", MEL: "anel pulsante", OXT: "coral", GABA: "coral ramificado", EQ: "labirinto", WF: "coral ramificado", TC: "coral", HEAT: "filamentos errantes", AIR: "labirinto aberto", NOISE: "fibras curtas", LIGHT: "anel pulsante", WAR: "labirinto denso" };
+  Object.assign(RDREG, { ACH: RDREG.NOR, HIS: RDREG.ADR, CRH: RDREG.COR, SUBP: RDREG.GLU, AVP: RDREG.MEL, END: RDREG.OXT, ANA: RDREG.SER });
+  const RDNAME = { ACH: "coral ramificado", HIS: "fibras curtas", CRH: "filamentos errantes", SUBP: "labirinto denso", AVP: "anel pulsante", END: "coral", ANA: "coral", DOP: "coral", ADR: "fibras curtas", NOR: "coral ramificado", COR: "filamentos errantes", GLU: "labirinto denso", IL6: "labirinto aberto", SER: "coral", GRE: "filamentos", MEL: "anel pulsante", OXT: "coral", GABA: "coral ramificado", EQ: "labirinto", WF: "coral ramificado", TC: "coral", HEAT: "filamentos errantes", AIR: "labirinto aberto", NOISE: "fibras curtas", LIGHT: "anel pulsante", WAR: "labirinto denso" };
   function portraitFromPlace(ps) {
-    const src = freshSrc(ps), top = speciesFor(src);
+    const src = freshSrc(ps), chem6 = chemProfile(src.factors).filter(x => x[1] > 0.04).slice(0, 6), top = chem6.length >= 3 ? chem6 : speciesFor(src);
     const layers = top.map(([key, i]) => ({ key, i, ch: { ...RDREG[key](i), n: Math.round(16 + 200 * i), R: (0.18 + 0.28 * i) * PS, ring: key === "LIGHT" || key === "MEL" } }));
     const nz = (src.factors.find(f => f.key === "NOISE") || { i: 0 }).i, mx = Math.max(...top.map(x => x[1]));
     return { id: ps.pl.world ? "rpw" : "rp" + PLACES.indexOf(ps.pl), kind: "lugar", place: src, layers, noise: nz, light: src.light, period: 600,
@@ -1296,6 +1304,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
   }
   // sound rules (parameter-mapping sonification)
   const HZ = { DOP: () => medHz("DOP"), ADR: () => medHz("ADR"), NOR: () => medHz("NOR"), COR: () => medHz("COR"), GLU: () => medHz("GLU"), IL6: () => medHz("IL6"), SER: () => medHz("SER"), GRE: () => medHz("GRE"), MEL: () => medHz("MEL"), OXT: () => medHz("OXT"), GABA: () => medHz("GABA"), EQ: i => 120 / Math.pow(2, 2 * i), WF: i => 2000 + 4000 * i, TC: i => 150 + 6 * (200 * i), HEAT: (i, T) => 55 * Math.pow(2, ((T ?? 10 + 24 * i) - 10) / 24), AIR: () => 500, NOISE: () => 1200, LIGHT: () => 82.4, WAR: () => 70 };
+  for (const k of Object.keys(MED)) if (!HZ[k]) HZ[k] = () => medHz(k);
   function chainPlace(src) {
     const T = src.place.pl.T;
     return src.layers.map(l => {
@@ -1342,7 +1351,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     if (!gl) return;
     const vs = "attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}";
     const fs = `precision highp float;
-uniform vec2 uRes,uOff;uniform float uT;uniform vec3 uC1,uC2,uC3;uniform float uW1,uW2,uWarp,uFil,uPts;
+uniform vec2 uRes,uOff;uniform float uT;uniform vec3 uC1,uC2,uC3,uC4,uC5;uniform float uW1,uW2,uWarp,uFil,uPts;
 float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*f*(f*(f*6.-15.)+10.);return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),f.x),f.y);}
 float fbm(vec2 p){float v=0.,a=.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<7;i++){v+=a*n(p);p=m*p;a*=.5;}return v;}
@@ -1368,7 +1377,7 @@ void main(){
  float r1=clamp(1.-abs(r.x-.5)*2.,0.,1.),r2=clamp(1.-abs(fbm(p*2.6+4.*r+t)-.5)*2.,0.,1.);
  float fil=pow(r1,36.)*1.3+pow(r2,48.)*.8,glw=pow(r1,8.)*.22+pow(r2,12.)*.1;
  col+=(uC3*(fil+glw)+vec3(1.)*pow(r1,90.)*.6)*uFil;
- col+=stars(uv,34.,uPts*.10,uT)+stars(uv+7.3,78.,uPts*.07,uT*1.3)*.7;
+ col+=stars(uv,34.,uPts*.10,uT)*mix(vec3(1.),uC4,.55)+stars(uv+7.3,78.,uPts*.07,uT*1.3)*.7*mix(vec3(1.),uC5,.55);
  col=(col*(2.51*col+.03))/(col*(2.43*col+.59)+.14);
  col*=1.-.55*smoothstep(.5,1.15,length(uv));
  col+=(h(gl_FragCoord.xy+fract(uT))-.5)*.03;
@@ -1380,22 +1389,24 @@ void main(){
     gl.useProgram(pr);
     const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(pr, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    NB.gl = gl; NB.u = {}; for (const k of ["uRes", "uOff", "uT", "uC1", "uC2", "uC3", "uW1", "uW2", "uWarp", "uFil", "uPts"]) NB.u[k] = gl.getUniformLocation(pr, k);
+    NB.gl = gl; NB.u = {}; for (const k of ["uRes", "uOff", "uT", "uC1", "uC2", "uC3", "uC4", "uC5", "uW1", "uW2", "uWarp", "uFil", "uPts"]) NB.u[k] = gl.getUniformLocation(pr, k);
     NB.ok = true;
   })();
-  NB.cur = { c1: [0.9, 0.2, 0.15], c2: [0.92, 0.9, 0.86], c3: [0.35, 0.5, 1], w1: 0.8, w2: 0.4, warp: 4, fil: 0.8, pts: 0.5, off: [0, 0] };
+  NB.cur = { c4: [1, 1, 1], c5: [1, 1, 1], c1: [0.9, 0.2, 0.15], c2: [0.92, 0.9, 0.86], c3: [0.35, 0.5, 1], w1: 0.8, w2: 0.4, warp: 4, fil: 0.8, pts: 0.5, off: [0, 0] };
   NB.tgt = JSON.parse(JSON.stringify(NB.cur));
   function nbTarget(src) {
     const L = speciesFor(src), s0 = L[0], s1 = L[1] || s0, s2 = L[2] || ["NOISE", 0.3, 0.2];
     const noise = (L.find(x => x[0] === "NOISE") || [0, 0.25])[1];
-    NB.tgt = { c1: COL[s0[0]].map(v => v / 255), c3: COL[s1[0]].map(v => v / 255), c2: COL[s2[0]].map(v => v / 255),
+    const ext = src.kind === "lugar" ? chemProfile(src.factors).filter(x => !L.find(y => y[0] === x[0])).slice(0, 2) : [];
+    const c4 = ext[0] ? COL[ext[0][0]].map(v => v / 255) : [1, 1, 1], c5 = ext[1] ? COL[ext[1][0]].map(v => v / 255) : c4;
+    NB.tgt = { c4, c5, c1: COL[s0[0]].map(v => v / 255), c3: COL[s1[0]].map(v => v / 255), c2: COL[s2[0]].map(v => v / 255),
       w1: 0.6 + 0.6 * s0[1], w2: 0.2 + 0.55 * s2[1], warp: 2.5 + 3 * s0[1], fil: 0.3 + 0.9 * s1[1], pts: 0.15 + 0.8 * noise, off: [(src.lon || 0) / 25, (src.lat || 0) / 25] };
     const row = (key, what, v) => `<dt style="color:${hex(COL[key])}">${COLNAME[key]}</dt><dd>${what} · ${v}</dd>`;
     document.getElementById("gNebRows").innerHTML = NB.mode === "neb" ?
       row(s0[0], "nuvem principal", `densidade ${NB.tgt.w1.toFixed(2)} · torção ${NB.tgt.warp.toFixed(1)}`) +
       row(s1[0], "filamentos", `brilho ${NB.tgt.fil.toFixed(2)}`) +
       row(s2[0], "manchas", `área ${NB.tgt.w2.toFixed(2)}`) +
-      `<dt>pontos de luz</dt><dd>densidade ${NB.tgt.pts.toFixed(2)} (ruído)</dd>` : "";
+      `<dt>pontos de luz</dt><dd>densidade ${NB.tgt.pts.toFixed(2)} (ruído)${ext.length ? " · cor de " + ext.map(x => COLNAME[x[0]]).join(" e ") : ""}</dd>` : "";
   }
   function nbResize() {
     const r = NB.cv.getBoundingClientRect(), dpr = Math.min(1.5, window.devicePixelRatio || 1);
@@ -1405,12 +1416,12 @@ void main(){
     if (!NB.ok) return;
     const k = Math.min(1, dt * (0.1 + 1.4 * Math.exp(-(performance.now() - (G.lastSwitch || 0)) / 1800))), c = NB.cur, t = NB.tgt;
     for (let i = 0; i < 2; i++) c.off[i] += (t.off[i] - c.off[i]) * k * 0.35;
-    for (const key of ["c1", "c2", "c3"]) for (let i = 0; i < 3; i++) c[key][i] += (t[key][i] - c[key][i]) * k;
+    for (const key of ["c1", "c2", "c3", "c4", "c5"]) for (let i = 0; i < 3; i++) c[key][i] += (t[key][i] - c[key][i]) * k;
     for (const key of ["w1", "w2", "warp", "fil", "pts"]) c[key] += (t[key] - c[key]) * k;
     const gl = NB.gl, u = NB.u; if (NB.cv.width < 3) nbResize();
     gl.viewport(0, 0, NB.cv.width, NB.cv.height);
     gl.uniform2f(u.uRes, NB.cv.width, NB.cv.height); gl.uniform2f(u.uOff, c.off[0], c.off[1]); gl.uniform1f(u.uT, (performance.now() - NB.t0) / 1000);
-    gl.uniform3fv(u.uC1, c.c1); gl.uniform3fv(u.uC2, c.c2); gl.uniform3fv(u.uC3, c.c3);
+    gl.uniform3fv(u.uC1, c.c1); gl.uniform3fv(u.uC2, c.c2); gl.uniform3fv(u.uC3, c.c3); gl.uniform3fv(u.uC4, c.c4); gl.uniform3fv(u.uC5, c.c5);
     gl.uniform1f(u.uW1, c.w1); gl.uniform1f(u.uW2, c.w2); gl.uniform1f(u.uWarp, c.warp); gl.uniform1f(u.uFil, c.fil); gl.uniform1f(u.uPts, c.pts);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
@@ -1447,6 +1458,13 @@ void main(){
     AIR:  { SA: 0.30, RA: 0.20, SD: 24, sp: 0.9, dec: 0.95, form: "névoa em rede" },
     NOISE:{ SA: 1.20, RA: 0.60, SD: 4,  sp: 1.5, dec: 0.82, form: "grão" },
     LIGHT:{ SA: 0.35, RA: 0.50, SD: 16, sp: 1.0, dec: 0.92, form: "órbitas" },
+    ACH:  { SA: 0.55, RA: 0.28, SD: 6,  sp: 1.6, dec: 0.86, form: "fios de atenção" },
+    HIS:  { SA: 1.20, RA: 0.60, SD: 4,  sp: 1.5, dec: 0.82, form: "grão inquieto" },
+    CRH:  { SA: 0.50, RA: 0.45, SD: 12, sp: 1.0, dec: 0.90, form: "células de comando" },
+    SUBP: { SA: 1.00, RA: 1.10, SD: 3,  sp: 1.4, dec: 0.80, form: "estilhaços" },
+    AVP:  { SA: 0.35, RA: 0.50, SD: 16, sp: 1.0, dec: 0.92, form: "órbitas de água" },
+    END:  { SA: 0.25, RA: 0.70, SD: 20, sp: 0.9, dec: 0.94, form: "laços quentes" },
+    ANA:  { SA: 0.22, RA: 0.95, SD: 18, sp: 1.2, dec: 0.93, form: "vórtices macios" },
   };
   function speciesFor(src) {
     if (src.kind === "lugar") { const top = chemProfile(src.factors).filter(x => x[1] > 0.03).slice(0, 3); if (!top.find(x => x[0] === "GABA") && top.length < 3) top.push(["GABA", 0.18]); while (top.length < 3) top.push(["MEL", Math.max(0.15, src.light * 0.6)]); const tot = top.reduce((a, x) => a + 0.3 + x[1], 0); return top.map(([m, i]) => [m, i, (0.3 + i) / tot]); }
@@ -1624,11 +1642,11 @@ void main(){
   function rgReset(src) {
     const gl = RG.gl, N = RG.N;
     if (RG.first) { for (const b of RG.tex) { gl.bindTexture(gl.TEXTURE_2D, b.t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, N, N, 0, gl.RGBA, gl.FLOAT, null); } RG.first = false; }
-    RG.layers = src.layers.slice(0, 3);
+    RG.layers = src.layers.slice(0, 6);
     RG.em = []; RG.bornAt = performance.now();
     RG.layers.forEach((l, k) => {
-      const i = l.i ?? 0.5, cnt = 3;
-      for (let j = 0; j < cnt; j++) RG.em.push({ key: l.key, i, ang: (k / 3 + j / cnt) * Math.PI * 2 + Math.random() * 0.6, rad: 0.08 + Math.random() * (0.12 + 0.12 * i), sp: (Math.random() < 0.5 ? -1 : 1) * (0.04 + 0.08 * Math.random()), ph: Math.random() * 6.28, r: 0.035 + 0.05 * i, col: softCol(l.key) });
+      const i = l.i ?? 0.5, cnt = RG.layers.length <= 3 ? 3 : 2;
+      for (let j = 0; j < cnt; j++) RG.em.push({ key: l.key, i, ang: (k / RG.layers.length + j / cnt) * Math.PI * 2 + Math.random() * 0.6, rad: 0.08 + Math.random() * (0.12 + 0.12 * i), sp: (Math.random() < 0.5 ? -1 : 1) * (0.04 + 0.08 * Math.random()), ph: Math.random() * 6.28, r: 0.035 + 0.05 * i, col: softCol(l.key) });
     });
   }
   function rgSeeds(k) {
@@ -1670,17 +1688,17 @@ void main(){
   (function cyInit() {
     if (!CY.cv) return; const gl = CY.cv.getContext("webgl", { preserveDrawingBuffer: true }); if (!gl) return;
     const vs = "attribute vec2 a;varying vec2 v;void main(){v=a*.5+.5;gl_Position=vec4(a,0.,1.);}";
-    const fs = `precision highp float;varying vec2 v;uniform vec2 uM0,uM1,uM2;uniform vec3 uW,uC0,uC1,uC2;uniform float uT;
+    const fs = `precision highp float;varying vec2 v;uniform vec2 uM0,uM1,uM2,uM3,uM4;uniform vec3 uW,uC0,uC1,uC2,uC3,uC4;uniform vec2 uW2;uniform float uT;
 const float PI=3.14159265;
 float ch(vec2 p,vec2 m){return cos(m.x*PI*p.x)*cos(m.y*PI*p.y)-cos(m.y*PI*p.x)*cos(m.x*PI*p.y);}
 float hh(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
 void main(){
  float wx=sin(v.y*5.3+uT*.05)*.035+sin(v.x*11.+v.y*4.+uT*.03)*.018,wy=sin(v.x*4.7-uT*.04)*.035+sin(v.y*9.+v.x*3.-uT*.025)*.018;
- vec2 p=v+vec2(wx,wy);float a0=ch(p,uM0),a1=ch(p,uM1),a2=ch(p,uM2);
- vec3 w=uW*(.8+.2*vec3(sin(uT*.06),sin(uT*.045+2.),sin(uT*.035+4.)));
- float S=a0*w.x+a1*w.y+a2*w.z;
+ vec2 p=v+vec2(wx,wy);float a0=ch(p,uM0),a1=ch(p,uM1),a2=ch(p,uM2),a3=ch(p,uM3),a4=ch(p,uM4);
+ vec3 w=uW*(.8+.2*vec3(sin(uT*.06),sin(uT*.045+2.),sin(uT*.035+4.)));vec2 w2=uW2*(.8+.2*vec2(sin(uT*.05+1.),sin(uT*.04+3.)));
+ float S=a0*w.x+a1*w.y+a2*w.z+(a3*w2.x+a4*w2.y)*.6;
  vec3 col=vec3(.01,.008,.014);
- col+=uC0*exp(-abs(a0)*5.)*w.x*.45+uC1*exp(-abs(a1)*5.)*w.y*.45+uC2*exp(-abs(a2)*5.)*w.z*.45;
+ col+=uC0*exp(-abs(a0)*5.)*w.x*.45+uC1*exp(-abs(a1)*5.)*w.y*.45+uC2*exp(-abs(a2)*5.)*w.z*.45+uC3*exp(-abs(a3)*6.)*w2.x*.32+uC4*exp(-abs(a4)*6.)*w2.y*.32;
  float sand=exp(-abs(S)*4.);col+=mix(vec3(1.,.95,.88),uC0,.5)*sand*.35;col+=mix(uC0,uC1,.5)*exp(-abs(S)*1.6)*.2;
  float g=hh(floor(p*420.)+floor(uT*1.));col*=.97+.06*g*sand;
  vec2 uv=p-.5;col*=1.-.55*smoothstep(.3,.72,length(uv));
@@ -1692,11 +1710,11 @@ void main(){
     const p = gl.createProgram(); gl.attachShader(p, v); gl.attachShader(p, f); gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) return; gl.useProgram(p);
     const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const l = gl.getAttribLocation(p, "a"); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, 2, gl.FLOAT, false, 0, 0);
-    CY.gl = gl; CY.u = Object.fromEntries(["uM0", "uM1", "uM2", "uW", "uC0", "uC1", "uC2", "uT"].map(n => [n, gl.getUniformLocation(p, n)])); CY.ok = true;
+    CY.gl = gl; CY.u = Object.fromEntries(["uM0", "uM1", "uM2", "uM3", "uM4", "uW", "uW2", "uC0", "uC1", "uC2", "uC3", "uC4", "uT"].map(n => [n, gl.getUniformLocation(p, n)])); CY.ok = true;
   })();
   function cyModes(src) {
     const T = src.place ? src.place.pl.T : 20;
-    return (src.layers || []).slice(0, 3).map(l => {
+    return (src.layers || []).slice(0, 5).map(l => {
       const f = HZ[l.key] ? HZ[l.key](l.i ?? 0.5, T) : 220, k = Math.log2(Math.max(30, f) / 20);
       const n = 1 + Math.floor(k), m = n + 1 + Math.floor((k - Math.floor(k)) * 3);
       return { key: l.key, f, n, m, w: 0.4 + 0.6 * (l.i ?? 0.5) };
@@ -1705,11 +1723,12 @@ void main(){
   function cyTick() {
     if (!CY.ok) { if (frame % 20 === 0) { const el = document.getElementById("sCymInfo"); if (el) el.innerHTML = cyModes(P.src).map(x => `<dt style="color:${hex(COL[x.key])}">${COLNAME[x.key]}</dt><dd>${Math.round(x.f)} Hz → modo (${x.n}, ${x.m})</dd>`).join(""); } return; }
     const gl = CY.gl, u = CY.u, md = cyModes(P.src);
-    while (md.length < 3) md.push({ key: md[0] ? md[0].key : "LIGHT", n: 2, m: 3, w: 0 });
+    while (md.length < 5) md.push({ key: md[0] ? md[0].key : "LIGHT", n: 2, m: 3, w: 0 });
     const r = CY.cv.getBoundingClientRect(); const s = Math.max(2, Math.round(r.width * Math.min(1.5, window.devicePixelRatio || 1)));
     if (CY.cv.width !== s) { CY.cv.width = s; CY.cv.height = s; }
     gl.viewport(0, 0, CY.cv.width, CY.cv.height);
-    gl.uniform2f(u.uM0, md[0].n, md[0].m); gl.uniform2f(u.uM1, md[1].n, md[1].m); gl.uniform2f(u.uM2, md[2].n, md[2].m);
+    gl.uniform2f(u.uM0, md[0].n, md[0].m); gl.uniform2f(u.uM1, md[1].n, md[1].m); gl.uniform2f(u.uM2, md[2].n, md[2].m); gl.uniform2f(u.uM3, md[3].n, md[3].m + 1); gl.uniform2f(u.uM4, md[4].n + 1, md[4].m + 1);
+    gl.uniform2f(u.uW2, md[3].w, md[4].w); gl.uniform3fv(u.uC3, COL[md[3].key].map(x => x / 255)); gl.uniform3fv(u.uC4, COL[md[4].key].map(x => x / 255));
     gl.uniform3f(u.uW, md[0].w, md[1].w, md[2].w);
     gl.uniform3fv(u.uC0, COL[md[0].key].map(x => x / 255)); gl.uniform3fv(u.uC1, COL[md[1].key].map(x => x / 255)); gl.uniform3fv(u.uC2, COL[md[2].key].map(x => x / 255));
     gl.uniform1f(u.uT, performance.now() / 1000); gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -1765,7 +1784,7 @@ void main(){
     if (!audio() || PSND.on) return;
     PSND.bus = ac.createGain(); PSND.bus.gain.value = 0; PSND.bus.connect(master); PSND.bus.gain.setTargetAtTime(0.9, ac.currentTime, 1.2);
     const nbuf = ac.createBuffer(1, ac.sampleRate * 4, ac.sampleRate), d = nbuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    PSND.slots = [0, 1, 2].map(() => {
+    PSND.slots = [0, 1, 2, 3, 4, 5].map(() => {
       const osc = ac.createOscillator(), og = ac.createGain(); og.gain.value = 0; osc.connect(og); og.connect(PSND.bus); osc.start();
       const ns = ac.createBufferSource(); ns.buffer = nbuf; ns.loop = true; const bp = ac.createBiquadFilter(); bp.type = "bandpass"; const ng = ac.createGain(); ng.gain.value = 0; ns.connect(bp); bp.connect(ng); ng.connect(PSND.bus); ns.start();
       const lfo = ac.createOscillator(), lg = ac.createGain(); lg.gain.value = 0; lfo.frequency.value = 0.1; lfo.connect(lg); lg.connect(og.gain); lfo.start();
@@ -1781,7 +1800,8 @@ void main(){
   function psndUpdate(src) {
     if (!PSND.on || !src) return;
     const T = src.place ? src.place.pl.T : src.pl ? src.pl.T : 20;
-    const layers = src.layers || speciesFor(src).map(([key, i]) => ({ key, i }));
+    const base = src.kind === "lugar" && src.factors ? src : src.place && src.place.factors ? src.place : null;
+    const layers = base ? chemProfile(base.factors).filter(x => x[1] > 0.04).slice(0, 6).map(([key, i]) => ({ key, i })) : (src.layers || speciesFor(src).map(([key, i]) => ({ key, i })));
     const t = ac.currentTime, tau = 1.6;
     PSND.slots.forEach((sl, k) => {
       const l = layers[k];
@@ -1795,6 +1815,13 @@ void main(){
         else if (l.key === "NOR") { nA = 0.04 + 0.06 * i; Q = 6; }
         else if (l.key === "IL6") { nA = 0.08 + 0.16 * i; Q = 1.2; oA *= 0.5; }
         else if (l.key === "GLU") { lr = 0.7; ld = 0.08 * i; }
+        else if (l.key === "HIS") { lr = 2.2; ld = 0.05 + 0.05 * i; }
+        else if (l.key === "ACH") { lr = 5.5; ld = 0.04; }
+        else if (l.key === "SUBP") { nA = 0.05 + 0.08 * i; Q = 3; type = "triangle"; }
+        else if (l.key === "CRH") { type = "triangle"; lr = 0.05; ld = 0.1; }
+        else if (l.key === "END" || l.key === "ANA") { lr = 0.06; ld = 0.15; }
+        else if (l.key === "AVP") { lr = 0.12; ld = 0.08; }
+        oA *= 0.8;   // six voices share the space
       }
       else if (l.key === "EQ") { oA = 0.3 + 0.3 * i; }
       else if (l.key === "HEAT") { oA = 0.16 + 0.2 * i; type = "triangle"; }

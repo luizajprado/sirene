@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Bolsa da Aflição",
   "version": "0.1.0",
-  "description": "Troca os índices da bolsa nas páginas pelos índices de aflição da Sirene (Luiza Jesus do Prado, 2026).",
+  "description": "Troca os índices da bolsa nas páginas pelos índices de aflição da Carga Alostática (Luiza Jesus do Prado, 2026).",
   "permissions": ["storage"],
   "host_permissions": ["https://luizajprado.github.io/*"],
   "action": { "default_popup": "popup.html", "default_title": "Bolsa da Aflição" },

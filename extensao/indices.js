@@ -1,7 +1,7 @@
-// Busca os dados da Sirene e calcula os índices que substituem os da bolsa. Usado pela página e pelo popup.
+// Busca os dados da Carga Alostática e calcula os índices que substituem os da bolsa. Usado pela página e pelo popup.
 const SIRENE_URL = "https://luizajprado.github.io/sirene/dados.json";
 const TROCAS = [
-  // [padrão na página, rótulo novo, campo da Sirene, chave da série, lugar ou null para a média mundial]
+  // [padrão na página, rótulo novo, campo da Carga Alostática, chave da série, lugar ou null para a média mundial]
   [/\bIbovespa\b/gi, "Aflição São Paulo", "aflicao_coletiva", "ANSI", "São Paulo"],
   [/\bS&(?:amp;)?P\s?500\b/g, "Aflição mundial", "aflicao_coletiva", "ANSI", null],
   [/\bDow Jones\b/g, "Violência mundial", "violencia", "VIOL", null],

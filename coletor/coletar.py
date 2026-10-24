@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sirene · coletor de dados.
+"""Carga Alostática · coletor de dados.
 
 Roda sozinho a cada hora no GitHub Actions. Usa só a biblioteca padrão do Python.
 Busca dados públicos sobre o que pode pesar na saúde mental em cada lugar,
@@ -26,7 +26,7 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UA = "Sirene/1.0 (obra de arte de dados, codigo aberto; ver README)"
+UA = "CargaAlostatica/1.0 (obra de arte de dados, codigo aberto; ver README)"
 AGORA = datetime.now(timezone.utc).replace(second=0, microsecond=0)
 JANELA_H = 96  # alertas mais antigos que isso saem da obra (a memória visual dura ~3 dias)
 

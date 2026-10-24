@@ -1,5 +1,5 @@
 """
-Observatório · bancos de pesquisa em saúde mental (Sirene, Luiza Jesus do Prado, 2026)
+Observatório · bancos de pesquisa em saúde mental (Carga Alostática, Luiza Jesus do Prado, 2026)
 
 - Europe PMC: artigos publicados na última semana, por tema.
 - ClinicalTrials.gov: ensaios clínicos em saúde mental recrutando agora, e quem os financia.
@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 AGORA = datetime.now(timezone.utc)
-UA = "Sirene/1.0 (obra de arte de dados; github.com/luizajprado/sirene)"
+UA = "CargaAlostatica/1.0 (obra de arte de dados; github.com/luizajprado/sirene)"
 
 TEMAS = {
     "estresse e cortisol": '(stress AND (cortisol OR "HPA axis" OR allostatic))',

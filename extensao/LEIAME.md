@@ -1,6 +1,6 @@
 # Extensão Bolsa da Aflição
 
-Troca, no texto das páginas, os nomes dos índices da bolsa (Ibovespa, S&P 500, Dow Jones, Nasdaq, FTSE, Nikkei, DAX) pelos índices de aflição da Sirene, com a variação em 24 horas. Passe o mouse sobre o trecho trocado para ver o que estava escrito antes.
+Troca, no texto das páginas, os nomes dos índices da bolsa (Ibovespa, S&P 500, Dow Jones, Nasdaq, FTSE, Nikkei, DAX) pelos índices de aflição da Carga Alostática, com a variação em 24 horas. Passe o mouse sobre o trecho trocado para ver o que estava escrito antes.
 
 ## Instalar (Chrome, Edge, Brave)
 
