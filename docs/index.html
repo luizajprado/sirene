@@ -542,6 +542,8 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     ESP:  { DOP: .40, SER: .30, OXT: .30 },
   };
   const POSITIVOS = new Set(["CUID", "ESP"]);
+  // every factor also gets a color: the color of the mediator it mobilizes most
+  for (const [k, w] of Object.entries(FMED)) if (!COL[k]) { const m = Object.entries(w).sort((a, b) => b[1] - a[1])[0][0]; COL[k] = MED[m].cor; COLNAME[k] = MED[m].nome; }
   for (const [k, m] of Object.entries(MED)) { COL[k] = m.cor; COLNAME[k] = m.nome; }
   function chemProfile(factors) {
     const prof = {};
