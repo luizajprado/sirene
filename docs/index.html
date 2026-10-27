@@ -742,7 +742,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       const a = 1 - (now - l.born) / 5000, x = l.x / MW * M.w, y = l.y / MH * M.h, right = x > M.w * 0.72;
       ctx.globalAlpha = a; ctx.strokeStyle = ctx.fillStyle = l.color; ctx.lineWidth = Math.max(1, M.dpr);
       ctx.beginPath(); ctx.moveTo(x - fs, y); ctx.lineTo(x + fs, y); ctx.moveTo(x, y - fs); ctx.lineTo(x, y + fs); ctx.stroke();
-      ctx.textAlign = right ? "right" : "left"; ctx.fillText(l.text, x + (right ? -fs * 1.4 : fs * 1.4), y - fs * 0.6);
+      ctx.textAlign = right ? "right" : "left"; ctx.fillText(window.trCanvas ? trCanvas(l.text) : l.text, x + (right ? -fs * 1.4 : fs * 1.4), y - fs * 0.6);
     }
     ctx.globalAlpha = 1;
     document.getElementById("mClock").textContent = fmt(M.t);
@@ -1249,7 +1249,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       const a = 1 - (pnow - l.born) / 5000, x = l.x / AW * A.w, y = l.y / AH * A.h, right = x > A.w * 0.72;
       ctx.globalAlpha = a; ctx.strokeStyle = ctx.fillStyle = l.color; ctx.lineWidth = Math.max(1, A.dpr);
       ctx.beginPath(); ctx.moveTo(x - fs, y); ctx.lineTo(x + fs, y); ctx.moveTo(x, y - fs); ctx.lineTo(x, y + fs); ctx.stroke();
-      ctx.textAlign = right ? "right" : "left"; ctx.fillText(l.text, x + (right ? -fs * 1.4 : fs * 1.4), y - fs * 0.6);
+      ctx.textAlign = right ? "right" : "left"; ctx.fillText(window.trCanvas ? trCanvas(l.text) : l.text, x + (right ? -fs * 1.4 : fs * 1.4), y - fs * 0.6);
     }
     ctx.globalAlpha = 1;
     const d = new Date(A.t);
@@ -1976,7 +1976,7 @@ void main(){
       }
       x.globalCompositeOperation = "source-over";
       x.strokeStyle = "rgba(160,158,166,0.55)"; x.lineWidth = 1 * s; x.beginPath(); x.arc(p.x, p.y, (4 + 26 * p.load) * s, 0, Math.PI * 2); x.stroke();
-      x.fillStyle = "rgba(236,234,226,0.75)"; x.font = `${10 * s}px ${FONT()}`; x.fillText(p.name, p.x + 6 * s, p.y - 6 * s);
+      x.fillStyle = "rgba(236,234,226,0.75)"; x.font = `${10 * s}px ${FONT()}`; x.fillText(window.trCanvas ? trCanvas(p.name) : p.name, p.x + 6 * s, p.y - 6 * s);
       x.globalCompositeOperation = "lighter"; void R;
     }
     x.globalCompositeOperation = "source-over";
@@ -2910,6 +2910,7 @@ window.GUIDE = { titulo: T[0][0], intro: T[1][0], rodape: FOOT[0], groups: [{ no
     }
     return out == null ? null : src.replace(t, out);
   }
+  window.trCanvas = x => { try { return tr(String(x)) ?? x; } catch (e) { return x; } };
   const SKIP = new Set(["SCRIPT", "STYLE", "TEXTAREA", "CODE", "NOSCRIPT"]);
   function doText(n) {
     const pe = n.parentElement; if (!pe || SKIP.has(pe.tagName) || pe.closest("[data-noi18n]")) return;
