@@ -210,6 +210,12 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
             <h3>lugares</h3>
             <div class="chips" id="gChips" role="group" aria-label="Fontes"></div>
           </div>
+          <div class="panel" id="nbAtlas" hidden>
+            <h3>prancha do atlas</h3>
+            <p class="dim" style="margin:0 0 10px">Escolha um lugar, fixe a imagem quando ela estiver como você quer e baixe a prancha em alta resolução (4:5, 2400 × 3000 px). O nome do arquivo guarda o lugar e a data.</p>
+            <div class="row"><button type="button" class="btn" id="nbFix" aria-pressed="false">fixar imagem</button><button type="button" class="btn" id="nbDown">baixar prancha</button></div>
+            <div class="dim" id="nbCap" style="margin-top:8px;font-size:11px"></div>
+          </div>
         </div>
       </div>
       <div class="panel">
@@ -1494,7 +1500,7 @@ void main(){
     for (const key of ["w1", "w2", "warp", "fil", "pts"]) c[key] += (t[key] - c[key]) * k;
     const gl = NB.gl, u = NB.u; if (NB.cv.width < 3) nbResize();
     gl.viewport(0, 0, NB.cv.width, NB.cv.height);
-    gl.uniform2f(u.uRes, NB.cv.width, NB.cv.height); gl.uniform2f(u.uOff, c.off[0], c.off[1]); gl.uniform1f(u.uT, (performance.now() - NB.t0) / 1000);
+    gl.uniform2f(u.uRes, NB.cv.width, NB.cv.height); gl.uniform2f(u.uOff, c.off[0], c.off[1]); gl.uniform1f(u.uT, ((NB.frozen ?? performance.now()) - NB.t0) / 1000);
     gl.uniform3fv(u.uC1, c.c1); gl.uniform3fv(u.uC2, c.c2); gl.uniform3fv(u.uC3, c.c3); gl.uniform3fv(u.uC4, c.c4); gl.uniform3fv(u.uC5, c.c5);
     gl.uniform1f(u.uW1, c.w1); gl.uniform1f(u.uW2, c.w2); gl.uniform1f(u.uWarp, c.warp); gl.uniform1f(u.uFil, c.fil); gl.uniform1f(u.uPts, c.pts);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -2167,6 +2173,23 @@ void main(){
   if (SOLO === "cuidado") {
     document.body.classList.add("solo"); document.title = "Mapa do cuidado";
     VIEWS.splice(0, VIEWS.length, "cuidado"); show("cuidado");
+  } else if (SOLO === "nebulosa") {
+    document.body.classList.add("solo"); document.title = "Nebulosas";
+    const sec = document.querySelector('[data-view="figuras"]');
+    sec.querySelector(".vhead h2").textContent = "Nebulosas";
+    sec.querySelector(".vhead p").textContent = "Gerador do Atlas das nebulosas. Cada nebulosa é um lugar numa data: a cor da nuvem principal, dos filamentos e das manchas vem das substâncias que mais pesam ali, e a densidade, a torção, o brilho e os pontos de luz vêm dos dados do dia. Cada prancha baixada é uma imagem fixa, com lugar e data.";
+    document.getElementById("gAuto").hidden = true; document.getElementById("nbAtlas").hidden = false;
+    VIEWS.splice(0, VIEWS.length, "figuras"); gAuto(false); gMode("neb"); show("figuras");
+    const slug = x => String(x || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const cap = () => { const n = G.src ? (window.trCanvas ? trCanvas(G.src.label || "") : G.src.label) : ""; document.getElementById("nbCap").textContent = `${n} · ${new Date().toLocaleDateString("pt-BR")}`; };
+    setInterval(cap, 1000); cap();
+    document.getElementById("nbFix").addEventListener("click", e => { const on = NB.frozen == null; NB.frozen = on ? performance.now() : null; e.currentTarget.setAttribute("aria-pressed", String(on)); e.currentTarget.textContent = on ? "imagem fixa · soltar" : "fixar imagem"; });
+    document.getElementById("nbDown").addEventListener("click", () => {
+      if (!NB.ok) return; const keep = NB.frozen; NB.frozen = keep ?? performance.now();
+      NB.cv.width = 2400; NB.cv.height = 3000; nbTick(0);
+      NB.cv.toBlob(bl => { NB.frozen = keep; nbResize(); if (!bl) return; const a = document.createElement("a"); a.href = URL.createObjectURL(bl);
+        a.download = `nebulosa-${slug(G.src && (window.trCanvas ? trCanvas(G.src.label) : G.src.label))}-${new Date().toISOString().slice(0, 10)}.png`; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }, "image/png");
+    });
   } else show(VIEWS.includes(start) || OLD_VIEWS.includes(start) ? start : "agora");
   if (LIVE) { const el = document.getElementById("fonteData"); if (el) el.textContent = `Coleta automática ao longo do dia. Última: ${LIVE.atualizado.replace("T", " ").replace("Z", " UTC")}. ${Object.entries(LIVE.fontes || {}).map(([k, v]) => `${k}: ${v}`).join(" · ")}.`; }
   mResize(); aResize(); new ResizeObserver(() => { if (view === "mapa") mResize(); }).observe(M.cv); new ResizeObserver(() => { if (view === "agora") aResize(); }).observe(A.cv); new ResizeObserver(() => { if (view === "figuras" && NB.mode === "neb") nbResize(); }).observe(NB.cv);
@@ -2868,6 +2891,14 @@ window.GUIDE = { titulo: T[0][0], intro: T[1][0], rodape: FOOT[0], groups: [{ no
 // title) is swapped for its English or Spanish version, including text the page writes later. Numbers are kept:
 // "carga 0,62" matches the template "carga {#}". Composed sentences fall back to phrase-by-phrase replacement.
 (() => {
+  if (window.I18N_DICT) { Object.assign(window.I18N_DICT.en, {
+    "prancha do atlas": "atlas plate", "fixar imagem": "fix the image", "imagem fixa · soltar": "image fixed · release", "baixar prancha": "download plate", "Nebulosas": "Nebulae",
+    "Escolha um lugar, fixe a imagem quando ela estiver como você quer e baixe a prancha em alta resolução (4:5, 2400 × 3000 px). O nome do arquivo guarda o lugar e a data.": "Choose a place, fix the image when it looks the way you want and download the plate in high resolution (4:5, 2400 × 3000 px). The file name keeps the place and the date.",
+    "Gerador do Atlas das nebulosas. Cada nebulosa é um lugar numa data: a cor da nuvem principal, dos filamentos e das manchas vem das substâncias que mais pesam ali, e a densidade, a torção, o brilho e os pontos de luz vêm dos dados do dia. Cada prancha baixada é uma imagem fixa, com lugar e data.": "Generator for the Atlas of nebulae. Each nebula is a place on a date: the colours of the main cloud, the filaments and the patches come from the substances that weigh most there, and the density, twist, brightness and points of light come from that day's data. Each downloaded plate is a fixed image, with place and date." });
+    Object.assign(window.I18N_DICT.es, {
+    "prancha do atlas": "lámina del atlas", "fixar imagem": "fijar la imagen", "imagem fixa · soltar": "imagen fija · soltar", "baixar prancha": "descargar lámina", "Nebulosas": "Nebulosas",
+    "Escolha um lugar, fixe a imagem quando ela estiver como você quer e baixe a prancha em alta resolução (4:5, 2400 × 3000 px). O nome do arquivo guarda o lugar e a data.": "Elige un lugar, fija la imagen cuando esté como quieres y descarga la lámina en alta resolución (4:5, 2400 × 3000 px). El nombre del archivo guarda el lugar y la fecha.",
+    "Gerador do Atlas das nebulosas. Cada nebulosa é um lugar numa data: a cor da nuvem principal, dos filamentos e das manchas vem das substâncias que mais pesam ali, e a densidade, a torção, o brilho e os pontos de luz vêm dos dados do dia. Cada prancha baixada é uma imagem fixa, com lugar e data.": "Generador del Atlas de las nebulosas. Cada nebulosa es un lugar en una fecha: los colores de la nube principal, de los filamentos y de las manchas vienen de las sustancias que más pesan allí, y la densidad, la torsión, el brillo y los puntos de luz vienen de los datos del día. Cada lámina descargada es una imagen fija, con lugar y fecha." }); }
   const D = window.I18N_DICT || { en: {}, es: {} }, F = window.I18N_FRAG || { en: [], es: [] };
   const NUM = /\d+(?:[.,:]\d+)*/g, LANGS = ["pt", "en", "es"], LABEL = { pt: "PT", en: "EN", es: "ES" };
   const pick = () => {
