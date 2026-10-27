@@ -97,6 +97,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
 }
 .status b { color: var(--fg); font-weight: 400; }
 @media (max-width: 980px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.solo .app { grid-template-columns: minmax(0, 1fr); } .solo nav { display: none; }
 @media (max-width: 760px) {
   .app { grid-template-columns: minmax(0, 1fr); }
   nav { position: static; border-right: 0; border-bottom: 1px solid var(--line); padding: 0 0 12px; margin-bottom: 14px; }
@@ -125,7 +126,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       <button type="button" data-v="estereo"><span>estereograma</span><kbd>5</kbd></button>
       <button type="button" data-v="metodo"><span>método</span><kbd>6</kbd></button>
     </div>
-    <div class="navnote">Tudo aqui é calculado ao vivo no seu navegador, a partir de 26 alertas reais do GDACS (20 a 22/10/2026). Teclas 1 a 5 trocam de seção. Espaço liga e desliga o som.</div>
+    <div class="navnote">Tudo aqui é calculado ao vivo no seu navegador, a partir de 26 alertas reais do GDACS (20 a 22/10/2026). Teclas 1 a 6 trocam de seção. Espaço liga e desliga o som.</div>
   </nav>
 
   <main>
@@ -335,6 +336,34 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
           <div class="panel">
             <h3>síntese do lugar · Hz calculados</h3>
             <ol class="chain" id="sChain"></ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CUIDADO -->
+    <section class="view" data-view="cuidado" hidden>
+      <div class="vhead">
+        <div><h2>Mapa do cuidado</h2><p>O avesso da carga: onde as pessoas se seguram. A luz de cada lugar vem da ajuda e da cooperação relatadas no noticiário e das buscas e posts de esperança; os fios ligam os lugares onde o cuidado está presente ao mesmo tempo. O anel cinza é a carga do lugar, para comparar. Nise da Silveira chamava de afeto catalisador o vínculo que ajuda a tratar.</p></div>
+      </div>
+      <div class="grid2">
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="stage" style="aspect-ratio:2/1"><canvas id="cCv" style="width:100%;height:100%;display:block" aria-label="Mapa do mundo com a luz do cuidado em cada lugar e fios entre os lugares"></canvas></div>
+          <div class="dim" style="font-size:11px">luz = cuidado e esperança · anel cinza = carga · fio = cuidado presente nos dois lugares</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+          <div class="panel">
+            <h3>cuidado no mundo · agora</h3>
+            <dl class="kv" id="cSum"></dl>
+          </div>
+          <div class="panel">
+            <h3>lugares · do mais cuidado para o menos</h3>
+            <dl class="kv" id="cRows"></dl>
+          </div>
+          <div class="panel">
+            <h3>de onde vem</h3>
+            <div class="dim">Ajuda, acordos e cooperação: GDELT. Esperança e vínculo: buscas na Wikipedia e posts públicos do Bluesky, só contagens. Nenhum dado identifica pessoas. As cores são as substâncias do vínculo e da calma: GABA, anandamida, serotonina e dopamina.</div>
+            <div class="dim">Próxima camada: quem visita poderá responder, sem nome, "quem ou o que cuida de você?", e cada resposta vira um ponto de luz na cidade.</div>
           </div>
         </div>
       </div>
@@ -1899,6 +1928,59 @@ void main(){
     }
   }
   document.addEventListener("click", (ev) => { const b = ev.target.closest && ev.target.closest(".psndBtn"); if (!b) return; PSND.on ? psndStop() : psndStart(); });
+  // ================= mapa do cuidado: where people hold on =================
+  const C = { cv: document.getElementById("cCv"), t0: performance.now() };
+  const CARE_COL = { CUID: MED.GABA.cor, ESP: MED.DOP.cor, MIX: MED.ANA.cor };
+  function careOf(src) { const g = k => (src.factors.find(f => f.key === k) || { i: 0 }).i || 0; return { cuid: g("CUID"), esp: g("ESP") }; }
+  function cData() {
+    return PSRC.filter(s => !(s.pl && s.pl.world)).map(s => { const f = freshSrc(s), c = careOf(f); return { s: f, name: f.label, lat: f.lat, lon: f.lon, cuid: c.cuid, esp: c.esp, care: (c.cuid + c.esp) / 2, load: placeLoad(f) }; });
+  }
+  function cResize() {
+    const r = C.cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    C.w = Math.max(1, Math.round(r.width * dpr)); C.h = Math.max(1, Math.round(r.height * dpr)); C.dpr = dpr; C.cv.width = C.w; C.cv.height = C.h;
+    C.base = document.createElement("canvas"); C.base.width = C.w; C.base.height = C.h;
+    const d = C.base.getContext("2d"); d.fillStyle = "#070609"; d.fillRect(0, 0, C.w, C.h); d.fillStyle = "#2a2830"; const rad = Math.max(0.8, C.w / 360 * 2.5 * 0.2);
+    for (let lat = 77.5; lat > -55; lat -= 2.5) {
+      let best = ROWS[0]; for (const row of ROWS) if (Math.abs(row[0] - lat) < Math.abs(best[0] - lat)) best = row;
+      for (let lon = -178.75; lon < 180; lon += 2.5) { if (!best[1].some(([a, b]) => lon >= a && lon <= b)) continue; d.beginPath(); d.arc((lon + 180) / 360 * C.w, (90 - lat) / 180 * C.h, rad, 0, Math.PI * 2); d.fill(); }
+    }
+    cRefresh();
+  }
+  function cRefresh() {
+    C.data = cData(); const xy = p => [(p.lon + 180) / 360 * C.w, (90 - p.lat) / 180 * C.h];
+    for (const p of C.data) [p.x, p.y] = xy(p);
+    C.links = []; const on = C.data.filter(p => p.care > 0.08);
+    for (let i = 0; i < on.length; i++) for (let j = i + 1; j < on.length; j++) C.links.push({ a: on[i], b: on[j], w: Math.sqrt(on[i].care * on[j].care), ph: (i * 7 + j * 13) % 10 / 10 });
+    C.links.sort((x, y) => y.w - x.w); C.links = C.links.slice(0, 40);
+    const byCare = C.data.slice().sort((a, b) => b.care - a.care), avg = k => C.data.reduce((s, p) => s + p[k], 0) / C.data.length;
+    const num = v => v.toFixed(2).replace(".", ",");
+    document.getElementById("cSum").innerHTML = `<dt>cuidado (ajuda e cooperação)</dt><dd>${num(avg("cuid"))}</dd><dt>esperança e vínculo</dt><dd>${num(avg("esp"))}</dd><dt>carga média</dt><dd>${num(avg("load"))}</dd><dt>fios ativos</dt><dd>${C.links.length}</dd>`;
+    document.getElementById("cRows").innerHTML = byCare.map(p => `<dt>${p.name}</dt><dd>cuidado ${num(p.care)} · carga ${num(p.load)}</dd>`).join("");
+  }
+  function cDraw() {
+    if (!C.base) return; const x = C.cv.getContext("2d"), t = (performance.now() - C.t0) / 1000, s = C.dpr;
+    x.globalCompositeOperation = "source-over"; x.drawImage(C.base, 0, 0);
+    x.globalCompositeOperation = "lighter";
+    for (const l of C.links) {
+      const mx = (l.a.x + l.b.x) / 2, my = (l.a.y + l.b.y) / 2 - Math.hypot(l.b.x - l.a.x, l.b.y - l.a.y) * 0.22, c = CARE_COL.MIX;
+      x.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.08 + 0.35 * l.w})`; x.lineWidth = (0.6 + 1.6 * l.w) * s;
+      x.beginPath(); x.moveTo(l.a.x, l.a.y); x.quadraticCurveTo(mx, my, l.b.x, l.b.y); x.stroke();
+      const u = (t * 0.08 + l.ph) % 1, px = (1 - u) * (1 - u) * l.a.x + 2 * (1 - u) * u * mx + u * u * l.b.x, py = (1 - u) * (1 - u) * l.a.y + 2 * (1 - u) * u * my + u * u * l.b.y;
+      const g = x.createRadialGradient(px, py, 0, px, py, 6 * s); g.addColorStop(0, `rgba(240,245,230,${0.5 * l.w + 0.15})`); g.addColorStop(1, "rgba(240,245,230,0)"); x.fillStyle = g; x.fillRect(px - 6 * s, py - 6 * s, 12 * s, 12 * s);
+    }
+    for (const p of C.data) {
+      const breathe = 1 + 0.08 * Math.sin(t * 0.6 + p.lon), R = (6 + 34 * p.care) * s * breathe;
+      for (const [k, v, off] of [["CUID", p.cuid, -0.25], ["ESP", p.esp, 0.25]]) {
+        const c = CARE_COL[k], rr = (5 + 30 * v) * s * breathe, cx = p.x + off * rr * 0.5, g = x.createRadialGradient(cx, p.y, 0, cx, p.y, rr);
+        g.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${0.25 + 0.6 * v})`); g.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`); x.fillStyle = g; x.beginPath(); x.arc(cx, p.y, rr, 0, Math.PI * 2); x.fill();
+      }
+      x.globalCompositeOperation = "source-over";
+      x.strokeStyle = "rgba(160,158,166,0.55)"; x.lineWidth = 1 * s; x.beginPath(); x.arc(p.x, p.y, (4 + 26 * p.load) * s, 0, Math.PI * 2); x.stroke();
+      x.fillStyle = "rgba(236,234,226,0.75)"; x.font = `${10 * s}px ${FONT()}`; x.fillText(p.name, p.x + 6 * s, p.y - 6 * s);
+      x.globalCompositeOperation = "lighter"; void R;
+    }
+    x.globalCompositeOperation = "source-over";
+  }
   // ================= estereograma: the place hides a shape in a texture of its own substances =================
   const E = { cv: document.getElementById("eCv"), mode: "relevo", reveal: false, src: null, lang: null };
   const E_MODES = {
@@ -2040,10 +2122,11 @@ void main(){
     if (!VIEWS.includes(v)) v = "agora"; view = v;
     document.querySelectorAll(".view").forEach(s => s.hidden = s.dataset.view !== v);
     document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-current", b.dataset.v === v ? "page" : "false"));
-    document.getElementById("stView").textContent = v === "som" ? "som e cimática" : v === "estereo" ? "estereograma" : v === "mapa" ? "reprise 72 h" : v;
+    document.getElementById("stView").textContent = v === "som" ? "som e cimática" : v === "estereo" ? "estereograma" : v === "cuidado" ? "mapa do cuidado" : v === "mapa" ? "reprise 72 h" : v;
     if (v === "mapa") requestAnimationFrame(mResize);
     if (v === "agora") requestAnimationFrame(aResize);
     if (v === "figuras" && NB.mode === "neb") requestAnimationFrame(nbResize);
+    if (v === "cuidado") requestAnimationFrame(cResize);
     if (v === "estereo") requestAnimationFrame(() => E.src ? eDraw() : eSet(PSRC[0]));
     try { history.replaceState(null, "", "#" + v); } catch (err) {}
   }
@@ -2069,6 +2152,7 @@ void main(){
     if (view === "mapa") mTick(dt);
     else if (view === "retratos") { pTick(); pRender(P.ctx, P.cv.width, P.cv.height); }
     else if (view === "som") sTick();
+    if (view === "cuidado") cDraw();
     if (view === "estereo" && E.src && E.mode === "pergunta" && E.lang !== eLang()) eDraw();
     if (fpsAcc > 0.5) { document.getElementById("stFps").textContent = Math.round(fpsN / fpsAcc); fpsAcc = 0; fpsN = 0; document.getElementById("stSteps").textContent = totalSteps.toLocaleString("pt-BR"); document.getElementById("stAudio").textContent = live() ? "ligado" : "desligado"; }
     requestAnimationFrame(tick);
@@ -2078,7 +2162,12 @@ void main(){
   buildSearch(document.querySelector('[data-search="som"]'), src => { setAuto(false); pStart(portraitFromPlace(src)); });
   mReset(); P.qi = 1; pStart(portraitFromPlace(PSRC[0])); gMode("net");
   const start = (location.hash || "").slice(1);
-  show(VIEWS.includes(start) || OLD_VIEWS.includes(start) ? start : "agora");
+  // ?obra=cuidado: the Map of care as a work of its own (no lab menu), for its own page and the installation
+  const SOLO = (() => { try { return new URLSearchParams(location.search).get("obra"); } catch (e) { return null; } })();
+  if (SOLO === "cuidado") {
+    document.body.classList.add("solo"); document.title = "Mapa do cuidado";
+    VIEWS.splice(0, VIEWS.length, "cuidado"); show("cuidado");
+  } else show(VIEWS.includes(start) || OLD_VIEWS.includes(start) ? start : "agora");
   if (LIVE) { const el = document.getElementById("fonteData"); if (el) el.textContent = `Coleta automática ao longo do dia. Última: ${LIVE.atualizado.replace("T", " ").replace("Z", " UTC")}. ${Object.entries(LIVE.fontes || {}).map(([k, v]) => `${k}: ${v}`).join(" · ")}.`; }
   mResize(); aResize(); new ResizeObserver(() => { if (view === "mapa") mResize(); }).observe(M.cv); new ResizeObserver(() => { if (view === "agora") aResize(); }).observe(A.cv); new ResizeObserver(() => { if (view === "figuras" && NB.mode === "neb") nbResize(); }).observe(NB.cv);
   requestAnimationFrame(tick);
@@ -2155,6 +2244,21 @@ window.I18N_FRAG = {
 
 window.I18N_DICT = {
 en: {
+"mapa do cuidado": "map of care", "cuidado": "care",
+"Mapa do cuidado": "Map of care",
+"O avesso da carga: onde as pessoas se seguram. A luz de cada lugar vem da ajuda e da cooperação relatadas no noticiário e das buscas e posts de esperança; os fios ligam os lugares onde o cuidado está presente ao mesmo tempo. O anel cinza é a carga do lugar, para comparar. Nise da Silveira chamava de afeto catalisador o vínculo que ajuda a tratar.": "The reverse of the load: where people hold on. Each place's light comes from aid and cooperation reported in the news and from searches and posts of hope; the threads link places where care is present at the same time. The grey ring is the place's load, for comparison. Nise da Silveira called the bond that helps healing the catalysing affect.",
+"Mapa do mundo com a luz do cuidado em cada lugar e fios entre os lugares": "World map with the light of care in each place and threads between places",
+"luz = cuidado e esperança · anel cinza = carga · fio = cuidado presente nos dois lugares": "light = care and hope · grey ring = load · thread = care present in both places",
+"cuidado no mundo · agora": "care in the world · now",
+"lugares · do mais cuidado para o menos": "places · from most care to least",
+"de onde vem": "where it comes from",
+"Ajuda, acordos e cooperação: GDELT. Esperança e vínculo: buscas na Wikipedia e posts públicos do Bluesky, só contagens. Nenhum dado identifica pessoas. As cores são as substâncias do vínculo e da calma: GABA, anandamida, serotonina e dopamina.": "Aid, agreements and cooperation: GDELT. Hope and bonds: Wikipedia searches and public Bluesky posts, counts only. No data identifies people. The colours are the substances of bonding and calm: GABA, anandamide, serotonin and dopamine.",
+"Próxima camada: quem visita poderá responder, sem nome, \"quem ou o que cuida de você?\", e cada resposta vira um ponto de luz na cidade.": "Next layer: visitors will be able to answer, without a name, \"who or what takes care of you?\", and each answer becomes a point of light in the city.",
+"cuidado (ajuda e cooperação)": "care (aid and cooperation)",
+"esperança e vínculo": "hope and bonds",
+"carga média": "average load",
+"fios ativos": "active threads",
+"carga": "load",
 "estereograma": "stereogram",
 "Estereograma": "Stereogram",
 "Cada lugar vira um estereograma: a textura usa as cores das substâncias do lugar e esconde uma forma em relevo. O que pesa sobre um lugar está ali o tempo todo, mas só aparece quando se muda o jeito de olhar. Continua a pesquisa de Social Hacker (2019) com estereogramas e sistemas vistos de cima.": "Each place becomes a stereogram: the texture uses the colours of the place's substances and hides a shape in relief. What weighs on a place is there all the time, but it only appears when you change the way you look. It continues the research of Social Hacker (2019) with stereograms and systems seen from above.",
@@ -2270,6 +2374,21 @@ en: {
 "Tromsø": "Tromsø", "São Paulo": "São Paulo", "Lagos": "Lagos",
 },
 es: {
+"mapa do cuidado": "mapa del cuidado", "cuidado": "cuidado",
+"Mapa do cuidado": "Mapa del cuidado",
+"O avesso da carga: onde as pessoas se seguram. A luz de cada lugar vem da ajuda e da cooperação relatadas no noticiário e das buscas e posts de esperança; os fios ligam os lugares onde o cuidado está presente ao mesmo tempo. O anel cinza é a carga do lugar, para comparar. Nise da Silveira chamava de afeto catalisador o vínculo que ajuda a tratar.": "El revés de la carga: dónde las personas se sostienen. La luz de cada lugar viene de la ayuda y la cooperación reportadas en las noticias y de las búsquedas y publicaciones de esperanza; los hilos unen los lugares donde el cuidado está presente al mismo tiempo. El anillo gris es la carga del lugar, para comparar. Nise da Silveira llamaba afecto catalizador al vínculo que ayuda a sanar.",
+"Mapa do mundo com a luz do cuidado em cada lugar e fios entre os lugares": "Mapa del mundo con la luz del cuidado en cada lugar e hilos entre los lugares",
+"luz = cuidado e esperança · anel cinza = carga · fio = cuidado presente nos dois lugares": "luz = cuidado y esperanza · anillo gris = carga · hilo = cuidado presente en los dos lugares",
+"cuidado no mundo · agora": "cuidado en el mundo · ahora",
+"lugares · do mais cuidado para o menos": "lugares · del más cuidado al menos",
+"de onde vem": "de dónde viene",
+"Ajuda, acordos e cooperação: GDELT. Esperança e vínculo: buscas na Wikipedia e posts públicos do Bluesky, só contagens. Nenhum dado identifica pessoas. As cores são as substâncias do vínculo e da calma: GABA, anandamida, serotonina e dopamina.": "Ayuda, acuerdos y cooperación: GDELT. Esperanza y vínculo: búsquedas en Wikipedia y publicaciones públicas de Bluesky, solo recuentos. Ningún dato identifica a personas. Los colores son las sustancias del vínculo y la calma: GABA, anandamida, serotonina y dopamina.",
+"Próxima camada: quem visita poderá responder, sem nome, \"quem ou o que cuida de você?\", e cada resposta vira um ponto de luz na cidade.": "Próxima capa: quien visite podrá responder, sin nombre, \"¿quién o qué te cuida?\", y cada respuesta se convierte en un punto de luz en la ciudad.",
+"cuidado (ajuda e cooperação)": "cuidado (ayuda y cooperación)",
+"esperança e vínculo": "esperanza y vínculo",
+"carga média": "carga media",
+"fios ativos": "hilos activos",
+"carga": "carga",
 "estereograma": "estereograma",
 "Estereograma": "Estereograma",
 "Cada lugar vira um estereograma: a textura usa as cores das substâncias do lugar e esconde uma forma em relevo. O que pesa sobre um lugar está ali o tempo todo, mas só aparece quando se muda o jeito de olhar. Continua a pesquisa de Social Hacker (2019) com estereogramas e sistemas vistos de cima.": "Cada lugar se convierte en un estereograma: la textura usa los colores de las sustancias del lugar y esconde una forma en relieve. Lo que pesa sobre un lugar está ahí todo el tiempo, pero solo aparece cuando se cambia la forma de mirar. Continúa la investigación de Social Hacker (2019) con estereogramas y sistemas vistos desde arriba.",
