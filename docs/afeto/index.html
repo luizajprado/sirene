@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Afeto Catalisador</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Martian+Mono:wdth,wght@75..112.5,300..800&display=swap">
+<style>
+/* Layout: the room fills the stage; a control desk on the right, same language as Sirene.
+   Single dark look by choice: the object only reads in a dark room. */
+:root {
+  --bg: #07070A; --room: #0B0B10; --panel: #101016; --line: #262632; --fg: #ECE8F2; --dim: #9A96A8;
+  --care: #6FA8FF; --warm: #FFF1D6;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --disp: "Martian Mono", "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--mono); font-size: 13px; line-height: 1.55; margin: 0; }
+button { font: inherit; color: inherit; }
+.app { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 380px; }
+.stage { position: relative; min-width: 0; min-height: 0; background: var(--room); }
+#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; }
+.label { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: 16px; pointer-events: none; display: flex; flex-direction: column; gap: 4px; }
+.label b { font-family: var(--disp); font-stretch: 75%; font-weight: 800; font-size: clamp(26px, 3.6vw, 44px); letter-spacing: .02em; line-height: 1; }
+.label span { color: var(--dim); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+.views { position: absolute; right: 16px; top: 16px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 60%; }
+.views .btn { background: rgba(7,7,10,.7); backdrop-filter: blur(6px); }
+.hint { position: absolute; left: 50%; transform: translateX(-50%); bottom: 64px; color: var(--dim); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; pointer-events: none; background: rgba(7,7,10,.6); padding: 6px 10px; }
+.state { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline;
+  background: rgba(7,7,10,.72); border: 1px solid var(--line); padding: 10px 14px; backdrop-filter: blur(6px); max-width: calc(100% - 32px); box-sizing: border-box; font-variant-numeric: tabular-nums; }
+.state span { color: var(--dim); } .state span b { color: var(--fg); font-weight: 500; }
+.desk { background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding-block: 18px 40px; padding-left: 18px; padding-right: max(18px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.sec { display: flex; flex-direction: column; gap: 10px; }
+.sec + .sec { border-top: 1px solid var(--line); padding-top: 18px; }
+h2 { margin: 0; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); font-weight: 500; }
+.dim { color: var(--dim); font-size: 12px; margin: 0; line-height: 1.6; }
+.btn { background: none; border: 1px solid var(--line); color: var(--fg); padding: 9px 12px; min-height: 40px; cursor: pointer; }
+.btn:hover { border-color: var(--dim); }
+.btn[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.btn i { font-style: normal; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; }
+.kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 16px; margin: 0; font-variant-numeric: tabular-nums; }
+.kv dt { color: var(--dim); } .kv dd { margin: 0; text-align: right; }
+.feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--dim); min-height: 7.5em; max-height: 9em; overflow: hidden; }
+.feed b { color: var(--fg); font-weight: 500; }
+.spec { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; line-height: 1.55; }
+.spec li::marker { color: var(--dim); }
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: 62vh auto; height: auto; }
+  html, body { height: auto; }
+  .desk { border-left: 0; border-top: 1px solid var(--line); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .views { top: auto; bottom: 74px; right: 16px; max-width: calc(100% - 32px); }
+  .hint { bottom: 120px; }
+}
+@media (prefers-reduced-motion: reduce) { .hint { display: none; } }
+</style>
+
+</head>
+<body>
+<div class="app">
+  <div class="stage">
+    <canvas id="gl" aria-label="Simulação 3D do Afeto Catalisador: um recipiente de vidro em forma de útero sobre um pedestal, com água morna e luz por dentro e uma membrana translúcida em cima. Clicar na membrana é tocar."></canvas>
+    <div class="label"><b>AFETO CATALISADOR</b><span>membrana de toque à distância</span></div>
+    <div class="views" role="group" aria-label="Pontos de vista">
+      <button type="button" class="btn" data-view="sala" aria-pressed="true">sala</button>
+      <button type="button" class="btn" data-view="perto" aria-pressed="false">perto</button>
+      <button type="button" class="btn" data-view="cima" aria-pressed="false">de cima</button>
+      <button type="button" class="btn" data-view="corte" aria-pressed="false">corte</button>
+    </div>
+    <div class="hint" id="hint">clique na membrana para tocar · arraste para girar</div>
+    <div class="state" aria-live="polite">
+      <span>toques agora <b id="sN">0</b></span>
+      <span>último <b id="sLast">—</b></span>
+      <span>encontros <b id="sMeet">0</b></span>
+      <span>membrana <b>Ø 75 cm · 1,10 m</b></span>
+    </div>
+  </div>
+
+  <aside class="desk" aria-label="Controles da simulação">
+    <div id="lng" role="group" aria-label="Idioma" class="row" style="gap:0;border:1px solid var(--line);align-self:flex-start"><button type="button" class="btn" data-l="pt" style="border:0">PT</button><button type="button" class="btn" data-l="en" style="border:0">EN</button><button type="button" class="btn" data-l="es" style="border:0">ES</button></div>
+    <div class="sec">
+      <h2>o objeto</h2>
+      <p class="dim">Um recipiente de vidro arredondado, em forma de útero, sobre um pedestal. Dentro, água morna e luz. Em cima, uma membrana translúcida de silicone, na altura da mão.</p>
+      <p class="dim">Há uma membrana igual em outras cidades. Quando alguém toca uma delas, as outras sentem no mesmo ponto: a membrana vibra de leve, aquece um pouco, acende na cor do lugar de onde veio o toque, e um pulso lento soa.</p>
+      <p class="dim">Quando ninguém toca, a luz e o pulso seguem o mapa do cuidado: ajuda, cooperação e esperança medidas em cada lugar.</p>
+      <p class="dim">O nome vem de Nise da Silveira, que chamava de afeto catalisador o vínculo que ajuda a tratar.</p>
+      <p class="dim"><a href="../?obra=cuidado" style="color:var(--fg)">ver o mapa do cuidado ↗</a></p>
+      <div class="row"><button type="button" class="btn" id="snd" aria-pressed="false">ligar som</button></div>
+    </div>
+
+    <div class="sec">
+      <h2>tocar daqui</h2>
+      <p class="dim">Clique ou toque na membrana. O seu toque aparece em luz morna e seria sentido nas outras cidades.</p>
+    </div>
+
+    <div class="sec">
+      <h2>toques de outros lugares · simulação</h2>
+      <p class="dim">Na obra, chegam pela internet em menos de meio segundo. Aqui, simule um toque vindo de outra membrana.</p>
+      <div class="row" id="cities"></div>
+      <div class="row"><button type="button" class="btn" id="auto" aria-pressed="true">toques simulados: ligados</button></div>
+      <p class="dim">Dois toques no mesmo ponto, de cidades diferentes, ao mesmo tempo, são um encontro: as luzes se juntam e o pulso acelera um pouco.</p>
+      <ul class="feed" id="feed"></ul>
+    </div>
+
+    <div class="sec">
+      <h2>ficha técnica · proposta</h2>
+      <dl class="kv">
+        <dt>recipiente</dt><dd>vidro soprado, cerca de 85 cm de largura</dd>
+        <dt>membrana</dt><dd>silicone translúcido, Ø cerca de 75 cm</dd>
+        <dt>altura do toque</dt><dd>1,10 m do chão</dd>
+        <dt>pedestal</dt><dd>Ø 60 cm, eletrônica selada</dd>
+        <dt>dentro</dt><dd>água morna e anel de LED</dd>
+        <dt>controle</dt><dd>ESP32 com wi-fi, baixa tensão</dd>
+      </dl>
+      <ul class="spec">
+        <li>Sensores de pressão em grade sob a membrana: leem onde e com que força se toca.</li>
+        <li>Transdutores de vibração colados no vidro e pastilhas térmicas com limite de temperatura.</li>
+        <li>Anel de LED endereçável na base, nas cores das substâncias do vínculo e da calma.</li>
+        <li>Servidor de mensagens em tempo real que só repassa posição, força, cidade e hora.</li>
+        <li>Medidas de proposta, definidas no protótipo. Use a vista "corte" para ver as partes.</li>
+      </ul>
+    </div>
+
+    <div class="sec">
+      <h2>cuidados</h2>
+      <ul class="spec">
+        <li>Calor sempre morno, com limite no próprio circuito. Vibração leve. Luz sem flashes.</li>
+        <li>Pulso lento, abaixo de um batimento por segundo.</li>
+        <li>Eletrônica em baixa tensão, selada no pedestal, sem contato com a água.</li>
+        <li>Sem câmera e sem gravação de som. Aviso na sala explicando o que é medido (LGPD).</li>
+      </ul>
+      <p class="dim">Luiza Jesus do Prado, 2026 · O que é a loucura?</p>
+    </div>
+  </aside>
+</div>
+
+<script>
+window.I18N={en:{"sala": "room", "corte": "cross-section", "perto": "close", "dentro": "inside", "último": "last", "de cima": "from above", "cuidados": "care", "pedestal": "pedestal", "controle": "control", "o objeto": "the object", "membrana": "membrane", "ligar som": "turn on sound", "encontros": "meetings", "recipiente": "vessel", "tocar daqui": "touch from here", "toques agora": "touches now", "1,10 m do chão": "1.10 m from the floor", "altura do toque": "touch height", "Pontos de vista": "Points of view", "Ø 75 cm · 1,10 m": "Ø 75 cm · 1.10 m", "Controles da simulação": "Simulation controls", "água morna e anel de LED": "warm water and LED ring", "ficha técnica · proposta": "technical sheet · proposal", "toques simulados: ligados": "simulated touches: on", "toques simulados: desligados": "simulated touches: off", "Ø 60 cm, eletrônica selada": "Ø 60 cm, sealed electronics", "ESP32 com wi-fi, baixa tensão": "ESP32 with wi-fi, low voltage", "toques de outros lugares · simulação": "touches from other places · simulation", "silicone translúcido, Ø cerca de 75 cm": "translucent silicone, Ø about 75 cm", "vidro soprado, cerca de 85 cm de largura": "blown glass, about 85 cm wide", "Luiza Jesus do Prado, 2026 · O que é a loucura?": "Luiza Jesus do Prado, 2026 · What Is Madness?", "Pulso lento, abaixo de um batimento por segundo.": "A slow pulse, below one beat per second.", "membrana de toque à distância": "a membrane for touch at a distance", "clique na membrana para tocar · arraste para girar": "click the membrane to touch · drag to turn", "Eletrônica em baixa tensão, selada no pedestal, sem contato com a água.": "Low-voltage electronics, sealed in the pedestal, with no contact with the water.", "Sensores de pressão em grade sob a membrana: leem onde e com que força se toca.": "A grid of pressure sensors under the membrane reads where and how hard it is touched.", "Servidor de mensagens em tempo real que só repassa posição, força, cidade e hora.": "A real-time message server that only relays position, pressure, city and time.", "Anel de LED endereçável na base, nas cores das substâncias do vínculo e da calma.": "An addressable LED ring at the base, in the colours of the substances of bonding and calm.", "Sem câmera e sem gravação de som. Aviso na sala explicando o que é medido (LGPD).": "No camera and no sound recording. A notice in the room explains what is measured (Brazil's LGPD).", "Calor sempre morno, com limite no próprio circuito. Vibração leve. Luz sem flashes.": "Heat always lukewarm, with a limit in the circuit itself. Gentle vibration. No flashing light.", "Medidas de proposta, definidas no protótipo. Use a vista \"corte\" para ver as partes.": "Proposed dimensions, to be set in the prototype. Use the \"cross-section\" view to see the parts.", "Transdutores de vibração colados no vidro e pastilhas térmicas com limite de temperatura.": "Vibration transducers bonded to the glass and thermal pads with a temperature limit.", "Clique ou toque na membrana. O seu toque aparece em luz morna e seria sentido nas outras cidades.": "Click or tap the membrane. Your touch appears as warm light and would be felt in the other cities.", "Na obra, chegam pela internet em menos de meio segundo. Aqui, simule um toque vindo de outra membrana.": "In the work, they arrive over the internet in under half a second. Here, simulate a touch coming from another membrane.", "Quando ninguém toca, a luz e o pulso seguem o mapa do cuidado: ajuda, cooperação e esperança medidas em cada lugar.": "When no one touches, the light and the pulse follow the map of care: aid, cooperation and hope measured in each place.", "Dois toques no mesmo ponto, de cidades diferentes, ao mesmo tempo, são um encontro: as luzes se juntam e o pulso acelera um pouco.": "Two touches on the same spot, from different cities, at the same time, are a meeting: the lights join and the pulse quickens a little.", "Um recipiente de vidro arredondado, em forma de útero, sobre um pedestal. Dentro, água morna e luz. Em cima, uma membrana translúcida de silicone, na altura da mão.": "A rounded glass vessel, shaped like a womb, on a pedestal. Inside, warm water and light. On top, a translucent silicone membrane at hand height.", "Simulação 3D do Afeto Catalisador: um recipiente de vidro em forma de útero sobre um pedestal, com água morna e luz por dentro e uma membrana translúcida em cima. Clicar na membrana é tocar.": "3D simulation of Catalysing Affect: a womb-shaped glass vessel on a pedestal, with warm water and light inside and a translucent membrane on top. Clicking the membrane is touching it.", "Há uma membrana igual em outras cidades. Quando alguém toca uma delas, as outras sentem no mesmo ponto: a membrana vibra de leve, aquece um pouco, acende na cor do lugar de onde veio o toque, e um pulso lento soa.": "There is an identical membrane in other cities. When someone touches one, the others feel it on the same spot: the membrane vibrates gently, warms a little, lights up in the colour of the place the touch came from, and a slow pulse sounds.", "O nome vem de Nise da Silveira, que chamava de afeto catalisador o vínculo que ajuda a tratar.": "The name comes from Nise da Silveira, who called the bond that helps healing a catalysing affect.", "ver o mapa do cuidado ↗": "see the map of care ↗", "AFETO CATALISADOR": "CATALYSING AFFECT", "Afeto Catalisador": "Catalysing Affect", "som ligado · desligar": "sound on · turn off", "aqui": "here", "tocou a membrana": "touched the membrane", "tocou e foi sentido aqui": "touched and it was felt here", "encontro": "meeting", "no mesmo ponto": "on the same spot", "e": "and", "Madri": "Madrid", "Nova Délhi": "New Delhi"},es:{"sala": "sala", "corte": "corte", "perto": "cerca", "dentro": "dentro", "último": "último", "de cima": "desde arriba", "cuidados": "cuidados", "pedestal": "pedestal", "controle": "control", "o objeto": "el objeto", "membrana": "membrana", "ligar som": "encender sonido", "encontros": "encuentros", "recipiente": "recipiente", "tocar daqui": "tocar desde aquí", "toques agora": "toques ahora", "1,10 m do chão": "1,10 m del suelo", "altura do toque": "altura del toque", "Pontos de vista": "Puntos de vista", "Ø 75 cm · 1,10 m": "Ø 75 cm · 1,10 m", "Controles da simulação": "Controles de la simulación", "água morna e anel de LED": "agua tibia y anillo de LED", "ficha técnica · proposta": "ficha técnica · propuesta", "toques simulados: ligados": "toques simulados: encendidos", "toques simulados: desligados": "toques simulados: apagados", "Ø 60 cm, eletrônica selada": "Ø 60 cm, electrónica sellada", "ESP32 com wi-fi, baixa tensão": "ESP32 con wi-fi, baja tensión", "toques de outros lugares · simulação": "toques de otros lugares · simulación", "silicone translúcido, Ø cerca de 75 cm": "silicona translúcida, Ø unos 75 cm", "vidro soprado, cerca de 85 cm de largura": "vidrio soplado, unos 85 cm de ancho", "Luiza Jesus do Prado, 2026 · O que é a loucura?": "Luiza Jesus do Prado, 2026 · ¿Qué es la locura?", "Pulso lento, abaixo de um batimento por segundo.": "Pulso lento, por debajo de un latido por segundo.", "membrana de toque à distância": "membrana de toque a distancia", "clique na membrana para tocar · arraste para girar": "haz clic en la membrana para tocar · arrastra para girar", "Eletrônica em baixa tensão, selada no pedestal, sem contato com a água.": "Electrónica de baja tensión, sellada en el pedestal, sin contacto con el agua.", "Sensores de pressão em grade sob a membrana: leem onde e com que força se toca.": "Una rejilla de sensores de presión bajo la membrana lee dónde y con qué fuerza se toca.", "Servidor de mensagens em tempo real que só repassa posição, força, cidade e hora.": "Un servidor de mensajes en tiempo real que solo transmite posición, fuerza, ciudad y hora.", "Anel de LED endereçável na base, nas cores das substâncias do vínculo e da calma.": "Anillo de LED direccionable en la base, en los colores de las sustancias del vínculo y la calma.", "Sem câmera e sem gravação de som. Aviso na sala explicando o que é medido (LGPD).": "Sin cámara y sin grabación de sonido. Un aviso en la sala explica qué se mide (LGPD de Brasil).", "Calor sempre morno, com limite no próprio circuito. Vibração leve. Luz sem flashes.": "Calor siempre tibio, con límite en el propio circuito. Vibración suave. Luz sin destellos.", "Medidas de proposta, definidas no protótipo. Use a vista \"corte\" para ver as partes.": "Medidas de propuesta, definidas en el prototipo. Usa la vista \"corte\" para ver las partes.", "Transdutores de vibração colados no vidro e pastilhas térmicas com limite de temperatura.": "Transductores de vibración pegados al vidrio y pastillas térmicas con límite de temperatura.", "Clique ou toque na membrana. O seu toque aparece em luz morna e seria sentido nas outras cidades.": "Haz clic o toca la membrana. Tu toque aparece como luz tibia y se sentiría en las otras ciudades.", "Na obra, chegam pela internet em menos de meio segundo. Aqui, simule um toque vindo de outra membrana.": "En la obra llegan por internet en menos de medio segundo. Aquí, simula un toque que viene de otra membrana.", "Quando ninguém toca, a luz e o pulso seguem o mapa do cuidado: ajuda, cooperação e esperança medidas em cada lugar.": "Cuando nadie toca, la luz y el pulso siguen el mapa del cuidado: ayuda, cooperación y esperanza medidas en cada lugar.", "Dois toques no mesmo ponto, de cidades diferentes, ao mesmo tempo, são um encontro: as luzes se juntam e o pulso acelera um pouco.": "Dos toques en el mismo punto, desde ciudades distintas, al mismo tiempo, son un encuentro: las luces se juntan y el pulso se acelera un poco.", "Um recipiente de vidro arredondado, em forma de útero, sobre um pedestal. Dentro, água morna e luz. Em cima, uma membrana translúcida de silicone, na altura da mão.": "Un recipiente de vidrio redondeado, con forma de útero, sobre un pedestal. Dentro, agua tibia y luz. Arriba, una membrana translúcida de silicona, a la altura de la mano.", "Simulação 3D do Afeto Catalisador: um recipiente de vidro em forma de útero sobre um pedestal, com água morna e luz por dentro e uma membrana translúcida em cima. Clicar na membrana é tocar.": "Simulación 3D de Afecto Catalizador: un recipiente de vidrio con forma de útero sobre un pedestal, con agua tibia y luz dentro y una membrana translúcida encima. Hacer clic en la membrana es tocarla.", "Há uma membrana igual em outras cidades. Quando alguém toca uma delas, as outras sentem no mesmo ponto: a membrana vibra de leve, aquece um pouco, acende na cor do lugar de onde veio o toque, e um pulso lento soa.": "Hay una membrana igual en otras ciudades. Cuando alguien toca una, las otras lo sienten en el mismo punto: la membrana vibra suavemente, se calienta un poco, se ilumina con el color del lugar de donde vino el toque y suena un pulso lento.", "O nome vem de Nise da Silveira, que chamava de afeto catalisador o vínculo que ajuda a tratar.": "El nombre viene de Nise da Silveira, que llamaba afecto catalizador al vínculo que ayuda a sanar.", "ver o mapa do cuidado ↗": "ver el mapa del cuidado ↗", "AFETO CATALISADOR": "AFECTO CATALIZADOR", "Afeto Catalisador": "Afecto Catalizador", "som ligado · desligar": "sonido encendido · apagar", "aqui": "aquí", "tocou a membrana": "tocó la membrana", "tocou e foi sentido aqui": "tocó y se sintió aquí", "encontro": "encuentro", "no mesmo ponto": "en el mismo punto", "e": "y", "Madri": "Madrid", "Nova Délhi": "Nueva Delhi"}};
+window.LANG=(()=>{let q=null,s=null;try{q=new URLSearchParams(location.search).get("lang")}catch(e){}try{s=localStorage.getItem("lang")}catch(e){}return [q,s].find(x=>["pt","en","es"].includes(x))||"en"})();
+window.tr=t=>window.LANG==="pt"?t:((window.I18N[window.LANG]||{})[t]??t);
+(function(){let nodes=null,attrs=null,t0=null;const collect=()=>{nodes=[];const W=document.createTreeWalker(document.querySelector(".app"),NodeFilter.SHOW_TEXT);while(W.nextNode()){const n=W.currentNode;if(n.parentElement.closest("script,style,#lng"))continue;const t=n.nodeValue.trim();if(t)nodes.push([n,n.nodeValue,t]);}
+attrs=[...document.querySelectorAll("[aria-label]")].map(el=>[el,el.getAttribute("aria-label")]);t0=document.title;};
+window.applyLang=l=>{if(!nodes)collect();window.LANG=l;try{localStorage.setItem("lang",l)}catch(e){}nodes.forEach(([n,orig,t])=>{n.nodeValue=orig.replace(t,tr(t))});attrs.forEach(([el,a])=>el.setAttribute("aria-label",tr(a)));document.title=tr(t0);document.documentElement.lang=l==="pt"?"pt-BR":l;document.querySelectorAll("#lng [data-l]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.l===l)));};
+document.querySelectorAll("#lng [data-l]").forEach(b=>b.addEventListener("click",()=>window.applyLang(b.dataset.l)));})();
+</script>
+<script>
+(() => {
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const $ = id => document.getElementById(id);
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // care colours: the substances of bonding and calm used across the project
+  const C = { GABA: [111, 168, 255], ANA: [134, 226, 140], DOP: [255, 226, 120], SER: [46, 196, 182], ACH: [180, 255, 236], END: [255, 192, 150] };
+  const HERE = [255, 241, 214];
+  const CITIES = [["São Paulo", "GABA"], ["Madri", "DOP"], ["Lagos", "ANA"], ["Cairo", "SER"], ["Tromsø", "ACH"], ["Nova Délhi", "END"]];
+  const REST = [0.22, 0.42, 0.68];   // resting light: a blue-green mix of GABA and anandamide
+
+  // geometry shared with the shader (metres)
+  const MY = 1.10, MR = 0.377;
+
+  const FS = `precision highp float;
+uniform vec2 uRes;uniform float uT,uBeat,uCut,uMeet;uniform vec3 uCam,uTgt,uRest;uniform vec4 uTch[8];uniform vec3 uTC[8];
+const float W=6.,D=6.,H=4.2;
+const vec3 VC=vec3(0.,.95,0.);const vec3 VR=vec3(.42,.34,.42);const float MY=${MY.toFixed(3)};const float MR=${MR.toFixed(3)};
+float hs(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hs(i),hs(i+vec2(1.,0.)),f.x),mix(hs(i+vec2(0.,1.)),hs(i+vec2(1.,1.)),f.x),f.y);}
+float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*vn(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return v;}
+float memH(vec2 q){float h=0.;for(int i=0;i<8;i++){if(uTch[i].w<=0.)continue;float a=uTch[i].z;float d=length(q-uTch[i].xy);
+ h+=uTch[i].w*(.012*sin(d*42.-a*8.)*exp(-a*.6)*exp(-d*d*5.)-.022*exp(-d*d*140.)*exp(-a*1.4));}return h;}
+vec3 waterCol(){vec3 c=uRest*(.55+.45*uBeat);float e=0.;for(int i=0;i<8;i++){if(uTch[i].w<=0.)continue;float k=uTch[i].w*exp(-uTch[i].z*.35);c+=uTC[i]*k*.9;e+=k;}return c*(1.+.6*uMeet);}
+float sdEll(vec3 p,vec3 r){float k0=length(p/r);float k1=length(p/(r*r));return k0*(k0-1.)/k1;}
+float sdBox(vec3 p,vec3 b){vec3 q=abs(p)-b;return length(max(q,0.))+min(max(q.x,max(q.y,q.z)),0.);}
+float sdCyl(vec3 p,float r,float h){vec2 d=abs(vec2(length(p.xz),p.y))-vec2(r,h);return min(max(d.x,d.y),0.)+length(max(d,0.));}
+float sdTor(vec3 p,vec2 t){vec2 q=vec2(length(p.xz)-t.x,p.y);return length(q)-t.y;}
+vec2 map(vec3 p){
+ float other=min(H-p.y,min(W-abs(p.x),D-abs(p.z)));float room=min(p.y,other);vec2 r=vec2(room,p.y<other?0.:1.);
+ float clip=uCut>.5?p.z:-1e3;
+ float ped=max(sdCyl(p-vec3(0.,.34,0.),.30,.34),clip);if(ped<r.x)r=vec2(ped,2.);
+ float e=sdEll(p-VC,VR);float shell=max(max(abs(e)-.008,p.y-MY),clip);if(shell<r.x)r=vec2(shell,3.);
+ float m=max(sdCyl(p-vec3(0.,MY+memH(p.xz),0.),MR,.004),clip);if(m<r.x)r=vec2(m,4.);
+ if(uCut>.5){
+  float led=sdTor(p-vec3(0.,.66,0.),vec2(.13,.014));if(led<r.x)r=vec2(led,5.);
+  float box=sdBox(p-vec3(0.,.32,0.),vec3(.11,.05,.08));if(box<r.x)r=vec2(box,6.);
+  float spk=sdCyl(p-vec3(.16,.50,0.),.05,.02);if(spk<r.x)r=vec2(spk,6.);
+  float ex=min(sdBox(p-vec3(.405,.95,0.),vec3(.012,.04,.03)),sdBox(p-vec3(-.405,.95,0.),vec3(.012,.04,.03)));if(ex<r.x)r=vec2(ex,7.);
+  float pe=min(sdBox(p-vec3(.33,.73,0.),vec3(.03,.008,.03)),sdBox(p-vec3(-.33,.73,0.),vec3(.03,.008,.03)));if(pe<r.x)r=vec2(pe,8.);
+  float cab=sdCyl(p-vec3(0.,.50,0.),.008,.16);if(cab<r.x)r=vec2(cab,6.);
+ }
+ return r;}
+vec3 nrm(vec3 p){vec2 e=vec2(.0015,0.);return normalize(vec3(map(p+e.xyy).x-map(p-e.xyy).x,map(p+e.yxy).x-map(p-e.yxy).x,map(p+e.yyx).x-map(p-e.yyx).x));}
+vec3 lightAt(vec3 p,vec3 n,vec3 wc){vec3 L=VC-p;float d=length(L);L/=d;float wrap=max(dot(n,L)*.8+.2,0.);return wc*wrap*1.4/(1.+2.2*d*d)+vec3(.012);}
+// light caught in the water: integrate along the part of the ray inside the vessel
+float waterLen(vec3 ro,vec3 rd,float tmax){vec3 o=(ro-VC)/VR,d=rd/VR;float a=dot(d,d),b=dot(o,d),c=dot(o,o)-1.;float h=b*b-a*c;if(h<0.)return 0.;h=sqrt(h);
+ float t0=(-b-h)/a,t1=(-b+h)/a;
+ if(abs(rd.y)>1e-4){float ty=(MY-ro.y)/rd.y;if(rd.y>0.)t1=min(t1,ty);else t0=max(t0,ty);}else if(ro.y>MY)return 0.;
+ if(uCut>.5&&abs(rd.z)>1e-4){float tz=-ro.z/rd.z;if(rd.z>0.)t1=min(t1,tz);else t0=max(t0,tz);}
+ t0=max(t0,0.);t1=min(t1,tmax);return max(t1-t0,0.);}
+void main(){
+ vec2 uv=(gl_FragCoord.xy-.5*uRes)/uRes.y;
+ vec3 fw=normalize(uTgt-uCam),rt=normalize(cross(fw,vec3(0.,1.,0.))),up=cross(rt,fw);
+ vec3 rd=normalize(fw*1.5+uv.x*rt+uv.y*up),ro=uCam;
+ float t=0.;vec2 h=vec2(0.,-1.);
+ for(int i=0;i<140;i++){vec3 p=ro+rd*t;h=map(p);if(h.x<.0008*t+.0004)break;t+=h.x*.85;if(t>25.)break;}
+ vec3 p=ro+rd*t,n=nrm(p),col=vec3(0.),wc=waterCol();
+ float through=1.;
+ if(h.y<.5){col=vec3(.07,.07,.08)*lightAt(p,n,wc);
+  float r=length(p.xz);col+=wc*.10*exp(-r*r*1.4);
+  col*=.85+.15*fract(sin(dot(floor(p.xz*1.3),vec2(12.9,78.2)))*437.);
+ }else if(h.y<1.5){col=vec3(.10,.10,.115)*lightAt(p,n,wc);
+  if(p.y>H-.02){ // caustics on the ceiling: the light that crosses the moving water
+   vec2 q=p.xz*2.2;float w=fbm(q+uT*.12)+.5*fbm(q*2.1-uT*.09);float ripple=0.;for(int i=0;i<8;i++){if(uTch[i].w<=0.)continue;ripple+=uTch[i].w*exp(-uTch[i].z*.5);}
+   float c=pow(1.-abs(sin(w*7.+ripple*3.)),10.);col+=wc*c*1.1*exp(-dot(p.xz,p.xz)*.35)+wc*.05*exp(-dot(p.xz,p.xz)*.2);}
+ }else if(h.y<2.5){col=vec3(.045)*lightAt(p,n,wc)*2.+vec3(.015);}
+ else if(h.y<3.5){float fr=pow(1.-abs(dot(n,-rd)),3.);col=vec3(.75,.8,.85)*fr*.35+wc*.06;through=.85;}
+ else if(h.y<4.5){vec3 mc=wc*.22+vec3(.03);
+  for(int i=0;i<8;i++){if(uTch[i].w<=0.)continue;float d=length(p.xz-uTch[i].xy);float a=uTch[i].z;mc+=uTC[i]*uTch[i].w*(exp(-d*d*45.)*1.6*exp(-a*.45)+exp(-pow(d-a*.18,2.)*900.)*.6*exp(-a*.8));}
+  if(uCut>.5){vec2 g=fract(p.xz*14.)-.5;mc+=vec3(1.,.75,.6)*.35*smoothstep(.12,.06,length(g));}
+  float sp=pow(max(dot(reflect(rd,n),normalize(vec3(.3,1.,.2))),0.),60.);col=mc+vec3(sp*.35);through=.55;}
+ else if(h.y<5.5){col=wc*2.2+vec3(.1);}
+ else if(h.y<6.5){col=vec3(.16,.16,.18)*lightAt(p,n,wc)*3.+vec3(.03);}
+ else if(h.y<7.5){col=vec3(.53,.89,.55)*.7*lightAt(p,n,wc)*3.+vec3(.05,.12,.06);}
+ else {col=vec3(1.,.75,.59)*.7*lightAt(p,n,wc)*3.+vec3(.12,.07,.05);}
+ float L=waterLen(ro,rd,through<1.?25.:t);col+=wc*L*(uCut>.5?.4:.55)*through;
+ col=(col*(2.51*col+.03))/(col*(2.43*col+.59)+.14);
+ col=pow(col,vec3(1./2.2));col*=1.-.32*dot(uv,uv);
+ gl_FragColor=vec4(col+(fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233))+uT)*43758.5)-.5)*.012,1.);
+}`;
+
+  const cv = $("gl"), gl = cv.getContext("webgl", { antialias: false, preserveDrawingBuffer: true });
+  let U = null;
+  (function init() {
+    if (!gl) return;
+    const mk = (ty, src) => { const s = gl.createShader(ty); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { console.error(gl.getShaderInfoLog(s)); return null; } return s; };
+    const v = mk(gl.VERTEX_SHADER, "attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}"), f = mk(gl.FRAGMENT_SHADER, FS); if (!v || !f) return;
+    const pr = gl.createProgram(); gl.attachShader(pr, v); gl.attachShader(pr, f); gl.linkProgram(pr); gl.useProgram(pr);
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(pr, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    U = {}; for (const k of ["uRes", "uT", "uBeat", "uCut", "uMeet", "uCam", "uTgt", "uRest", "uTch", "uTC"]) U[k] = gl.getUniformLocation(pr, k);
+  })();
+
+  // ---------- touches ----------
+  const T = []; let meets = 0, meetGlow = 0;
+  const feed = $("feed");
+  function log(html) { const li = document.createElement("li"); li.innerHTML = html; feed.prepend(li); while (feed.children.length > 6) feed.lastChild.remove(); }
+  function touch(x, z, from, rgb) {
+    const now = performance.now() / 1000;
+    const near = T.find(o => o.from !== from && now - o.t0 < 1.6 && Math.hypot(o.x - x, o.z - z) < 0.12);
+    T.push({ x, z, t0: now, from, rgb, str: 1 }); while (T.length > 8) T.shift();
+    $("sLast").textContent = tr(from);
+    log(`<b>${tr(from)}</b> ${tr(from === "aqui" ? "tocou a membrana" : "tocou e foi sentido aqui")}`);
+    if (near) { meets++; meetGlow = 1; $("sMeet").textContent = meets; log(`<b>${tr("encontro")}</b> · ${tr(near.from)} ${tr("e")} ${tr(from)} ${tr("no mesmo ponto")}`); }
+    if (A) chime(rgb, near);
+  }
+  function remote(name, key) { const a = Math.random() * 6.283, r = Math.sqrt(Math.random()) * MR * 0.85; touch(Math.cos(a) * r, Math.sin(a) * r, name, C[key]); }
+  const cityBox = $("cities");
+  CITIES.forEach(([name, key]) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "btn";
+    b.innerHTML = `<i style="color:rgb(${C[key].join(",")})">●</i> <span>${name}</span>`; b.addEventListener("click", () => remote(name, key)); cityBox.append(b);
+  });
+  let auto = true, nextAuto = 3;
+  $("auto").addEventListener("click", e => { auto = !auto; e.currentTarget.setAttribute("aria-pressed", String(auto)); e.currentTarget.textContent = tr(auto ? "toques simulados: ligados" : "toques simulados: desligados"); });
+
+  // ---------- camera and points of view ----------
+  const VIEWS = { sala: { az: 0.8, el: 0.22, dist: 4.6, ty: 0.85, cut: 0 }, perto: { az: 0.5, el: 0.42, dist: 2.0, ty: 1.0, cut: 0 }, cima: { az: 0.2, el: 1.25, dist: 1.6, ty: 1.1, cut: 0 }, corte: { az: 0.0, el: 0.12, dist: 2.6, ty: 0.75, cut: 1 } };
+  const V = { ...VIEWS.sala, drag: null, moved: 0, idle: 0 };
+  document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => {
+    Object.assign(V, VIEWS[b.dataset.view]); V.idle = 0;
+    document.querySelectorAll("[data-view]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  }));
+  function camera() { const ce = Math.cos(V.el); return { cam: [V.dist * ce * Math.sin(V.az), V.ty + V.dist * Math.sin(V.el), V.dist * ce * Math.cos(V.az)], tgt: [0, V.ty, 0] }; }
+  const norm = v => { const l = Math.hypot(...v); return v.map(x => x / l); };
+  const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  function pickMembrane(px, py) {
+    const r = cv.getBoundingClientRect(), W = r.width, H = r.height;
+    const u = [(px - r.left - W / 2) / H, (H / 2 - (py - r.top)) / H];
+    const { cam, tgt } = camera(), fw = norm(tgt.map((x, i) => x - cam[i])), rt = norm(cross(fw, [0, 1, 0])), up = cross(rt, fw);
+    const rd = norm([0, 1, 2].map(i => fw[i] * 1.5 + u[0] * rt[i] + u[1] * up[i]));
+    if (Math.abs(rd[1]) < 1e-4) return null; const t = (MY - cam[1]) / rd[1]; if (t <= 0) return null;
+    const x = cam[0] + rd[0] * t, z = cam[2] + rd[2] * t; return Math.hypot(x, z) <= MR ? [x, z] : null;
+  }
+  cv.addEventListener("pointerdown", e => { V.drag = [e.clientX, e.clientY]; V.moved = 0; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", e => { if (!V.drag) return; const dx = e.clientX - V.drag[0], dy = e.clientY - V.drag[1]; V.moved += Math.abs(dx) + Math.abs(dy);
+    V.az -= dx * 0.006; V.el = clamp(V.el + dy * 0.004, -0.05, 1.35); V.drag = [e.clientX, e.clientY]; V.idle = 0; });
+  cv.addEventListener("pointerup", e => { if (V.drag && V.moved < 6) { const h = pickMembrane(e.clientX, e.clientY); if (h) { touch(h[0], h[1], "aqui", HERE); $("hint").hidden = true; } } V.drag = null; });
+  cv.addEventListener("wheel", e => { e.preventDefault(); V.dist = clamp(V.dist * (1 + Math.sign(e.deltaY) * 0.08), 1.2, 7); }, { passive: false });
+
+  // ---------- sound: a slow pulse and a chime at the pitch of each touch's colour ----------
+  let ac = null, A = null;
+  const PITCH = { "255,241,214": 220, "111,168,255": 206.2, "255,226,120": 153.2, "134,226,140": 173.8, "46,196,182": 176.2, "180,255,236": 146.2, "255,192,150": 211.5 };
+  function startSound() {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    const master = ac.createGain(); master.gain.value = 0; const comp = ac.createDynamicsCompressor(); comp.threshold.value = -20;
+    master.connect(comp); comp.connect(ac.destination); master.gain.setTargetAtTime(0.25, ac.currentTime, 1.5);
+    const hum = ac.createOscillator(); hum.type = "sine"; hum.frequency.value = 103.1; const hg = ac.createGain(); hg.gain.value = 0.025; hum.connect(hg); hg.connect(master); hum.start();
+    A = { master, nextBeat: ac.currentTime + 0.5 };
+  }
+  function beat(t, strong) { const o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; o.frequency.setValueAtTime(58, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.25);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(strong ? 0.5 : 0.3, t + 0.02); g.gain.exponentialRampToValueAtTime(0.001, t + 0.45); o.connect(g); g.connect(A.master); o.start(t); o.stop(t + 0.5); }
+  function chime(rgb, meet) { const f = (PITCH[rgb.join(",")] || 200) * 2, t = ac.currentTime;
+    [f, meet ? f * 1.5 : null].filter(Boolean).forEach(fr => { const o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; o.frequency.value = fr;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.12, t + 0.05); g.gain.exponentialRampToValueAtTime(0.001, t + 3.5); o.connect(g); g.connect(A.master); o.start(t); o.stop(t + 3.6); }); }
+  $("snd").addEventListener("click", e => { const b = e.currentTarget;
+    if (!ac) startSound(); else if (ac.state === "running") ac.suspend(); else ac.resume();
+    setTimeout(() => { const on = ac && ac.state === "running"; b.setAttribute("aria-pressed", String(on)); b.textContent = tr(on ? "som ligado · desligar" : "ligar som"); }, 80); });
+
+  // ---------- loop ----------
+  const t0 = performance.now(); let last = t0;
+  const tch = new Float32Array(32), tcc = new Float32Array(24);
+  function resize() { const r = cv.getBoundingClientRect(), dpr = Math.min(1.5, window.devicePixelRatio || 1); cv.width = Math.max(1, Math.round(r.width * dpr)); cv.height = Math.max(1, Math.round(r.height * dpr)); }
+  new ResizeObserver(resize).observe(cv); resize();
+  function frame(now) {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now; const ts = (now - t0) / 1000, sec = now / 1000;
+    V.idle += dt; if (!V.drag && V.idle > 8 && !reduce && V.cut === 0) V.az += dt * 0.04;
+    if (auto && ts > nextAuto) { const [n, k] = CITIES[Math.floor(Math.random() * CITIES.length)]; remote(n, k); nextAuto = ts + 5 + Math.random() * 8; }
+    const live = T.filter(o => sec - o.t0 < 14); T.splice(0, T.length, ...live);
+    meetGlow = Math.max(0, meetGlow - dt * 0.35);
+    const bpm = 0.72 + 0.18 * meetGlow, ph = (ts * bpm) % 1, beatV = Math.pow(Math.max(0, Math.sin(ph * 6.283)), 10) + 0.5 * Math.pow(Math.max(0, Math.sin(ph * 6.283 - 0.7)), 10);
+    if (A && ac.state === "running" && ac.currentTime >= A.nextBeat) { beat(A.nextBeat, meetGlow > 0.3); A.nextBeat += 1 / bpm; }
+    $("sN").textContent = T.filter(o => sec - o.t0 < 4).length;
+    if (U) {
+      tch.fill(0); tcc.fill(0);
+      T.forEach((o, i) => { tch.set([o.x, o.z, sec - o.t0, o.str], i * 4); tcc.set(o.rgb.map(v => v / 255), i * 3); });
+      const { cam, tgt } = camera();
+      gl.viewport(0, 0, cv.width, cv.height);
+      gl.uniform2f(U.uRes, cv.width, cv.height); gl.uniform1f(U.uT, reduce ? 0 : ts); gl.uniform1f(U.uBeat, beatV); gl.uniform1f(U.uCut, V.cut); gl.uniform1f(U.uMeet, meetGlow);
+      gl.uniform3fv(U.uCam, cam); gl.uniform3fv(U.uTgt, tgt); gl.uniform3fv(U.uRest, REST); gl.uniform4fv(U.uTch, tch); gl.uniform3fv(U.uTC, tcc);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  window.applyLang && window.applyLang(window.LANG);
+})();
+</script>
+
+</body>
+</html>
