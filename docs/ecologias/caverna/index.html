@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ecologias da Percepção · Laboratório</title>
+<meta name="description" content="Laboratório de Ecologias da Percepção: panorama 360° de Luiza Jesus do Prado, animado e navegável, com som e modo VR.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Space+Mono:wght@400;700&display=swap">
+<style>
+:root{--void:#071008;--ink:#eceee4;--mute:#a7b09c;--acid:#b8f23c;--glass:rgba(7,16,8,.6);--edge:rgba(184,242,60,.28);
+  --display:'Syne','Arial Black',Arial,sans-serif;--mono:'Space Mono','Courier New',monospace;color-scheme:dark}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--void);color:var(--ink);font-family:var(--mono)}
+#scene{position:fixed;inset:0;display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#scene:active{cursor:grabbing}
+.top{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;pointer-events:none;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
+.brand h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(18px,2.6vw,30px);line-height:.9;letter-spacing:-.02em;text-transform:uppercase;color:var(--acid);text-shadow:0 1px 14px rgba(0,0,0,.5)}
+.brand p{margin:6px 0 0;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;pointer-events:auto}
+button{font:700 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:var(--glass);border:1px solid var(--edge);padding:10px 12px;cursor:pointer;backdrop-filter:blur(8px)}
+button:hover{border-color:var(--acid);color:var(--acid)}
+button:focus-visible{outline:2px solid var(--acid);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--acid);color:var(--void)}
+.hint{position:fixed;left:0;bottom:0;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);opacity:.75;text-shadow:0 1px 8px rgba(0,0,0,.7);
+  padding:0 max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+#msg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:min(420px,calc(100% - 32px));background:var(--glass);border:1px solid var(--edge);padding:14px;font-size:12px;line-height:1.5}
+@media (max-width:520px){.brand p{display:none}}
+</style>
+</head>
+<body>
+<canvas id="scene" aria-label="Panorama 360 graus de Ecologias da Percepção"></canvas>
+<header class="top">
+  <div class="brand"><h1>Ecologias<br>da Percepção</h1><p>Laboratório · panorama 360° animado</p></div>
+  <div class="actions">
+    <button id="sound" type="button" aria-pressed="false">Ativar som</button>
+    <button id="vr" type="button" hidden>Entrar em VR</button>
+  </div>
+</header>
+<span class="hint">Arraste para olhar em volta · roda do mouse para aproximar</span>
+<div id="msg" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+const canvas=document.getElementById('scene');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.xr.enabled=true;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x071008);
+const camera=new THREE.PerspectiveCamera(75,1,0.05,200);
+const rig=new THREE.Group(); rig.add(camera); scene.add(rig);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function resize(){const w=canvas.clientWidth||innerWidth,h=canvas.clientHeight||innerHeight; if(!w||!h)return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();}
+addEventListener('resize',resize); resize();
+
+// ---------- o panorama da artista, animado por shader ----------
+const tex=new THREE.TextureLoader().load('caverna.jpg');
+tex.wrapS=THREE.RepeatWrapping; tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+const pano=new THREE.ShaderMaterial({
+  uniforms:{map:{value:tex},t:{value:0}},
+  vertexShader:'varying vec2 vUv; void main(){vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader:`
+  uniform sampler2D map; uniform float t; varying vec2 vUv;
+  float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+  float noise(vec2 p){vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f);
+    return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+  void main(){
+    vec2 uv=vUv;
+    vec3 base=texture2D(map,vUv).rgb;
+    float green=smoothstep(0.02,0.16,base.g-max(base.r,base.b)*0.85);
+    float pink=smoothstep(0.04,0.22,base.r-base.g)*smoothstep(0.35,0.75,base.r);
+    // teto: o vidro verde escorre devagar
+    float ceil=smoothstep(0.55,0.88,vUv.y);
+    float col=hash(vec2(floor(vUv.x*420.),0.));
+    uv.y+=ceil*green*0.0035*sin(t*0.6+col*6.283);
+    // chão: gel ondulando, lento e viscoso
+    float floorz=smoothstep(0.32,0.08,vUv.y);
+    uv+=floorz*vec2(sin(vUv.y*90.-t*0.7+sin(vUv.x*25.+t*.3)*1.2),cos(vUv.x*70.+t*.55))*0.0022;
+    // formas rosadas e rendas respirando
+    float breathe=(1.-floorz)*(0.3+pink+green*0.5);
+    uv+=vec2(sin(vUv.y*20.+t*.5+vUv.x*7.),cos(vUv.x*26.+t*.4))*0.0014*breathe;
+    vec3 c=texture2D(map,uv).rgb;
+    // gotas de luz descendo pelos fios verdes do teto
+    float lane=hash(vec2(floor(vUv.x*700.),3.));
+    float drip=pow(0.5+0.5*sin(vUv.y*55.+t*(1.2+lane*1.5)+lane*40.),24.)*ceil*green*step(0.55,lane);
+    c+=vec3(0.55,1.0,0.45)*drip*0.55;
+    // brilho no gel do chão
+    float lum=dot(c,vec3(.299,.587,.114));
+    c+=pow(smoothstep(0.55,1.0,lum),3.)*floorz*(0.5+0.5*sin(t*2.4+hash(floor(vUv*vec2(800.,400.)))*6.28))*0.35;
+    // névoa verde passando
+    float fog=noise(vec2(vUv.x*6.+t*0.03,vUv.y*4.-t*0.02))*noise(vec2(vUv.x*14.-t*0.05,vUv.y*9.));
+    c+=vec3(0.25,0.55,0.18)*fog*smoothstep(0.25,0.6,vUv.y)*smoothstep(0.95,0.6,vUv.y)*0.35;
+    // pulso suave nas formas rosadas
+    c*=1.+pink*0.1*sin(t*0.9+vUv.x*14.);
+    gl_FragColor=vec4(c,1.);
+  }`,
+  side:THREE.BackSide
+});
+const sphere=new THREE.Mesh(new THREE.SphereGeometry(60,96,64),pano);
+sphere.scale.x=-1;            // vista de dentro, sem espelhar a imagem
+sphere.rotation.y=-Math.PI/2; // começa olhando para o centro da imagem
+scene.add(sphere);
+
+// ---------- bolhas e gotas de verdade, flutuando à frente da imagem ----------
+const bubbleMat=new THREE.ShaderMaterial({
+  uniforms:{t:{value:0}},
+  vertexShader:'varying vec3 vN; varying vec3 vV; void main(){vec4 mv=modelViewMatrix*vec4(position,1.); vN=normalize(normalMatrix*normal); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv;}',
+  fragmentShader:`uniform float t; varying vec3 vN; varying vec3 vV;
+  void main(){ float f=pow(1.0-abs(dot(vN,vV)),2.0);
+    vec3 iri=0.5+0.5*cos(6.2831*(f*1.2+vec3(0.15,0.4,0.7))+t*0.25);
+    vec3 col=mix(vec3(0.75,1.0,0.6),iri,0.45);
+    float spec=pow(max(dot(reflect(-vV,vN),normalize(vec3(-.3,.9,.2))),0.),36.);
+    gl_FragColor=vec4(col*f+spec,f*0.8+spec*0.9); }`,
+  transparent:true,depthWrite:false
+});
+const geo=new THREE.SphereGeometry(1,32,16), bubbles=[];
+const N=reduce?20:55;
+for(let i=0;i<N;i++){
+  const b=new THREE.Mesh(geo,bubbleMat); const r=0.03+Math.pow(Math.random(),2.6)*0.28; b.scale.setScalar(r);
+  const a=Math.random()*Math.PI*2, d=2.2+Math.random()*10;
+  b.position.set(Math.cos(a)*d,-1.4+Math.random()*5.5,Math.sin(a)*d);
+  b.userData={a,d,speed:.03+Math.random()*.09,seed:Math.random()*100,r};
+  scene.add(b); bubbles.push(b);
+}
+// gotas que caem do teto, perto de quem olha
+const dropMat=new THREE.MeshBasicMaterial({color:0x9cff5a,transparent:true,opacity:.75,blending:THREE.AdditiveBlending,depthWrite:false});
+const dropGeo=new THREE.SphereGeometry(1,12,10), drops=[];
+for(let i=0;i<(reduce?6:18);i++){
+  const m=new THREE.Mesh(dropGeo,dropMat); const a=Math.random()*Math.PI*2,d=2.5+Math.random()*6;
+  m.position.set(Math.cos(a)*d,4+Math.random()*3,Math.sin(a)*d); m.scale.set(.025,.06,.025);
+  m.userData={v:0,wait:Math.random()*8}; scene.add(m); drops.push(m);
+}
+
+// ---------- olhar em volta ----------
+let yaw=0,pitch=0.08,drag=null,fov=75;
+canvas.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY}; canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener('pointermove',e=>{if(!drag)return; const s=fov/75*0.0035; yaw+=(e.clientX-drag.x)*s; pitch+=(e.clientY-drag.y)*s; pitch=Math.max(-1.35,Math.min(1.35,pitch)); drag={x:e.clientX,y:e.clientY};});
+canvas.addEventListener('pointerup',()=>drag=null); canvas.addEventListener('pointercancel',()=>drag=null);
+canvas.addEventListener('wheel',e=>{e.preventDefault(); fov=Math.max(35,Math.min(95,fov+e.deltaY*0.03)); camera.fov=fov; camera.updateProjectionMatrix();},{passive:false});
+addEventListener('keydown',e=>{const k=e.key; if(k==='ArrowLeft')yaw+=.06; if(k==='ArrowRight')yaw-=.06; if(k==='ArrowUp')pitch=Math.min(1.35,pitch+.05); if(k==='ArrowDown')pitch=Math.max(-1.35,pitch-.05);});
+
+// ---------- VR ----------
+const vrBtn=document.getElementById('vr'), msg=document.getElementById('msg');
+if(navigator.xr&&navigator.xr.isSessionSupported){navigator.xr.isSessionSupported('immersive-vr').then(ok=>vrBtn.hidden=!ok).catch(()=>{});}
+let session=null;
+vrBtn.addEventListener('click',async()=>{
+  if(session){session.end();return;}
+  try{ session=await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor']}); await renderer.xr.setSession(session);
+    vrBtn.textContent='Sair do VR'; rig.position.y=-1.6;
+    session.addEventListener('end',()=>{session=null; vrBtn.textContent='Entrar em VR'; rig.position.y=0;});
+  }catch(e){ session=null; msg.textContent='O navegador não liberou o modo VR aqui. Abra luizajprado.github.io/sirene/ecologias direto no navegador do óculos.'; msg.hidden=false; setTimeout(()=>msg.hidden=true,7000); }
+});
+
+// ---------- som: caverna úmida e gotas ----------
+const soundBtn=document.getElementById('sound'); let actx=null;
+function startAudio(){
+  actx=new (window.AudioContext||window.webkitAudioContext)();
+  const master=actx.createGain(); master.gain.value=0; master.connect(actx.destination); master.gain.linearRampToValueAtTime(.5,actx.currentTime+3);
+  const len=actx.sampleRate*4, buf=actx.createBuffer(2,len,actx.sampleRate);
+  for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch); let last=0; for(let i=0;i<len;i++){last=(last+0.02*(Math.random()*2-1))/1.02; d[i]=last*3;}}
+  const src=actx.createBufferSource(); src.buffer=buf; src.loop=true;
+  const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=420;
+  const lfo=actx.createOscillator(), lg=actx.createGain(); lfo.frequency.value=.05; lg.gain.value=160; lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
+  const g=actx.createGain(); g.gain.value=.4; src.connect(lp); lp.connect(g); g.connect(master); src.start();
+  [65.4,98,130.8].forEach(f=>{const o=actx.createOscillator(); o.type='sine'; o.frequency.value=f; const og=actx.createGain(); og.gain.value=.03; o.connect(og); og.connect(master); o.start();});
+  setInterval(()=>{ if(actx.state!=='running')return; const o=actx.createOscillator(), og=actx.createGain(), p=actx.createStereoPanner();
+    const f=700+Math.random()*1300; o.type='sine'; o.frequency.setValueAtTime(f,actx.currentTime); o.frequency.exponentialRampToValueAtTime(f*0.55,actx.currentTime+.15);
+    og.gain.setValueAtTime(0,actx.currentTime); og.gain.linearRampToValueAtTime(.07,actx.currentTime+.005); og.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+.35);
+    p.pan.value=Math.random()*2-1; o.connect(og); og.connect(p); p.connect(master); o.start(); o.stop(actx.currentTime+.4); }, 900);
+}
+soundBtn.addEventListener('click',()=>{
+  if(!actx){startAudio(); soundBtn.setAttribute('aria-pressed','true'); soundBtn.textContent='Som ligado'; return;}
+  if(actx.state==='running'){actx.suspend(); soundBtn.setAttribute('aria-pressed','false'); soundBtn.textContent='Ativar som';}
+  else{actx.resume(); soundBtn.setAttribute('aria-pressed','true'); soundBtn.textContent='Som ligado';}
+});
+
+// ---------- loop ----------
+const clock=new THREE.Clock();
+renderer.setAnimationLoop(()=>{
+  if(!renderer.xr.isPresenting && Math.abs(canvas.width-canvas.clientWidth*renderer.getPixelRatio())>2) resize();
+  const dt=Math.min(clock.getDelta(),.05), t=clock.elapsedTime*(reduce?.35:1);
+  pano.uniforms.t.value=t; bubbleMat.uniforms.t.value=t;
+  if(!renderer.xr.isPresenting) camera.rotation.set(pitch,yaw,0,'YXZ');
+  bubbles.forEach(b=>{const u=b.userData;
+    b.position.y+=u.speed*dt*(reduce?.3:1);
+    b.position.x=Math.cos(u.a)*u.d+Math.sin(t*.4+u.seed)*0.25;
+    b.position.z=Math.sin(u.a)*u.d+Math.cos(t*.35+u.seed)*0.25;
+    const w=1+0.06*Math.sin(t*1.8+u.seed); b.scale.set(u.r*w,u.r/w,u.r*w);
+    if(b.position.y>6) b.position.y=-1.5;
+  });
+  drops.forEach(m=>{const u=m.userData;
+    if(u.wait>0){u.wait-=dt; return;}
+    u.v+=9.8*dt*0.35; m.position.y-=u.v*dt;
+    if(m.position.y<-1.6){m.position.y=4+Math.random()*3; u.v=0; u.wait=2+Math.random()*8;}
+  });
+  renderer.render(scene,camera);
+});
+})();
+</script>
+</body>
+</html>
