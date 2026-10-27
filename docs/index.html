@@ -2754,8 +2754,7 @@ window.GUIDE = { titulo: T[0][0], intro: T[1][0], rodape: FOOT[0], groups: [{ no
   const pick = () => {
     let q = null; try { q = new URLSearchParams(location.search).get("lang"); } catch (e) {}
     let s = null; try { s = localStorage.getItem("lang"); } catch (e) {}
-    const n = (navigator.language || "pt").slice(0, 2).toLowerCase();
-    return [q, s, n].find(x => LANGS.includes(x)) || "pt";
+    return [q, s].find(x => LANGS.includes(x)) || "en";   // English first unless chosen
   };
   let lang = pick();
   const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

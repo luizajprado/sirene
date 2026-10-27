@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Martian+Mono:wdth,wght@75..112.5,300..800&display=swap">
 <style>
-/* Layout: a financial terminal turned inside out. Ticker tape on top, the board of affliction assets on the left,
+/* Layout: a research panel. Ticker tape on top, the board of affliction assets on the left,
    money indices and the newswire on the right, sound and outward channels at the bottom. Single dark look by choice. */
 :root {
   --bg: #0A0907;
@@ -211,7 +211,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
 
 <div class="wrap">
   <div class="top">
-    <div class="brand"><b>OBSERVATÓRIO</b><span>bolsa da aflição · saúde mental, ciência e dinheiro</span></div>
+    <div class="brand"><b>OBSERVATÓRIO</b><span>painel de pesquisa · saúde mental, ciência e cuidado</span></div>
     <div class="clocks"><span>UTC <b id="cUtc">--:--:--</b></span><span>São Paulo <b id="cSp">--:--:--</b></span><span class="mode" id="mode">DEMONSTRAÇÃO</span></div>
   </div>
 
@@ -237,12 +237,12 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
 
   <div class="grid">
     <section class="panel" aria-labelledby="hBoard">
-      <div class="ph"><span id="hBoard"><b>PREGÃO</b> · ativos de aflição por lugar</span><span>↑ piora · ↓ alívio · valores de 0 a 100</span></div>
+      <div class="ph"><span id="hBoard"><b>ÍNDICES</b> · aflição por lugar</span><span>↑ piora · ↓ alívio · valores de 0 a 100</span></div>
       <div class="tablewrap">
         <table>
           <thead><tr>
-            <th data-k="sym">ativo</th><th data-k="nome">o que mede</th><th data-k="lugar">lugar</th>
-            <th class="num" data-k="v">cotação</th><th class="num" data-k="d" aria-sort="descending">24 h</th><th>tendência</th>
+            <th data-k="sym">índice</th><th data-k="nome">o que mede</th><th data-k="lugar">lugar</th>
+            <th class="num" data-k="v">valor</th><th class="num" data-k="d" aria-sort="descending">24 h</th><th>tendência</th>
           </tr></thead>
           <tbody id="board"></tbody>
         </table>
@@ -259,7 +259,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
         <div class="idx" id="pain"></div>
       </section>
       <section class="panel" aria-labelledby="hDetail">
-        <div class="ph"><span id="hDetail"><b>ATIVO</b></span><span>clique numa linha do pregão</span></div>
+        <div class="ph"><span id="hDetail"><b>ÍNDICE</b></span><span>clique numa linha da tabela</span></div>
         <div class="detail" id="detail"></div>
       </section>
     </div>
@@ -267,14 +267,14 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
 
   <div class="grid">
     <section class="panel" aria-labelledby="hWire">
-      <div class="ph"><span id="hWire"><b>BOLETIM</b> · na língua do mercado</span><span>o robô publica estas notas nas redes</span></div>
+      <div class="ph"><span id="hWire"><b>BOLETIM</b> · notas curtas</span><span>o robô publica estas notas nas redes</span></div>
       <ol class="wire" id="wire" aria-live="polite"></ol>
     </section>
     <section class="panel" aria-labelledby="hSound">
-      <div class="ph"><span id="hSound"><b>PREGÃO SONORO</b></span><span>contínuo · só para quando você desliga</span></div>
+      <div class="ph"><span id="hSound"><b>CHÃO SONORO</b></span><span>contínuo · só para quando você desliga</span></div>
       <div class="box">
-        <p>Cada ativo em alta soa na frequência do mediador químico que ele mobiliza (massa molecular levada por oitavas). O índice do medo dos mercados (VIX) é o grave por baixo. Cada nova cotação é um tique.</p>
-        <button type="button" class="btn" id="snd" aria-pressed="false">ligar pregão sonoro</button>
+        <p>Cada índice em alta soa na frequência do mediador químico que ele mobiliza (massa molecular levada por oitavas). O VIX, indicador de volatilidade financeira, é o grave por baixo. Cada novo valor é um tique.</p>
+        <button type="button" class="btn" id="snd" aria-pressed="false">ligar chão sonoro</button>
         <div class="voices" id="voices" hidden></div>
       </div>
     </section>
@@ -287,7 +287,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
         <label for="simPlace" class="note">lugar</label>
         <select id="simPlace"></select>
         <div id="sliders" style="display:flex;flex-direction:column;gap:10px"></div>
-        <button type="button" class="btn" id="simSnd" aria-pressed="false">ouvir a simulação no pregão sonoro</button>
+        <button type="button" class="btn" id="simSnd" aria-pressed="false">ouvir a simulação no chão sonoro</button>
       </div>
       <div>
         <div class="bigsim" id="simBig"></div>
@@ -343,29 +343,29 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     <section class="panel" aria-labelledby="hBot">
       <div class="ph"><span id="hBot"><b>ROBÔ</b> · Bluesky</span><span>prévia</span></div>
       <div class="box">
-        <p>Quando a bolsa mexe forte ou um ativo de aflição dispara, uma conta automática publica o boletim, cruzando o dinheiro e as pessoas no mesmo dia.</p>
+        <p>Quando um índice de aflição dispara, uma conta automática publica o boletim, cruzando o dinheiro e as pessoas no mesmo dia.</p>
         <div class="post" id="botPost"></div>
       </div>
     </section>
     <section class="panel" aria-labelledby="hExt">
       <div class="ph"><span id="hExt"><b>EXTENSÃO</b> · navegador</span><span>prévia</span></div>
       <div class="box">
-        <p>Instalada no navegador, troca os índices da bolsa nas páginas de notícia pelos índices de aflição do dia.</p>
+        <p>Instalada no navegador, mostra os índices de aflição do dia ao lado das notícias de economia.</p>
         <div class="mock" id="extMock"></div>
       </div>
     </section>
     <section class="panel" aria-labelledby="hCare">
       <div class="ph"><span id="hCare"><b>INVESTIR EM CUIDADO</b></span><span>contraponto</span></div>
       <div class="box">
-        <p>Aqui não se compra nem se vende. Cada ativo aponta para quem trabalha para que ele caia.</p>
+        <p>Cada índice aponta para quem trabalha para que ele caia.</p>
         <dl class="care" id="care"></dl>
       </div>
     </section>
   </div>
 
   <div class="foot">
-    <span id="fonte">Valores de demonstração. Na versão publicada no GitHub, os ativos vêm da coleta automática, a cada hora.</span>
-    <span>As cotações traduzem dados públicos agregados por lugar. Não medem o corpo de ninguém e não fazem diagnóstico.</span>
+    <span id="fonte">Valores de demonstração. Na versão publicada, os índices vêm da coleta automática, ao longo do dia.</span>
+    <span>Os índices traduzem dados públicos agregados por lugar. Não medem o corpo de ninguém e não fazem diagnóstico.</span>
     <span>Luiza Jesus do Prado, 2026</span>
   </div>
 </div>
@@ -525,7 +525,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     selected = sym; const q = Q.find(x => x.sym === sym); if (!q) return; renderBoard();
     const a = ASSETS[q.k], m = MED[q.med];
     document.getElementById("detail").innerHTML = `<h2>${q.sym}</h2>
-      <dl class="kv"><dt>mede</dt><dd>${q.nome}</dd><dt>lugar</dt><dd>${q.lugar}</dd><dt>cotação</dt><dd>${fmtN(q.v)} <span class="${cls(q)}">${arrow(q.d)} ${q.d >= 0 ? "+" : ""}${fmtN(q.d)}% em 24 h</span></dd>
+      <dl class="kv"><dt>mede</dt><dd>${q.nome}</dd><dt>lugar</dt><dd>${q.lugar}</dd><dt>valor</dt><dd>${fmtN(q.v)} <span class="${cls(q)}">${arrow(q.d)} ${q.d >= 0 ? "+" : ""}${fmtN(q.d)}% em 24 h</span></dd>
       <dt>mediador</dt><dd>${m[0]} · ${fmtN(medHz(q.med), 1)} Hz</dd><dt>origem</dt><dd>${q.nota || (LIVE ? "dados da coleta automática" : "valor de demonstração")}${LIVE && !q.real ? " · tendência ilustrativa até juntar algumas horas de coleta" : ""}</dd>
       <dt>resposta</dt><dd class="resp">${RESP[q.k][0]} <span class="note">(${RESP[q.k][1]})</span></dd>
       <dt>${q.positivo ? "fortalecer" : "fazer cair"}</dt><dd><a href="${a.cuidado[1]}" target="_blank" rel="noopener">${a.cuidado[0]}</a></dd></dl>`;
@@ -560,8 +560,8 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     if (r < 0.3) { const x = movers.filter(m => !m.positivo && m.d > 0).sort((a, b) => b.d - a.d)[0];
       if (x) return `${x.sym} explode ${fmtN(x.d)}% em 24 h. Contraponto: ${RESP[x.k][0]} (${RESP[x.k][1]}).`; }
     if (r < 0.5) return `${q.sym} ${verb} ${fmtN(Math.abs(q.d))}% e fecha a ${fmtN(q.v)}. ${q.positivo ? "Analistas apontam ajuda e cooperação relatadas na região." : `Pressão vem de ${q.nome}${q.nota ? ": " + q.nota : ""}.`}`;
-    if (r < 0.7) return `S&P 500 ${sp >= 0 ? "fecha em alta" : "fecha em baixa"} de ${fmtN(Math.abs(sp), 2)}%. No mesmo pregão, ${q.sym} (${q.lugar}) ${verb} ${fmtN(Math.abs(q.d))}%.`;
-    if (r < 0.85 && vix) return `Índice do medo dos mercados em ${fmtN(vix)}. Índice de aflição de ${q.lugar}: ${fmtN(q.v)}. Só um deles terá injeção de liquidez.`;
+    if (r < 0.7) return `S&P 500 ${sp >= 0 ? "fecha em alta" : "fecha em baixa"} de ${fmtN(Math.abs(sp), 2)}%. No mesmo dia, ${q.sym} (${q.lugar}) ${verb} ${fmtN(Math.abs(q.d))}%.`;
+    if (r < 0.85 && vix) return `Volatilidade financeira (VIX) em ${fmtN(vix)}. Índice de aflição de ${q.lugar}: ${fmtN(q.v)}. Só um deles terá injeção de liquidez.`;
     const c = Q.filter(x => x.k === "CUID").sort((a, b) => b.v - a.v)[0];
     return c ? `Contraponto: ${c.sym} cotado a ${fmtN(c.v)} em ${c.lugar}. Cooperação também é notícia, só circula menos.` : null;
   }
@@ -570,13 +570,13 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     if (!text) return; const d = new Date(), li = document.createElement("li"); li.className = "new";
     li.innerHTML = `<time>${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}</time><span>${text}</span>`;
     wire.prepend(li); while (wire.children.length > 40) wire.lastChild.remove();
-    document.getElementById("botPost").innerHTML = `<b>@bolsadaaflicao</b><span>${text}</span><small>${text.length} de 300 caracteres · publicaria automaticamente</small>`;
+    document.getElementById("botPost").innerHTML = `<b>@observatorio</b><span>${text}</span><small>${text.length} de 300 caracteres · publicaria automaticamente</small>`;
     tick();
   }
   function renderExt() {
     const pick = k => Q.filter(q => q.k === k && q.place.code === "SAO")[0] || Q.filter(q => q.k === k)[0];
     const c = pick("COR"), a = pick("ANSI");
-    document.getElementById("extMock").innerHTML = `<div style="font-weight:bold;margin-bottom:6px">Mercados hoje</div>
+    document.getElementById("extMock").innerHTML = `<div style="font-weight:bold;margin-bottom:6px">Indicadores econômicos hoje</div>
       <span class="q">Cortisol ${c ? c.lugar : ""} ${c ? fmtN(c.v) : ""} ${c ? arrow(c.d) + fmtN(Math.abs(c.d)) + "%" : ""}</span>
       <span class="q">Aflição ${a ? a.lugar : ""} ${a ? fmtN(a.v) : ""} ${a ? arrow(a.d) + fmtN(Math.abs(a.d)) + "%" : ""}</span>
       <div style="font-size:12px;color:#666;margin-top:6px">onde a página dizia "Ibovespa" e "S&P 500"</div>`;
@@ -626,7 +626,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
       SIM.cov[i.id] = +e.target.value; document.getElementById("o_" + i.id).textContent = e.target.value + "%"; renderSim(); }));
     document.getElementById("simSnd").addEventListener("click", e => {
       SIM.on = !SIM.on; e.currentTarget.setAttribute("aria-pressed", String(SIM.on));
-      e.currentTarget.textContent = SIM.on ? "o pregão sonoro toca a simulação · voltar ao real" : "ouvir a simulação no pregão sonoro";
+      e.currentTarget.textContent = SIM.on ? "o chão sonoro toca a simulação · voltar ao real" : "ouvir a simulação no chão sonoro";
       if (!ac) document.getElementById("snd").click(); else { if (ac.state !== "running") document.getElementById("snd").click(); updateSound(); }
     });
     renderSim();
@@ -661,7 +661,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
   document.getElementById("snd").addEventListener("click", e => {
     const b = e.currentTarget;
     if (!ac) startSound(); else if (ac.state === "running") ac.suspend(); else ac.resume();
-    setTimeout(() => { const on = ac && ac.state === "running"; b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "pregão sonoro ligado · desligar" : "ligar pregão sonoro"; document.getElementById("voices").hidden = !on; }, 60);
+    setTimeout(() => { const on = ac && ac.state === "running"; b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "chão sonoro ligado · desligar" : "ligar chão sonoro"; document.getElementById("voices").hidden = !on; }, 60);
   });
 
   // ---------- research databases (filled by the hourly collector) ----------
@@ -741,7 +741,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     elnino: { nome: "Super El Niño", quando: "out. 2026", codes: ["AUN", "PAC", "DAC", "JKT"], steps: [
       { k: "acontecimento", t: "Um El Niño fora da escala", big: "+3,8 °C", p: "A OMM projeta o Pacífico central cerca de 3,8 °C acima do normal de novembro a janeiro, com pico em dezembro: acima dos recordes passados. A ONU fala em calor extremo, secas e enchentes na América Latina, no leste e sul da África, na Ásia e no Pacífico.", s: "OMM e ONU, briefing de 23 out. 2026" },
       { k: "na saúde mental", t: "Calor é carga mental", big: "+9,7%", p: "Em ondas de calor, os atendimentos hospitalares por saúde mental sobem cerca de 9,7%. Ter um transtorno mental está entre os maiores preditores de morte por calor.", s: "CMAJ 2025; Thompson et al., revisão sistemática 2023" },
-      { k: "resposta do mercado", t: "Colheita perdida, comida mais cara", big: "50 mi", p: "A ONU estima que cerca de 50 milhões de pessoas podem passar mais fome. Só nas Filipinas, a seca já causou ₱ 8,57 bi em perdas agrícolas, atingindo 288 mil agricultores.", s: "ONU; Departamento de Agricultura das Filipinas, out. 2026" },
+      { k: "quem lucra", t: "Colheita perdida, comida mais cara", big: "50 mi", p: "A ONU estima que cerca de 50 milhões de pessoas podem passar mais fome. Só nas Filipinas, a seca já causou ₱ 8,57 bi em perdas agrícolas, atingindo 288 mil agricultores.", s: "ONU; Departamento de Agricultura das Filipinas, out. 2026" },
       { k: "o que a ciência mostra", cls: "sci", t: "Remédios psiquiátricos e calor", p: "Lítio pode intoxicar com a desidratação; antipsicóticos, antidepressivos e estimulantes podem atrapalhar a regulação da temperatura no cérebro; antipsicóticos e benzodiazepínicos podem diminuir a percepção do calor. O calor também rouba o sono, e o sono regula o humor.", s: "CMAJ 2025 (evidência direta ainda limitada)" },
       { k: "quem é atingido", cls: "who", t: "Quem vive com transtorno mental, no calor", p: "Na onda de calor do oeste do Canadá em 2021, pessoas com esquizofrenia tiveram o maior risco de morte entre as doenças crônicas. Agricultores em seca e quem trabalha ao ar livre vêm logo atrás.", s: "CMAJ 2025", extra: () => pbars([["chance de morte por calor com transtorno mental", 1, "×3,6", "var(--worse)"], ["sem transtorno mental", 0.28, "×1", "var(--dim)"]]) },
       { k: "o que ajuda", cls: "help", t: "Plano de calor que inclua a saúde mental", p: "Avisar e visitar quem usa remédios psiquiátricos, garantir água e lugares frescos, revisar doses com quem prescreveu, sombra e áreas verdes nas cidades.", s: "CMAJ 2025; OMS, Urban green spaces and health, 2016" },
@@ -749,7 +749,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     sudao: { nome: "Sudão: guerra, seca e fome", quando: "out. 2026", codes: ["SDN"], steps: [
       { k: "acontecimento", t: "Guerra desde 2023, agora com seca", big: "13 mi", p: "Pessoas deslocadas pela guerra, que já matou pelo menos 150 mil. A seca ligada ao El Niño atinge mais da metade do país; Darfur e Kordofan estão em risco de fome extrema.", s: "IPC, 12 out. 2026; ACLED" },
       { k: "na saúde mental", t: "Trauma e fome ao mesmo tempo", big: "1 em 5", p: "Cerca de 1 em cada 5 pessoas em zonas de conflito vive com um transtorno mental; a insegurança alimentar aumenta em 40% a chance de depressão.", s: "Charlson et al., Lancet 2019; Pourmotabbed et al. 2020" },
-      { k: "resposta do mercado", t: "O dinheiro que falta e o que sobra", big: "−59%", p: "O financiamento da assistência alimentar caiu cerca de 59% entre 2022 e 2025. No mesmo período, as 100 maiores fabricantes de armas bateram recorde: US$ 679 bi em 2024.", s: "FAO-WFP, jun. 2026; SIPRI 2025" },
+      { k: "quem lucra", t: "O dinheiro que falta e o que sobra", big: "−59%", p: "O financiamento da assistência alimentar caiu cerca de 59% entre 2022 e 2025. No mesmo período, as 100 maiores fabricantes de armas bateram recorde: US$ 679 bi em 2024.", s: "FAO-WFP, jun. 2026; SIPRI 2025" },
       { k: "o que a ciência mostra", cls: "sci", t: "Fome no cérebro em formação", p: "Em Nyala, as internações de crianças por desnutrição aguda grave subiram de cerca de 5% para 11% entre janeiro e agosto. A desnutrição na infância afeta o desenvolvimento do cérebro; no corpo em estresse, cortisol alto e menos triptofano, matéria-prima da serotonina.", s: "IPC, out. 2026; psicobiologia da fome e do estresse" },
       { k: "quem é atingido", cls: "who", t: "Crianças, deslocados, Darfur e Kordofan", p: "Quase 19,5 milhões de pessoas, mais de 40% da população, em insegurança alimentar aguda; 135 mil no nível mais grave.", s: "IPC, out. 2026", extra: () => pbars([["população em insegurança alimentar aguda", 0.41, "41%", "var(--worse)"], ["deslocados (13 mi de ~50 mi)", 0.26, "~26%", "var(--amber)"]]) },
       { k: "o que ajuda", cls: "help", t: "Comida, renda e cuidado breve", p: "Assistência alimentar e dinheiro; autocuidado guiado, que já reduziu o sofrimento de refugiadas sul-sudanesas em Uganda; apoio psicológico breve por agentes leigos.", s: "WFP; Tol et al., Lancet Global Health 2020; Rahman et al., JAMA 2016" },
@@ -757,7 +757,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     ormuz: { nome: "Guerra no Irã e Ormuz", quando: "desde fev. 2026", codes: [], steps: [
       { k: "acontecimento", t: "Guerra e o estreito fechado", big: "fev. 2026", p: "A guerra começou em 28 de fevereiro; o cessar-fogo caiu em 8 de julho, depois de ataques a navios no Estreito de Ormuz. Foi a maior interrupção de oferta já registrada no mercado de petróleo.", s: "Wikipedia, 2026 Iran war (síntese de fontes)" },
       { k: "na saúde mental", t: "Quem vive a guerra e quem paga a conta", big: "3.400+", p: "Civis mortos no Irã segundo a OCHA, além de mortos no Líbano, em Israel e no Golfo. Longe dali, a alta de preços pesa: em 2022, 59% dos adultos no Reino Unido disseram que os preços pioraram sua saúde mental.", s: "OCHA; Money and Mental Health 2022" },
-      { k: "resposta do mercado", t: "Petróleo e inflação", big: "US$ 94", p: "No cenário base, o barril (WTI) chegou perto de US$ 94 em abril e maio e fica acima de US$ 80 no resto de 2026; a inflação americana sobe cerca de 0,6 ponto. Gás, fertilizantes e alumínio também sentiram.", s: "CEPR VoxEU, 2026" },
+      { k: "quem lucra", t: "Petróleo e inflação", big: "US$ 94", p: "No cenário base, o barril (WTI) chegou perto de US$ 94 em abril e maio e fica acima de US$ 80 no resto de 2026; a inflação americana sobe cerca de 0,6 ponto. Gás, fertilizantes e alumínio também sentiram.", s: "CEPR VoxEU, 2026" },
       { k: "o que a ciência mostra", cls: "sci", t: "Choque econômico vira sofrimento", p: "Choques econômicos negativos causam sofrimento mental; dar dinheiro a quem perde renda melhora depressão e ansiedade. O estresse financeiro mantém o cortisol alto e o sono curto.", s: "Ridley et al., Science 2020" },
       { k: "quem é atingido", cls: "who", t: "Civis e quem já estava no limite", p: "Na região, civis e deslocados. No mundo, famílias de baixa renda e quem já vive com sofrimento mental: em 2022, 41% delas não conseguiram lidar com a alta de preços, o dobro das demais.", s: "Money and Mental Health 2022", extra: () => pbars([["com problema recente de saúde mental", 0.41, "41%", "var(--worse)"], ["demais adultos", 0.21, "~21%", "var(--amber)"]]) + `<p class="s">sentiram-se incapazes de lidar com os preços</p>` },
       { k: "o que ajuda", cls: "help", t: "Cessar-fogo e proteção de renda", p: "Cessar-fogo; apoio de renda e de energia para quem tem menos; cuidado psicológico breve para quem vive o conflito.", s: "Ridley et al., Science 2020; Rahman et al., JAMA 2016" },
@@ -765,7 +765,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     ebola: { nome: "Ebola na RDC", quando: "set. 2026", codes: ["COD"], steps: [
       { k: "acontecimento", t: "O pior surto de ebola da história da RDC", big: "8.067", p: "Casos e 3.901 mortes até 28 de setembro (letalidade de 48%), pelo vírus Bundibugyo. O surto foi declarado em 15 de maio e a OMS diz que está longe do fim.", s: "Al Jazeera, 28 set. 2026; OMS" },
       { k: "na saúde mental", t: "Medo, luto e desconfiança", big: "22%", p: "Entre sobreviventes de ebola na África, cerca de 22% têm insônia, 15% depressão e 14% ansiedade. Há raiva contra as medidas de prevenção: um político foi espancado até a morte depois de falar da epidemia no rádio.", s: "Acharibasam et al., PLOS ONE 2021; Al Jazeera 2026" },
-      { k: "resposta do mercado", t: "Sem vacina aprovada", big: "0", p: "Não há vacina nem tratamento aprovados para o Bundibugyo; vacinas experimentais estão em teste, e em Tshopo faltam por completo.", s: "Al Jazeera, set. 2026" },
+      { k: "quem lucra", t: "Sem vacina aprovada", big: "0", p: "Não há vacina nem tratamento aprovados para o Bundibugyo; vacinas experimentais estão em teste, e em Tshopo faltam por completo.", s: "Al Jazeera, set. 2026" },
       { k: "o que a ciência mostra", cls: "sci", t: "Corpo, sono e trauma", p: "A insônia é o sintoma mais comum entre sobreviventes. Isolamento, perda de pessoas e estigma mantêm o estresse ligado depois que o vírus vai embora.", s: "Acharibasam et al., PLOS ONE 2021" },
       { k: "quem é atingido", cls: "who", t: "Sobreviventes, famílias e quem cuida", p: "Sobreviventes estigmatizados, famílias enlutadas e profissionais de saúde em Ituri, onde a capacidade de tratar é baixa.", s: "Al Jazeera 2026", extra: () => pbars([["insônia", 0.22, "22%", "var(--worse)"], ["depressão", 0.15, "15%", "var(--amber)"], ["ansiedade", 0.14, "14%", "var(--amber)"]]) + `<p class="s">entre sobreviventes (meta-análise)</p>` },
       { k: "o que ajuda", cls: "help", t: "Cuidado que gera confiança", p: "Apoio psicossocial a sobreviventes e famílias, informação vinda de pessoas da própria comunidade e vacina para quem está na linha de frente.", s: "OMS; Acharibasam et al. 2021" },
@@ -773,7 +773,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     pandemia: { nome: "Referência: pandemia 2020–22", quando: "histórico", codes: [], steps: [
       { k: "acontecimento", t: "COVID-19, 2020 a 2022", big: "2020", p: "Isolamento, luto, medo de adoecer, perda de renda e escolas fechadas, ao mesmo tempo, no mundo inteiro.", s: "" },
       { k: "na saúde mental", t: "Ansiedade e depressão sobem", big: "+25%", p: "Aumento da prevalência de ansiedade e depressão no mundo no primeiro ano. Mulheres e jovens foram os mais atingidos.", s: "OMS, 2 mar. 2022" },
-      { k: "resposta do mercado", t: "Mais antidepressivos, mais pesquisa", big: "+63,5%", p: "Nos EUA, a dispensação de antidepressivos a pessoas de 12 a 25 anos passou a crescer 63,5% mais rápido depois de março de 2020. No mesmo período, surgiram 40 novos bilionários farmacêuticos.", s: "Chua et al., Pediatrics 2024; Oxfam 2022", extra: () => trialSpark("covid_saude_mental", "saúde mental e COVID-19") },
+      { k: "quem lucra", t: "Mais antidepressivos, mais pesquisa", big: "+63,5%", p: "Nos EUA, a dispensação de antidepressivos a pessoas de 12 a 25 anos passou a crescer 63,5% mais rápido depois de março de 2020. No mesmo período, surgiram 40 novos bilionários farmacêuticos.", s: "Chua et al., Pediatrics 2024; Oxfam 2022", extra: () => trialSpark("covid_saude_mental", "saúde mental e COVID-19") },
       { k: "o que a ciência mostra", cls: "sci", t: "ISRS e ossos", big: "×1,7", p: "Quem usa ISRS teve risco de fratura cerca de 1,7 vez maior em estudos observacionais. Por quê: células do osso têm receptores e transportador de serotonina; bloquear o transportador reduziu o ganho de osso em camundongos em crescimento e causou perda óssea em adultos. Quedas por tontura também pesam.", s: "Wu et al., Osteoporos Int 2012; Warden et al. 2005 e 2008" },
       { k: "quem é atingido", cls: "who", t: "Meninas e moças, no auge da formação do osso", p: "O maior salto de uso foi onde o esqueleto ainda está se formando. Os estudos sobre ossos, porém, olharam sobretudo mulheres após a menopausa e idosos.", s: "Chua et al., Pediatrics 2024; Calarge et al. 2010", extra: () => pbars([["meninas 12 a 17 anos", 1, "+129,6%", "var(--worse)"], ["mulheres 18 a 25", 0.44, "+56,6%", "var(--amber)"], ["homens 18 a 25", 0.03, "estável", "var(--dim)"], ["meninos 12 a 17", 0, "queda", "var(--relief)"]]) },
       { k: "o que ajuda", cls: "help", t: "Somar cuidado ao remédio", p: "Exercício reduz sintomas de depressão e fortalece o osso; apoio comunitário e terapia têm evidência. Nunca parar sem quem prescreveu.", s: "Noetel et al., BMJ 2024; Chibanda et al., JAMA 2016" },
@@ -784,11 +784,11 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     document.getElementById("caseTabs").innerHTML = Object.entries(CASES).map(([k, c]) => `<button type="button" class="chipbtn" data-c="${k}" aria-pressed="${k === selCase}">${c.nome} <span style="color:var(--dim)">· ${c.quando}</span></button>`).join("");
     document.querySelectorAll("#caseTabs button").forEach(b => b.addEventListener("click", () => { selCase = b.dataset.c; renderCases(); }));
     const c = CASES[selCase], live = Q.filter(q => q.k === "COR" && c.codes.includes(q.place.code));
-    document.getElementById("chain").innerHTML = c.steps.map((st, i) => `<article class="step ${st.cls || ""}"><span class="k"><b>${i + 1}</b>${st.k}</span><h3>${st.t}</h3>${st.big ? `<span class="big">${st.big}</span>` : ""}<p>${st.p}</p>${st.extra ? st.extra() : ""}${i === 0 && live.length ? `<p class="s" style="color:var(--amber)">no pregão agora: ${live.map(q => `${q.sym} ${fmtN(q.v)}`).join(" · ")}</p>` : ""}${st.s ? `<span class="s">${st.s}</span>` : ""}</article>`).join("");
+    document.getElementById("chain").innerHTML = c.steps.map((st, i) => `<article class="step ${st.cls || ""}"><span class="k"><b>${i + 1}</b>${st.k}</span><h3>${st.t}</h3>${st.big ? `<span class="big">${st.big}</span>` : ""}<p>${st.p}</p>${st.extra ? st.extra() : ""}${i === 0 && live.length ? `<p class="s" style="color:var(--amber)">nos índices agora: ${live.map(q => `${q.sym} ${fmtN(q.v)}`).join(" · ")}</p>` : ""}${st.s ? `<span class="s">${st.s}</span>` : ""}</article>`).join("");
   }
 
   // ---------- timeline: past, now (from the collector) and short, medium and long term (sourced projections) ----------
-  const LANES = [["mente", "saúde mental"], ["clima", "clima e desastres"], ["conflito", "guerra, fome, deslocamento"], ["dinheiro", "mercado e dinheiro"], ["ciencia", "ciência e remédios"], ["gente", "população"]];
+  const LANES = [["mente", "saúde mental"], ["clima", "clima e desastres"], ["conflito", "guerra, fome, deslocamento"], ["dinheiro", "indicadores e dinheiro"], ["ciencia", "ciência e remédios"], ["gente", "população"]];
   const NOW = new Date();
   const yr = d => d.getUTCFullYear() + (d.getUTCMonth() + d.getUTCDate() / 31) / 12;
   const nowY = yr(NOW);
@@ -865,7 +865,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     epidemia: "epidemias", antidep: "antidepressivos", ossos: "ossos e fraturas", parar: "parar remédios", sexual: "efeitos sexuais",
     benzo: "calmantes", antipsi: "antipsicóticos", ar: "ar e poluição", cuidado: "o que ajuda", jovens: "jovens", idosos: "idosos",
     estresse: "estresse e cortisol", inflam: "inflamação", sono: "sono", trauma: "trauma" };
-  const SECS = { caso: ["casos", "hCase"], ev: ["linha do tempo", "hTl"], ativo: ["pregão", "hBoard"], tema: ["pesquisa ao vivo", "hRes"],
+  const SECS = { caso: ["casos", "hCase"], ev: ["linha do tempo", "hTl"], ativo: ["índices", "hBoard"], tema: ["pesquisa ao vivo", "hRes"],
     achado: ["o que pouco chega ao público", "hHid"], novo: ["revisões recentes", "hHid"], remedio: ["remédios e moléculas", "hDrug"], quem: ["quem recolhe", "hWho"] };
   const T_CASO = { elnino: "calor fome antidep antipsi sono dinheiro cuidado", sudao: "guerra fome desl trauma jovens dinheiro cuidado",
     ormuz: "guerra dinheiro estresse cuidado", ebola: "epidemia trauma sono cuidado", pandemia: "epidemia antidep ossos jovens dinheiro cuidado" };
@@ -1008,7 +1008,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
     const info = document.getElementById("cmapInfo");
     if (selItem) info.innerHTML = `<span class="lk-k">${SECS[selItem.sec][0]}</span><h3>${esc(selItem.nome)}</h3><p>Liga-se a ${rel.size - 1} outras coisas da página por ${selItem.tags.length} ${selItem.tags.length === 1 ? "fio" : "fios"}: ${selItem.tags.map(t => `<b style="color:${FIO_COL[t]}">${FIOS[t]}</b>`).join(", ")}.</p>`;
     else if (MAP.fio) info.innerHTML = `<span class="lk-k">fio</span><h3 style="color:${FIO_COL[MAP.fio]}">${FIOS[MAP.fio]}</h3><p>${rel.size} coisas da página passam por este fio.</p>`;
-    else info.innerHTML = `<p>Cada ponto na borda é uma coisa da página: um caso, um ponto da linha do tempo, um ativo, um achado, um remédio. No centro ficam os fios, os assuntos que elas têm em comum. Clique num ponto ou num fio para acender o que se liga a ele.</p>`;
+    else info.innerHTML = `<p>Cada ponto na borda é uma coisa da página: um caso, um ponto da linha do tempo, um índice, um achado, um remédio. No centro ficam os fios, os assuntos que elas têm em comum. Clique num ponto ou num fio para acender o que se liga a ele.</p>`;
   }
   document.getElementById("cmap").addEventListener("click", e => {
     const n = e.target.closest("[data-map]"), f = e.target.closest("[data-fio]");
@@ -1024,7 +1024,7 @@ td.lug { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
   // ---------- live loop ----------
   if (LIVE) {
     document.getElementById("mode").textContent = "AO VIVO";
-    document.getElementById("fonte").textContent = `Coleta automática a cada hora. Última: ${LIVE.atualizado.replace("T", " ").replace("Z", " UTC")}.`;
+    document.getElementById("fonte").textContent = `Coleta automática ao longo do dia. Última: ${LIVE.atualizado.replace("T", " ").replace("Z", " UTC")}.`;
   }
   function clocks() {
     const d = new Date();
@@ -1067,14 +1067,14 @@ window.I18N_FRAG = {
     ["cortisol do lugar", "place cortisol"], ["cuidado", "care"], ["violência", "violence"], ["deslocamento", "displacement"], ["ar", "air"],
     ["aconteceu", "happened"], ["acontecendo", "happening"], ["previsto", "forecast"], ["projetado", "projected"], ["agora", "now"],
     ["avança", "advances"], ["dispara", "surges"], ["sobe", "rises"], ["renova máxima", "hits a record"], ["recua", "retreats"], ["cede", "eases"], ["cai", "falls"], ["devolve ganhos", "gives back gains"],
-    ["explode", "explodes"], ["e fecha a", "and closes at"], ["fecha em alta de", "closes up"], ["fecha em baixa de", "closes down"], ["No mesmo pregão,", "On the same trading day,"],
+    ["explode", "explodes"], ["e fecha a", "and closes at"], ["fecha em alta de", "closes up"], ["fecha em baixa de", "closes down"], ["No mesmo dia,", "On the same trading day,"],
     ["Contraponto:", "Counterpoint:"], ["Pressão vem de", "Pressure comes from"], ["Analistas apontam ajuda e cooperação relatadas na região.", "Analysts point to aid and cooperation reported in the region."],
-    ["Índice do medo dos mercados em", "Market fear index at"], ["Índice de aflição de", "Affliction index of"], ["Só um deles terá injeção de liquidez.", "Only one of them will get a liquidity injection."],
+    ["Volatilidade financeira (VIX) em", "Financial volatility (VIX) at"], ["Índice de aflição de", "Affliction index of"], ["Só um deles terá injeção de liquidez.", "Only one of them will get a liquidity injection."],
     ["cotado a", "quoted at"], ["Cooperação também é notícia, só circula menos.", "Cooperation is news too; it just travels less."], ["em", "in"], 
     ["Maior carga agora:", "Highest load now:"], ["Maior risco humanitário:", "Highest humanitarian risk:"], ["alertas de desastre em", "disaster alerts in"], ["artigos novos na semana", "new papers this week"],
     ["vermelhos ou laranja.", "red or orange."], ["Cada alerta entra como adrenalina e noradrenalina no lugar atingido.", "Each alert enters as adrenaline and noradrenaline in the place it hits."],
     ["Cortisol do lugar em", "Place cortisol at"], ["de 100", "out of 100"], ["valor de demonstração", "demo value"], ["coleta automática", "automatic collection"],
-    ["próxima fonte em", "next source in"], ["parado nesta fonte", "holding on this source"], ["no pregão agora:", "on the floor now:"], ["ver a cadeia completa:", "see the full chain:"],
+    ["próxima fonte em", "next source in"], ["parado nesta fonte", "holding on this source"], ["nos índices agora:", "in the indices now:"], ["ver a cadeia completa:", "see the full chain:"],
     ["sincronizando", "syncing"], ["memória sincronizada", "memory synced"], ["ao vivo", "live"], ["carga", "load"], ["alerta verde", "green alert"], ["alerta laranja", "orange alert"], ["alerta vermelho", "red alert"],
     ["passo", "step"], ["anel", "ring"], ["pétalas", "petals"], ["nuvem principal", "main cloud"], ["densidade", "density"], ["torção", "twist"], ["filamentos", "filaments"], ["brilho", "brightness"],
     ["manchas", "patches"], ["área", "area"], ["pontos de luz", "points of light"], ["cor de", "colour of"], ["modo", "mode"], ["volume", "volume"], ["massa em oitavas", "mass in octaves"],
@@ -1099,14 +1099,14 @@ window.I18N_FRAG = {
     ["cortisol do lugar", "cortisol del lugar"], ["cuidado", "cuidado"], ["violência", "violencia"], ["deslocamento", "desplazamiento"], ["ar", "aire"],
     ["aconteceu", "ocurrió"], ["acontecendo", "en curso"], ["previsto", "previsto"], ["projetado", "proyectado"], ["agora", "ahora"],
     ["avança", "avanza"], ["dispara", "se dispara"], ["sobe", "sube"], ["renova máxima", "marca un récord"], ["recua", "retrocede"], ["cede", "cede"], ["cai", "cae"], ["devolve ganhos", "devuelve ganancias"],
-    ["explode", "se dispara"], ["e fecha a", "y cierra en"], ["fecha em alta de", "cierra al alza de"], ["fecha em baixa de", "cierra a la baja de"], ["No mesmo pregão,", "En la misma sesión,"],
+    ["explode", "se dispara"], ["e fecha a", "y cierra en"], ["fecha em alta de", "cierra al alza de"], ["fecha em baixa de", "cierra a la baja de"], ["No mesmo dia,", "En la misma sesión,"],
     ["Contraponto:", "Contrapunto:"], ["Pressão vem de", "La presión viene de"], ["Analistas apontam ajuda e cooperação relatadas na região.", "Los analistas señalan ayuda y cooperación en la región."],
-    ["Índice do medo dos mercados em", "Índice del miedo de los mercados en"], ["Índice de aflição de", "Índice de aflicción de"], ["Só um deles terá injeção de liquidez.", "Solo uno de ellos recibirá una inyección de liquidez."],
+    ["Volatilidade financeira (VIX) em", "Volatilidad financiera (VIX) en"], ["Índice de aflição de", "Índice de aflicción de"], ["Só um deles terá injeção de liquidez.", "Solo uno de ellos recibirá una inyección de liquidez."],
     ["cotado a", "cotizado a"], ["Cooperação também é notícia, só circula menos.", "La cooperación también es noticia; solo circula menos."], ["em", "en"], 
     ["Maior carga agora:", "Mayor carga ahora:"], ["Maior risco humanitário:", "Mayor riesgo humanitario:"], ["alertas de desastre em", "alertas de desastre en"], ["artigos novos na semana", "artículos nuevos en la semana"],
     ["vermelhos ou laranja.", "rojas o naranjas."], ["Cada alerta entra como adrenalina e noradrenalina no lugar atingido.", "Cada alerta entra como adrenalina y noradrenalina en el lugar afectado."],
     ["Cortisol do lugar em", "Cortisol del lugar en"], ["de 100", "de 100"], ["valor de demonstração", "valor de demostración"], ["coleta automática", "recolección automática"],
-    ["próxima fonte em", "próxima fuente en"], ["parado nesta fonte", "detenido en esta fuente"], ["no pregão agora:", "en la sesión ahora:"], ["ver a cadeia completa:", "ver la cadena completa:"],
+    ["próxima fonte em", "próxima fuente en"], ["parado nesta fonte", "detenido en esta fuente"], ["nos índices agora:", "en los índices ahora:"], ["ver a cadeia completa:", "ver la cadena completa:"],
     ["sincronizando", "sincronizando"], ["memória sincronizada", "memoria sincronizada"], ["ao vivo", "en vivo"], ["carga", "carga"], ["alerta verde", "alerta verde"], ["alerta laranja", "alerta naranja"], ["alerta vermelho", "alerta roja"],
     ["passo", "paso"], ["anel", "anillo"], ["pétalas", "pétalos"], ["nuvem principal", "nube principal"], ["densidade", "densidad"], ["torção", "torsión"], ["filamentos", "filamentos"], ["brilho", "brillo"],
     ["manchas", "manchas"], ["área", "área"], ["pontos de luz", "puntos de luz"], ["cor de", "color de"], ["modo", "modo"], ["volume", "volumen"], ["massa em oitavas", "masa en octavas"],
@@ -1120,10 +1120,10 @@ window.I18N_FRAG = {
 
 window.I18N_DICT = {
 en: {
-"Observatório": "Observatory", "OBSERVATÓRIO": "OBSERVATORY", "bolsa da aflição · saúde mental, ciência e dinheiro": "affliction exchange · mental health, science and money",
+"Observatório": "Observatory", "OBSERVATÓRIO": "OBSERVATORY", "painel de pesquisa · saúde mental, ciência e cuidado": "research panel · mental health, science and care",
 "DEMONSTRAÇÃO": "DEMO", "AO VIVO": "LIVE", "CASOS": "CASES", "· o que está acontecendo no mundo agora, do acontecimento a quem ele atinge": "· what is happening in the world now, from the event to who it hits",
 "cada elo com fonte": "every link sourced", "Casos": "Cases",
-"acontecimento": "event", "na saúde mental": "in mental health", "resposta do mercado": "market response", "o que a ciência mostra": "what science shows", "quem é atingido": "who is hit", "o que ajuda": "what helps",
+"acontecimento": "event", "na saúde mental": "in mental health", "quem lucra": "who profits", "o que a ciência mostra": "what science shows", "quem é atingido": "who is hit", "o que ajuda": "what helps",
 "Super El Niño": "Super El Niño", "Sudão: guerra, seca e fome": "Sudan: war, drought and hunger", "Guerra no Irã e Ormuz": "War in Iran and Hormuz", "Ebola na RDC": "Ebola in the DRC", "Referência: pandemia {#}–{#}": "Reference: pandemic {#}–{#}",
 "· out. {#}": "· Oct. {#}", "· desde fev. {#}": "· since Feb. {#}", "· set. {#}": "· Sep. {#}", "· histórico": "· history",
 "Um El Niño fora da escala": "An El Niño off the scale",
@@ -1220,7 +1220,7 @@ en: {
 "Noetel et al., BMJ {#}; Chibanda et al., JAMA {#}": "Noetel et al., BMJ {#}; Chibanda et al., JAMA {#}",
 "LINHA DO TEMPO": "TIMELINE", "· o que aconteceu, o que acontece agora e o que pode vir": "· what happened, what is happening and what may come", "curto, médio e longo prazo": "short, medium and long term",
 "passado": "past", "curto prazo · até {#} meses": "short term · up to {#} months", "médio prazo · até {#} anos": "medium term · up to {#} years", "longo prazo · até {#}": "long term · up to {#}",
-"saúde mental": "mental health", "clima e desastres": "climate and disasters", "guerra, fome, deslocamento": "war, hunger, displacement", "mercado e dinheiro": "market and money", "ciência e remédios": "science and medicines", "população": "population",
+"saúde mental": "mental health", "clima e desastres": "climate and disasters", "guerra, fome, deslocamento": "war, hunger, displacement", "indicadores e dinheiro": "indicators and money", "ciência e remédios": "science and medicines", "população": "population",
 "● aconteceu": "● happened", "◉ acontecendo agora (dados da coleta)": "◉ happening now (collected data)", "○ previsto ou projetado, com fonte": "○ forecast or projected, sourced", "clique num ponto": "click a point",
 "Linha do tempo de acontecimentos e projeções ligados à saúde mental": "Timeline of events and projections linked to mental health",
 "faixa": "lane", "quem": "who", "caso": "case", "Projeção de quem a assina, não certeza. O futuro muda com o que for feito agora.": "A projection by whoever signs it, not a certainty. The future changes with what is done now.",
@@ -1248,20 +1248,20 @@ en: {
 "{#} mil mortes a mais por ano": "{#} thousand extra deaths a year", "Entre {#} e {#}, a mudança do clima deve causar cerca de {#} mil mortes a mais por ano, por desnutrição, malária, diarreia e calor.": "Between {#} and {#}, climate change is expected to cause about {#} thousand extra deaths a year, from undernutrition, malaria, diarrhoea and heat.", "OMS, avaliação de risco, {#}": "WHO, risk assessment, {#}",
 "{#} milhões de migrantes do clima": "{#} million climate migrants", "Até {#}, a mudança do clima pode forçar {#} milhões de pessoas a migrar dentro do próprio país; ação imediata pode reduzir isso em até {#}%.": "By {#}, climate change could force {#} million people to migrate within their own countries; immediate action could cut this by up to {#}%.", "Banco Mundial, Groundswell, {#}": "World Bank, Groundswell, {#}", "África Subsaariana ({#} mi), Leste Asiático e Pacífico ({#} mi), Sul da Ásia ({#} mi)": "Sub-Saharan Africa ({#} m), East Asia and Pacific ({#} m), South Asia ({#} m)",
 "{#} bilhões com {#} anos ou mais": "{#} billion aged {#} or older", "O número de pessoas com {#} anos ou mais dobra entre {#} e {#}; com {#} ou mais, triplica, para {#} milhões.": "The number of people aged {#} or older doubles between {#} and {#}; aged {#} or older, it triples to {#} million.",
-"PREGÃO": "FLOOR", "· ativos de aflição por lugar": "· affliction assets by place", "↑ piora · ↓ alívio · valores de {#} a {#}": "↑ worse · ↓ relief · values {#} to {#}",
-"ativo": "asset", "o que mede": "measures", "lugar": "place", "cotação": "quote", "tendência": "trend",
+"ÍNDICES": "INDICES", "· aflição por lugar": "· affliction by place", "↑ piora · ↓ alívio · valores de {#} a {#}": "↑ worse · ↓ relief · values {#} to {#}",
+"índice": "index", "o que mede": "measures", "lugar": "place", "valor": "value", "tendência": "trend",
 "cortisol do lugar (carga total)": "place cortisol (total load)", "aflição coletiva (buscas e posts)": "collective distress (searches and posts)", "cuidado ✚": "care ✚", "cuidado: ajuda e cooperação (contraponto)": "care: aid and cooperation (counterpoint)",
 "ÍNDICES DO DINHEIRO": "MONEY INDICES", "fechamento demonstração": "close · demo", "IBOVESPA": "IBOVESPA", "VIX · medo": "VIX · fear", "ÍNDICES DO SOFRIMENTO": "SUFFERING INDICES", "médias dos lugares": "mean of places", "CORTISOL GLOBAL": "GLOBAL CORTISOL", "FOME": "HUNGER", "CUIDADO": "CARE",
-"ATIVO": "ASSET", "clique numa linha do pregão": "click a row on the floor", "mede": "measures", "mediador": "mediator", "origem": "source", "resposta": "response", "fazer cair": "bring it down", "fortalecer": "strengthen",
+"ÍNDICE": "INDEX", "clique numa linha da tabela": "click a row in the table", "mede": "measures", "mediador": "mediator", "origem": "source", "resposta": "response", "fazer cair": "bring it down", "fortalecer": "strengthen",
 "cortisol · {#} Hz": "cortisol · {#} Hz", "▲ +{#}% em {#} h": "▲ +{#}% in {#} h", "▼ -{#}% em {#} h": "▼ -{#}% in {#} h",
-"BOLETIM": "NEWSWIRE", "· na língua do mercado": "· in the language of the market", "o robô publica estas notas nas redes": "the bot posts these notes on social media",
-"PREGÃO SONORO": "SOUND FLOOR", "contínuo · só para quando você desliga": "continuous · stops only when you stop it",
-"Cada ativo em alta soa na frequência do mediador químico que ele mobiliza (massa molecular levada por oitavas). O índice do medo dos mercados (VIX) é o grave por baixo. Cada nova cotação é um tique.": "Each rising asset sounds at the frequency of the chemical mediator it mobilises (molecular mass folded by octaves). The market fear index (VIX) is the bass underneath. Each new quote is a tick.",
-"ligar pregão sonoro": "turn on the sound floor", "pregão sonoro ligado · desligar": "sound floor on · turn off", "VIX (grave)": "VIX (bass)",
+"BOLETIM": "NEWSWIRE", "· notas curtas": "· short notes", "o robô publica estas notas nas redes": "the bot posts these notes on social media",
+"CHÃO SONORO": "SOUND FLOOR", "contínuo · só para quando você desliga": "continuous · stops only when you stop it",
+"Cada índice em alta soa na frequência do mediador químico que ele mobiliza (massa molecular levada por oitavas). O VIX, indicador de volatilidade financeira, é o grave por baixo. Cada novo valor é um tique.": "Each rising index sounds at the frequency of the chemical mediator it mobilises (molecular mass folded by octaves). The VIX, a financial volatility indicator, is the bass underneath. Each new value is a tick.",
+"ligar chão sonoro": "turn on the sound floor", "chão sonoro ligado · desligar": "sound floor on · turn off", "VIX (grave)": "VIX (bass)",
 "ZONA DE SIMULAÇÃO": "SIMULATION ZONE", "· e se houvesse resposta?": "· what if there were a response?", "especulativo · não é previsão": "speculative · not a forecast",
 "transferência de renda": "cash transfers", "assistência alimentar": "food assistance", "Programa Mundial de Alimentos": "World Food Programme", "cessar-fogo e mediação": "ceasefire and mediation", "retira a exposição à violência": "removes exposure to violence",
 "apoio psicossocial comunitário": "community psychosocial support", "acolhimento a deslocados": "support for displaced people", "áreas verdes, sombra e ar limpo": "green space, shade and clean air", "OMS, Urban green spaces and health, {#}": "WHO, Urban green spaces and health, {#}",
-"ouvir a simulação no pregão sonoro": "hear the simulation on the sound floor", "o pregão sonoro toca a simulação · voltar ao real": "the sound floor plays the simulation · back to real",
+"ouvir a simulação no chão sonoro": "hear the simulation on the sound floor", "o chão sonoro toca a simulação · voltar ao real": "the sound floor plays the simulation · back to real",
 "Barra vermelha clara: hoje. Barra verde: com as respostas escolhidas. Os pesos são ilustrativos: seguem a direção das evidências citadas em cada resposta, não a sua medida exata. A obra mostra que existe saída, não promete números.": "Faded red bar: today. Green bar: with the chosen responses. The weights are illustrative: they follow the direction of the evidence cited for each response, not its exact size. The work shows there is a way out; it promises no numbers.",
 "PESQUISA AO VIVO": "LIVE RESEARCH", "· bancos científicos abertos": "· open science databases", "Temas": "Topics",
 "estresse e cortisol": "stress and cortisol", "clima, calor e ar": "climate, heat and air", "guerra, violência e refúgio": "war, violence and refuge", "fome e pobreza": "hunger and poverty", "remédios: efeitos pouco falados": "medicines: little-discussed effects", "inflamação e mente": "inflammation and mind", "cuidado e comunidade": "care and community",
@@ -1306,21 +1306,21 @@ en: {
 "Cargill: receita recorde de US$ {#} bi; bilionários de alimentos e energia +US$ {#} bi em dois anos": "Cargill: record revenue of US$ {#} bn; food and energy billionaires +US$ {#} bn in two years",
 "Ansiedade e depressão +{#}% no mundo no primeiro ano": "Anxiety and depression +{#}% worldwide in the first year", "{#} novos bilionários farmacêuticos": "{#} new pharmaceutical billionaires",
 "(OMS {#})": "(WHO {#})", "É uma justaposição, não prova de que uma empresa causou o dano.": "It is a juxtaposition, not proof that a company caused the harm.",
-"ROBÔ": "BOT", "· Bluesky": "· Bluesky", "prévia": "preview", "Quando a bolsa mexe forte ou um ativo de aflição dispara, uma conta automática publica o boletim, cruzando o dinheiro e as pessoas no mesmo dia.": "When markets move hard or an affliction asset surges, an automated account posts the bulletin, crossing money and people on the same day.",
+"ROBÔ": "BOT", "· Bluesky": "· Bluesky", "prévia": "preview", "Quando um índice de aflição dispara, uma conta automática publica o boletim, cruzando o dinheiro e as pessoas no mesmo dia.": "When an affliction index surges, an automated account posts the bulletin, crossing money and people on the same day.",
 "{#} de {#} caracteres · publicaria automaticamente": "{#} of {#} characters · would post automatically",
-"EXTENSÃO": "EXTENSION", "· navegador": "· browser", "Instalada no navegador, troca os índices da bolsa nas páginas de notícia pelos índices de aflição do dia.": "Installed in the browser, it swaps stock indices on news pages for the day's affliction indices.",
-"Mercados hoje": "Markets today", "onde a página dizia \"Ibovespa\" e \"S&P {#}\"": "where the page said \"Ibovespa\" and \"S&P {#}\"",
-"INVESTIR EM CUIDADO": "INVEST IN CARE", "contraponto": "counterpoint", "Aqui não se compra nem se vende. Cada ativo aponta para quem trabalha para que ele caia.": "Nothing is bought or sold here. Each asset points to those working to bring it down.",
+"EXTENSÃO": "EXTENSION", "· navegador": "· browser", "Instalada no navegador, mostra os índices de aflição do dia ao lado das notícias de economia.": "Installed in the browser, it shows the day's affliction indices beside economic news.",
+"Indicadores econômicos hoje": "Economic indicators today", "onde a página dizia \"Ibovespa\" e \"S&P {#}\"": "where the page said \"Ibovespa\" and \"S&P {#}\"",
+"INVESTIR EM CUIDADO": "INVEST IN CARE", "contraponto": "counterpoint", "Cada índice aponta para quem trabalha para que ele caia.": "Each index points to those working to bring it down.",
 "Programa Mundial de Alimentos (WFP)": "World Food Programme (WFP)", "Médicos Sem Fronteiras": "Doctors Without Borders", "ACNUR": "UNHCR", "fome": "hunger", "deslocamento forçado": "forced displacement",
-"Valores de demonstração. Na versão publicada no GitHub, os ativos vêm da coleta automática, a cada hora.": "Demo values. In the version published on GitHub, assets come from the hourly automatic collection.",
-"As cotações traduzem dados públicos agregados por lugar. Não medem o corpo de ninguém e não fazem diagnóstico.": "Quotes translate public data aggregated by place. They measure no one's body and make no diagnosis.",
+"Valores de demonstração. Na versão publicada, os índices vêm da coleta automática, ao longo do dia.": "Demo values. In the published version, the indices come from the automatic collection, throughout the day.",
+"Os índices traduzem dados públicos agregados por lugar. Não medem o corpo de ninguém e não fazem diagnóstico.": "The indices translate public data aggregated by place. They measure no one's body and make no diagnosis.",
 "Luiza Jesus do Prado, {#}": "Luiza Jesus do Prado, {#}", "UTC": "UTC", "{#} mi": "{#} m", "{#} bi": "{#} bn", "{#} mil": "{#} k",
 },
 es: {
-"Observatório": "Observatorio", "OBSERVATÓRIO": "OBSERVATORIO", "bolsa da aflição · saúde mental, ciência e dinheiro": "bolsa de la aflicción · salud mental, ciencia y dinero",
+"Observatório": "Observatorio", "OBSERVATÓRIO": "OBSERVATORIO", "painel de pesquisa · saúde mental, ciência e cuidado": "panel de investigación · salud mental, ciencia y cuidado",
 "DEMONSTRAÇÃO": "DEMOSTRACIÓN", "AO VIVO": "EN VIVO", "CASOS": "CASOS", "· o que está acontecendo no mundo agora, do acontecimento a quem ele atinge": "· lo que está pasando en el mundo ahora, del acontecimiento a quién alcanza",
 "cada elo com fonte": "cada eslabón con fuente", "Casos": "Casos",
-"acontecimento": "acontecimiento", "na saúde mental": "en la salud mental", "resposta do mercado": "respuesta del mercado", "o que a ciência mostra": "lo que muestra la ciencia", "quem é atingido": "a quién alcanza", "o que ajuda": "lo que ayuda",
+"acontecimento": "acontecimiento", "na saúde mental": "en la salud mental", "quem lucra": "quién lucra", "o que a ciência mostra": "lo que muestra la ciencia", "quem é atingido": "a quién alcanza", "o que ajuda": "lo que ayuda",
 "Super El Niño": "Súper El Niño", "Sudão: guerra, seca e fome": "Sudán: guerra, sequía y hambre", "Guerra no Irã e Ormuz": "Guerra en Irán y Ormuz", "Ebola na RDC": "Ébola en la RDC", "Referência: pandemia {#}–{#}": "Referencia: pandemia {#}–{#}",
 "· out. {#}": "· oct. {#}", "· desde fev. {#}": "· desde feb. {#}", "· set. {#}": "· sep. {#}", "· histórico": "· histórico",
 "Um El Niño fora da escala": "Un El Niño fuera de escala",
@@ -1417,7 +1417,7 @@ es: {
 "Noetel et al., BMJ {#}; Chibanda et al., JAMA {#}": "Noetel et al., BMJ {#}; Chibanda et al., JAMA {#}",
 "LINHA DO TEMPO": "LÍNEA DE TIEMPO", "· o que aconteceu, o que acontece agora e o que pode vir": "· lo que pasó, lo que pasa ahora y lo que puede venir", "curto, médio e longo prazo": "corto, medio y largo plazo",
 "passado": "pasado", "curto prazo · até {#} meses": "corto plazo · hasta {#} meses", "médio prazo · até {#} anos": "medio plazo · hasta {#} años", "longo prazo · até {#}": "largo plazo · hasta {#}",
-"saúde mental": "salud mental", "clima e desastres": "clima y desastres", "guerra, fome, deslocamento": "guerra, hambre, desplazamiento", "mercado e dinheiro": "mercado y dinero", "ciência e remédios": "ciencia y medicamentos", "população": "población",
+"saúde mental": "salud mental", "clima e desastres": "clima y desastres", "guerra, fome, deslocamento": "guerra, hambre, desplazamiento", "indicadores e dinheiro": "indicadores y dinero", "ciência e remédios": "ciencia y medicamentos", "população": "población",
 "● aconteceu": "● ocurrió", "◉ acontecendo agora (dados da coleta)": "◉ en curso ahora (datos de la recolección)", "○ previsto ou projetado, com fonte": "○ previsto o proyectado, con fuente", "clique num ponto": "haz clic en un punto",
 "Linha do tempo de acontecimentos e projeções ligados à saúde mental": "Línea de tiempo de acontecimientos y proyecciones ligados a la salud mental",
 "faixa": "franja", "quem": "quién", "caso": "caso", "Projeção de quem a assina, não certeza. O futuro muda com o que for feito agora.": "Proyección de quien la firma, no certeza. El futuro cambia con lo que se haga ahora.",
@@ -1445,20 +1445,20 @@ es: {
 "{#} mil mortes a mais por ano": "{#} mil muertes más al año", "Entre {#} e {#}, a mudança do clima deve causar cerca de {#} mil mortes a mais por ano, por desnutrição, malária, diarreia e calor.": "Entre {#} y {#}, el cambio climático debe causar cerca de {#} mil muertes más al año, por desnutrición, malaria, diarrea y calor.", "OMS, avaliação de risco, {#}": "OMS, evaluación de riesgo, {#}",
 "{#} milhões de migrantes do clima": "{#} millones de migrantes climáticos", "Até {#}, a mudança do clima pode forçar {#} milhões de pessoas a migrar dentro do próprio país; ação imediata pode reduzir isso em até {#}%.": "Hasta {#}, el cambio climático puede forzar a {#} millones de personas a migrar dentro de su propio país; una acción inmediata puede reducirlo hasta un {#}%.", "Banco Mundial, Groundswell, {#}": "Banco Mundial, Groundswell, {#}", "África Subsaariana ({#} mi), Leste Asiático e Pacífico ({#} mi), Sul da Ásia ({#} mi)": "África subsahariana ({#} M), Asia oriental y Pacífico ({#} M), Asia meridional ({#} M)",
 "{#} bilhões com {#} anos ou mais": "{#} mil millones con {#} años o más", "O número de pessoas com {#} anos ou mais dobra entre {#} e {#}; com {#} ou mais, triplica, para {#} milhões.": "El número de personas de {#} años o más se duplica entre {#} y {#}; de {#} o más, se triplica, hasta {#} millones.",
-"PREGÃO": "SESIÓN", "· ativos de aflição por lugar": "· activos de aflicción por lugar", "↑ piora · ↓ alívio · valores de {#} a {#}": "↑ empeora · ↓ alivio · valores de {#} a {#}",
-"ativo": "activo", "o que mede": "qué mide", "lugar": "lugar", "cotação": "cotización", "tendência": "tendencia",
+"ÍNDICES": "ÍNDICES", "· aflição por lugar": "· aflicción por lugar", "↑ piora · ↓ alívio · valores de {#} a {#}": "↑ empeora · ↓ alivio · valores de {#} a {#}",
+"índice": "índice", "o que mede": "qué mide", "lugar": "lugar", "valor": "valor", "tendência": "tendencia",
 "cortisol do lugar (carga total)": "cortisol del lugar (carga total)", "aflição coletiva (buscas e posts)": "aflicción colectiva (búsquedas y publicaciones)", "cuidado ✚": "cuidado ✚", "cuidado: ajuda e cooperação (contraponto)": "cuidado: ayuda y cooperación (contrapunto)",
 "ÍNDICES DO DINHEIRO": "ÍNDICES DEL DINERO", "fechamento demonstração": "cierre · demostración", "IBOVESPA": "IBOVESPA", "VIX · medo": "VIX · miedo", "ÍNDICES DO SOFRIMENTO": "ÍNDICES DEL SUFRIMIENTO", "médias dos lugares": "media de los lugares", "CORTISOL GLOBAL": "CORTISOL GLOBAL", "FOME": "HAMBRE", "CUIDADO": "CUIDADO",
-"ATIVO": "ACTIVO", "clique numa linha do pregão": "haz clic en una fila de la sesión", "mede": "mide", "mediador": "mediador", "origem": "origen", "resposta": "respuesta", "fazer cair": "hacerlo bajar", "fortalecer": "fortalecer",
+"ÍNDICE": "ÍNDICE", "clique numa linha da tabela": "haz clic en una fila de la tabla", "mede": "mide", "mediador": "mediador", "origem": "origen", "resposta": "respuesta", "fazer cair": "hacerlo bajar", "fortalecer": "fortalecer",
 "cortisol · {#} Hz": "cortisol · {#} Hz", "▲ +{#}% em {#} h": "▲ +{#}% en {#} h", "▼ -{#}% em {#} h": "▼ -{#}% en {#} h",
-"BOLETIM": "BOLETÍN", "· na língua do mercado": "· en la lengua del mercado", "o robô publica estas notas nas redes": "el bot publica estas notas en las redes",
-"PREGÃO SONORO": "SESIÓN SONORA", "contínuo · só para quando você desliga": "continuo · solo para cuando lo apagas",
-"Cada ativo em alta soa na frequência do mediador químico que ele mobiliza (massa molecular levada por oitavas). O índice do medo dos mercados (VIX) é o grave por baixo. Cada nova cotação é um tique.": "Cada activo al alza suena en la frecuencia del mediador químico que moviliza (masa molecular llevada por octavas). El índice del miedo de los mercados (VIX) es el grave de fondo. Cada nueva cotización es un tic.",
-"ligar pregão sonoro": "encender la sesión sonora", "pregão sonoro ligado · desligar": "sesión sonora encendida · apagar", "VIX (grave)": "VIX (grave)",
+"BOLETIM": "BOLETÍN", "· notas curtas": "· notas cortas", "o robô publica estas notas nas redes": "el bot publica estas notas en las redes",
+"CHÃO SONORO": "SUELO SONORO", "contínuo · só para quando você desliga": "continuo · solo para cuando lo apagas",
+"Cada índice em alta soa na frequência do mediador químico que ele mobiliza (massa molecular levada por oitavas). O VIX, indicador de volatilidade financeira, é o grave por baixo. Cada novo valor é um tique.": "Cada índice al alza suena en la frecuencia del mediador químico que moviliza (masa molecular llevada por octavas). El VIX, indicador de volatilidad financiera, es el grave de fondo. Cada nuevo valor es un tic.",
+"ligar chão sonoro": "encender el suelo sonoro", "chão sonoro ligado · desligar": "suelo sonoro encendido · apagar", "VIX (grave)": "VIX (grave)",
 "ZONA DE SIMULAÇÃO": "ZONA DE SIMULACIÓN", "· e se houvesse resposta?": "· ¿y si hubiera respuesta?", "especulativo · não é previsão": "especulativo · no es previsión",
 "transferência de renda": "transferencia de ingresos", "assistência alimentar": "asistencia alimentaria", "Programa Mundial de Alimentos": "Programa Mundial de Alimentos", "cessar-fogo e mediação": "alto el fuego y mediación", "retira a exposição à violência": "retira la exposición a la violencia",
 "apoio psicossocial comunitário": "apoyo psicosocial comunitario", "acolhimento a deslocados": "acogida a desplazados", "áreas verdes, sombra e ar limpo": "áreas verdes, sombra y aire limpio", "OMS, Urban green spaces and health, {#}": "OMS, Urban green spaces and health, {#}",
-"ouvir a simulação no pregão sonoro": "escuchar la simulación en la sesión sonora", "o pregão sonoro toca a simulação · voltar ao real": "la sesión sonora toca la simulación · volver a lo real",
+"ouvir a simulação no chão sonoro": "escuchar la simulación en el suelo sonoro", "o chão sonoro toca a simulação · voltar ao real": "el suelo sonoro toca la simulación · volver a lo real",
 "Barra vermelha clara: hoje. Barra verde: com as respostas escolhidas. Os pesos são ilustrativos: seguem a direção das evidências citadas em cada resposta, não a sua medida exata. A obra mostra que existe saída, não promete números.": "Barra roja clara: hoy. Barra verde: con las respuestas elegidas. Los pesos son ilustrativos: siguen la dirección de las evidencias citadas en cada respuesta, no su medida exacta. La obra muestra que hay salida; no promete números.",
 "PESQUISA AO VIVO": "INVESTIGACIÓN EN VIVO", "· bancos científicos abertos": "· bases científicas abiertas", "Temas": "Temas",
 "estresse e cortisol": "estrés y cortisol", "clima, calor e ar": "clima, calor y aire", "guerra, violência e refúgio": "guerra, violencia y refugio", "fome e pobreza": "hambre y pobreza", "remédios: efeitos pouco falados": "medicamentos: efectos poco comentados", "inflamação e mente": "inflamación y mente", "cuidado e comunidade": "cuidado y comunidad",
@@ -1503,14 +1503,14 @@ es: {
 "Cargill: receita recorde de US$ {#} bi; bilionários de alimentos e energia +US$ {#} bi em dois anos": "Cargill: ingresos récord de US$ {#} mil millones; multimillonarios de alimentos y energía +US$ {#} mil millones en dos años",
 "Ansiedade e depressão +{#}% no mundo no primeiro ano": "Ansiedad y depresión +{#}% en el mundo en el primer año", "{#} novos bilionários farmacêuticos": "{#} nuevos multimillonarios farmacéuticos",
 "(OMS {#})": "(OMS {#})", "É uma justaposição, não prova de que uma empresa causou o dano.": "Es una yuxtaposición, no prueba de que una empresa causó el daño.",
-"ROBÔ": "BOT", "· Bluesky": "· Bluesky", "prévia": "vista previa", "Quando a bolsa mexe forte ou um ativo de aflição dispara, uma conta automática publica o boletim, cruzando o dinheiro e as pessoas no mesmo dia.": "Cuando la bolsa se mueve fuerte o un activo de aflicción se dispara, una cuenta automática publica el boletín, cruzando el dinero y las personas el mismo día.",
+"ROBÔ": "BOT", "· Bluesky": "· Bluesky", "prévia": "vista previa", "Quando um índice de aflição dispara, uma conta automática publica o boletim, cruzando o dinheiro e as pessoas no mesmo dia.": "Cuando un índice de aflicción se dispara, una cuenta automática publica el boletín, cruzando el dinero y las personas el mismo día.",
 "{#} de {#} caracteres · publicaria automaticamente": "{#} de {#} caracteres · se publicaría automáticamente",
-"EXTENSÃO": "EXTENSIÓN", "· navegador": "· navegador", "Instalada no navegador, troca os índices da bolsa nas páginas de notícia pelos índices de aflição do dia.": "Instalada en el navegador, cambia los índices de la bolsa en las páginas de noticias por los índices de aflicción del día.",
-"Mercados hoje": "Mercados hoy", "onde a página dizia \"Ibovespa\" e \"S&P {#}\"": "donde la página decía \"Ibovespa\" y \"S&P {#}\"",
-"INVESTIR EM CUIDADO": "INVERTIR EN CUIDADO", "contraponto": "contrapunto", "Aqui não se compra nem se vende. Cada ativo aponta para quem trabalha para que ele caia.": "Aquí no se compra ni se vende. Cada activo apunta a quien trabaja para que baje.",
+"EXTENSÃO": "EXTENSIÓN", "· navegador": "· navegador", "Instalada no navegador, mostra os índices de aflição do dia ao lado das notícias de economia.": "Instalada en el navegador, muestra los índices de aflicción del día junto a las noticias de economía.",
+"Indicadores econômicos hoje": "Indicadores económicos hoy", "onde a página dizia \"Ibovespa\" e \"S&P {#}\"": "donde la página decía \"Ibovespa\" y \"S&P {#}\"",
+"INVESTIR EM CUIDADO": "INVERTIR EN CUIDADO", "contraponto": "contrapunto", "Cada índice aponta para quem trabalha para que ele caia.": "Cada índice apunta a quien trabaja para que baje.",
 "Programa Mundial de Alimentos (WFP)": "Programa Mundial de Alimentos (PMA)", "Médicos Sem Fronteiras": "Médicos Sin Fronteras", "ACNUR": "ACNUR", "fome": "hambre", "deslocamento forçado": "desplazamiento forzado",
-"Valores de demonstração. Na versão publicada no GitHub, os ativos vêm da coleta automática, a cada hora.": "Valores de demostración. En la versión publicada en GitHub, los activos vienen de la recolección automática, cada hora.",
-"As cotações traduzem dados públicos agregados por lugar. Não medem o corpo de ninguém e não fazem diagnóstico.": "Las cotizaciones traducen datos públicos agregados por lugar. No miden el cuerpo de nadie ni hacen diagnóstico.",
+"Valores de demonstração. Na versão publicada, os índices vêm da coleta automática, ao longo do dia.": "Valores de demostración. En la versión publicada, los índices vienen de la recolección automática, a lo largo del día.",
+"Os índices traduzem dados públicos agregados por lugar. Não medem o corpo de ninguém e não fazem diagnóstico.": "Los índices traducen datos públicos agregados por lugar. No miden el cuerpo de nadie ni hacen diagnóstico.",
 "Luiza Jesus do Prado, {#}": "Luiza Jesus do Prado, {#}", "UTC": "UTC", "{#} mi": "{#} M", "{#} bi": "{#} mil M", "{#} mil": "{#} mil",
 }};
 (function () { const F = window.I18N_FRAG;
@@ -1521,7 +1521,7 @@ F.es.push(["A coleta automática traz aqui os artigos desta semana sobre","La re
 window.I18N_POS = "bottom:12px;right:12px";
 (function () { const D = window.I18N_DICT; const add = (pt, en, es) => { D.en[pt] = en; D.es[pt] = es; };
 [["calor e clima","heat and climate","calor y clima"],["fome","hunger","hambre"],["guerra e violência","war and violence","guerra y violencia"],["deslocamento","displacement","desplazamiento"],["dinheiro e preços","money and prices","dinero y precios"],["epidemias","epidemics","epidemias"],["antidepressivos","antidepressants","antidepresivos"],["ossos e fraturas","bones and fractures","huesos y fracturas"],["parar remédios","stopping medicines","dejar medicamentos"],["efeitos sexuais","sexual effects","efectos sexuales"],["calmantes","sedatives","calmantes"],["antipsicóticos","antipsychotics","antipsicóticos"],["ar e poluição","air and pollution","aire y contaminación"],["o que ajuda","what helps","lo que ayuda"],["jovens","young people","jóvenes"],["idosos","older people","personas mayores"],["estresse e cortisol","stress and cortisol","estrés y cortisol"],["inflamação","inflammation","inflamación"],["sono","sleep","sueño"],["trauma","trauma","trauma"],
-["casos","cases","casos"],["linha do tempo","timeline","línea de tiempo"],["pregão","floor","sesión"],["pesquisa ao vivo","live research","investigación en vivo"],["o que pouco chega ao público","what rarely reaches the public","lo que poco llega al público"],["remédios e moléculas","medicines and molecules","medicamentos y moléculas"],["quem recolhe","who collects","quién recauda"],
+["casos","cases","casos"],["linha do tempo","timeline","línea de tiempo"],["índices","indices","índices"],["pesquisa ao vivo","live research","investigación en vivo"],["o que pouco chega ao público","what rarely reaches the public","lo que poco llega al público"],["remédios e moléculas","medicines and molecules","medicamentos y moléculas"],["quem recolhe","who collects","quién recauda"],
 ["CONEXÕES","CONNECTIONS","CONEXIONES"],["Conexões","Connections","Conexiones"],["fechar","close","cerrar"],["fio","thread","hilo"],["Nada mais na página toca neste fio por enquanto.","Nothing else on the page touches this thread yet.","Nada más en la página toca este hilo por ahora."],
 ["Um fio liga coisas que tratam do mesmo assunto. Estar no mesmo fio não quer dizer que uma causou a outra.","A thread links things that deal with the same subject. Being on the same thread does not mean one caused the other.","Un hilo une cosas que tratan del mismo asunto. Estar en el mismo hilo no quiere decir que una causó la otra."],
 ["cortisol do lugar","place cortisol","cortisol del lugar"],["aflição coletiva","collective distress","aflicción colectiva"],["violência","violence","violencia"],["guerra","war","guerra"],["pressão econômica","economic pressure","presión económica"],["Energia, {#}","Energy, {#}","Energía, {#}"],["Fome, {#}","Hunger, {#}","Hambre, {#}"]
@@ -1535,9 +1535,9 @@ window.I18N_POS = "bottom:12px;right:12px";
 })();
 (function () { const D = window.I18N_DICT; const add = (pt, en, es) => { D.en[pt] = en; D.es[pt] = es; };
 [["MAPA DAS CONEXÕES","CONNECTIONS MAP","MAPA DE CONEXIONES"],["· tudo o que se toca, por fio","· everything that touches, by thread","· todo lo que se toca, por hilo"],["clique num ponto ou num fio","click a point or a thread","haz clic en un punto o en un hilo"],
-["Cada ponto na borda é uma coisa da página: um caso, um ponto da linha do tempo, um ativo, um achado, um remédio. No centro ficam os fios, os assuntos que elas têm em comum. Clique num ponto ou num fio para acender o que se liga a ele.","Each point on the rim is something on the page: a case, a timeline point, an asset, a finding, a medicine. In the middle are the threads, the subjects they share. Click a point or a thread to light up what connects to it.","Cada punto del borde es algo de la página: un caso, un punto de la línea de tiempo, un activo, un hallazgo, un medicamento. En el centro están los hilos, los asuntos que comparten. Haz clic en un punto o en un hilo para encender lo que se conecta con él."],
+["Cada ponto na borda é uma coisa da página: um caso, um ponto da linha do tempo, um índice, um achado, um remédio. No centro ficam os fios, os assuntos que elas têm em comum. Clique num ponto ou num fio para acender o que se liga a ele.","Each point on the rim is something on the page: a case, a timeline point, an index, a finding, a medicine. In the middle are the threads, the subjects they share. Click a point or a thread to light up what connects to it.","Cada punto del borde es algo de la página: un caso, un punto de la línea de tiempo, un índice, un hallazgo, un medicamento. En el centro están los hilos, los asuntos que comparten. Haz clic en un punto o en un hilo para encender lo que se conecta con él."],
 ["Liga-se a {#} outras coisas da página por {#} fios:","Connects to {#} other things on the page through {#} threads:","Se conecta con {#} otras cosas de la página por {#} hilos:"],["Liga-se a {#} outras coisas da página por {#} fio:","Connects to {#} other things on the page through {#} thread:","Se conecta con {#} otras cosas de la página por {#} hilo:"],["{#} coisas da página passam por este fio.","{#} things on the page run through this thread.","{#} cosas de la página pasan por este hilo."],
-["CASOS","CASES","CASOS"],["LINHA DO TEMPO","TIMELINE","LÍNEA DE TIEMPO"],["PREGÃO","FLOOR","SESIÓN"],["PESQUISA AO VIVO","LIVE RESEARCH","INVESTIGACIÓN EN VIVO"],["O QUE POUCO CHEGA AO PÚBLICO","WHAT RARELY REACHES THE PUBLIC","LO QUE POCO LLEGA AL PÚBLICO"],["REVISÕES RECENTES","RECENT REVIEWS","REVISIONES RECIENTES"],["REMÉDIOS E MOLÉCULAS","MEDICINES AND MOLECULES","MEDICAMENTOS Y MOLÉCULAS"],["QUEM RECOLHE","WHO COLLECTS","QUIÉN RECAUDA"]
+["CASOS","CASES","CASOS"],["LINHA DO TEMPO","TIMELINE","LÍNEA DE TIEMPO"],["ÍNDICES","INDICES","ÍNDICES"],["PESQUISA AO VIVO","LIVE RESEARCH","INVESTIGACIÓN EN VIVO"],["O QUE POUCO CHEGA AO PÚBLICO","WHAT RARELY REACHES THE PUBLIC","LO QUE POCO LLEGA AL PÚBLICO"],["REVISÕES RECENTES","RECENT REVIEWS","REVISIONES RECIENTES"],["REMÉDIOS E MOLÉCULAS","MEDICINES AND MOLECULES","MEDICAMENTOS Y MOLÉCULAS"],["QUEM RECOLHE","WHO COLLECTS","QUIÉN RECAUDA"]
 ].forEach(r => add(...r));
 })();
 
@@ -1548,9 +1548,9 @@ _med: ["substâncias do corpo", "", "substances in the body", "", "sustancias de
 _conc: ["conceitos", "", "concepts", "", "conceptos", ""],
 _som: ["imagem e som", "", "image and sound", "", "imagen y sonido", ""],
 _dados: ["dados e fontes", "", "data and sources", "", "datos y fuentes", ""],
-_merc: ["mercado", "", "market", "", "mercado", ""],
+_merc: ["indicadores econômicos", "", "economic indicators", "", "indicadores económicos", ""],
 _cien: ["pesquisa e remédios", "", "research and medicines", "", "investigación y medicamentos", ""],
-_cod: ["códigos do pregão", "", "floor codes", "", "códigos de la sesión", ""],
+_cod: ["códigos dos índices", "", "index codes", "", "códigos de los índices", ""],
 _mund: ["mundo e instituições", "", "world and institutions", "", "mundo e instituciones", ""],
 _md: ["a mandala", "", "the mandala", "", "la mandala", ""],
 _partes: ["partes da página", "", "parts of the page", "", "partes de la página", ""],
@@ -1702,28 +1702,28 @@ meteo: ["Open-Meteo", "Serviço aberto de clima e qualidade do ar usado para tem
 utc: ["UTC", "O horário universal de referência, sem fuso. São Paulo está 3 horas atrás.",
  "UTC", "The universal reference time, with no time zone. São Paulo is 3 hours behind.",
  "UTC", "La hora universal de referencia, sin huso. São Paulo está 3 horas atrás."],
-coleta: ["coleta automática", "Um programa no GitHub que busca os dados públicos a cada hora e atualiza a obra.",
- "automatic collection", "A program on GitHub that fetches the public data every hour and updates the work.",
- "recolección automática", "Un programa en GitHub que busca los datos públicos cada hora y actualiza la obra."],
+coleta: ["coleta automática", "Um programa no GitHub que busca os dados públicos ao longo do dia e atualiza a obra.",
+ "automatic collection", "A program on GitHub that fetches the public data throughout the day and updates the work.",
+ "recolección automática", "Un programa en GitHub que busca los datos públicos a lo largo del día y actualiza la obra."],
 // market
-ativo: ["ativo", "Algo cotado no pregão. Aqui, um tipo de aflição num lugar, de 0 a 100.",
- "asset", "Something quoted on the floor. Here, a kind of affliction in a place, from 0 to 100.",
- "activo", "Algo cotizado en la sesión. Aquí, un tipo de aflicción en un lugar, de 0 a 100."],
-pregao: ["pregão", "A sessão de negociação da bolsa. Aqui, a tabela com todos os ativos de aflição.",
- "floor", "The exchange's trading session. Here, the table of all affliction assets.",
- "sesión", "La sesión de negociación de la bolsa. Aquí, la tabla con todos los activos de aflicción."],
-cotacao: ["cotação e variação", "O valor de agora e quanto mudou em 24 horas. ▲ é piora; ▼ é alívio (no cuidado, ▲ é bom).",
- "quote and change", "The value now and how much it changed in 24 hours. ▲ means worse; ▼ means relief (for care, ▲ is good).",
- "cotización y variación", "El valor de ahora y cuánto cambió en 24 horas. ▲ es empeora; ▼ es alivio (en el cuidado, ▲ es bueno)."],
+ativo: ["índice de aflição", "Um tipo de aflição num lugar, de 0 a 100, calculado com dados públicos.",
+ "affliction index", "A kind of affliction in a place, from 0 to 100, calculated from public data.",
+ "índice de aflicción", "Un tipo de aflicción en un lugar, de 0 a 100, calculado con datos públicos."],
+pregao: ["tabela de índices", "A tabela com todos os índices de aflição por lugar.",
+ "index table", "The table of all affliction indices by place.",
+ "tabla de índices", "La tabla con todos los índices de aflicción por lugar."],
+cotacao: ["valor e variação", "O valor de agora e quanto mudou em 24 horas. ▲ é piora; ▼ é alívio (no cuidado, ▲ é bom).",
+ "value and change", "The value now and how much it changed in 24 hours. ▲ means worse; ▼ means relief (for care, ▲ is good).",
+ "valor y variación", "El valor de ahora y cuánto cambió en 24 horas. ▲ es empeora; ▼ es alivio (en el cuidado, ▲ es bueno)."],
 ibov: ["Ibovespa", "Principal índice da bolsa brasileira (B3).",
  "Ibovespa", "The main index of the Brazilian stock exchange (B3).",
  "Ibovespa", "Principal índice de la bolsa brasileña (B3)."],
 sp: ["S&P 500", "Índice das 500 maiores empresas dos Estados Unidos.",
  "S&P 500", "The index of the 500 largest companies in the United States.",
  "S&P 500", "Índice de las 500 mayores empresas de Estados Unidos."],
-vix: ["VIX", "O \"índice do medo\": mede quanto o mercado espera que as ações oscilem nos próximos 30 dias.",
- "VIX", "The \"fear index\": it measures how much the market expects stocks to swing over the next 30 days.",
- "VIX", "El \"índice del miedo\": mide cuánto espera el mercado que oscilen las acciones en los próximos 30 días."],
+vix: ["VIX", "Indicador de volatilidade: mede quanto se espera que as ações oscilem nos próximos 30 dias.",
+ "VIX", "Volatility indicator: it measures how much stocks are expected to swing over the next 30 days.",
+ "VIX", "Indicador de volatilidad: mide cuánto se espera que oscilen las acciones en los próximos 30 días."],
 liquidez: ["injeção de liquidez", "Quando bancos centrais põem dinheiro no mercado para acalmá-lo. O boletim usa a expressão para contrastar com o sofrimento, que não recebe o mesmo socorro.",
  "liquidity injection", "When central banks put money into the market to calm it. The newswire uses the phrase to contrast with suffering, which gets no such rescue.",
  "inyección de liquidez", "Cuando los bancos centrales ponen dinero en el mercado para calmarlo. El boletín usa la expresión para contrastar con el sufrimiento, que no recibe el mismo rescate."],
@@ -1733,7 +1733,7 @@ cVIOL: ["VIOL", "Violência e crise política.", "VIOL", "Violence and political
 cGUER: ["GUER", "Guerra e conflito armado.", "GUER", "War and armed conflict.", "GUER", "Guerra y conflicto armado."],
 cFOME: ["FOME", "Fome e insegurança alimentar.", "FOME", "Hunger and food insecurity.", "FOME", "Hambre e inseguridad alimentaria."],
 cDESL: ["DESL", "Deslocamento forçado: pessoas que tiveram de deixar a casa.", "DESL", "Forced displacement: people who had to leave home.", "DESL", "Desplazamiento forzado: personas que tuvieron que dejar su casa."],
-cECON: ["ECON", "Pressão econômica: inflação, desemprego e medo dos mercados.", "ECON", "Economic pressure: inflation, unemployment and market fear.", "ECON", "Presión económica: inflación, desempleo y miedo de los mercados."],
+cECON: ["ECON", "Pressão econômica: inflação, desemprego e volatilidade financeira.", "ECON", "Economic pressure: inflation, unemployment and financial volatility.", "ECON", "Presión económica: inflación, desempleo y volatilidad financiera."],
 cCUID: ["CUID", "Cuidado: ajuda e cooperação relatadas na região. É o contraponto; subir é bom.", "CUID", "Care: aid and cooperation reported in the region. It is the counterpoint; rising is good.", "CUID", "Cuidado: ayuda y cooperación reportadas en la región. Es el contrapunto; subir es bueno."],
 cSUF: ["sufixo do lugar", "As três letras depois do ponto dizem onde: COR.SAO é São Paulo, COR.LOS é Lagos, COR.CAI é Cairo.", "place suffix", "The three letters after the dot say where: COR.SAO is São Paulo, COR.LOS is Lagos, COR.CAI is Cairo.", "sufijo del lugar", "Las tres letras después del punto dicen dónde: COR.SAO es São Paulo, COR.LOS es Lagos, COR.CAI es El Cairo."],
 // research and medicines
@@ -1835,37 +1835,37 @@ window.GLOSS_USE = function (plan) {
 (function () {
 const T = [
 ["glossário", "glossary", "glosario"],
-["O Observatório lê saúde mental, ciência e dinheiro com a cara de um terminal de bolsa. A ideia é mostrar, para cada acontecimento no mundo, quem sofre, quem lucra, o que a ciência sabe e o que ajuda.",
- "The Observatory reads mental health, science and money through the look of a stock-market terminal. The idea is to show, for each event in the world, who suffers, who profits, what science knows and what helps.",
- "El Observatorio lee salud mental, ciencia y dinero con la apariencia de un terminal de bolsa. La idea es mostrar, para cada acontecimiento en el mundo, quién sufre, quién lucra, qué sabe la ciencia y qué ayuda."],
+["O Observatório é um painel de pesquisa sobre saúde mental, ciência e dinheiro. A ideia é mostrar, para cada acontecimento no mundo, quem sofre, quem lucra, o que a ciência sabe e o que ajuda.",
+ "The Observatory is a research panel on mental health, science and money. The idea is to show, for each event in the world, who suffers, who profits, what science knows and what helps.",
+ "El Observatorio es un panel de investigación sobre salud mental, ciencia y dinero. La idea es mostrar, para cada acontecimiento en el mundo, quién sufre, quién lucra, qué sabe la ciencia y qué ayuda."],
 ["casos", "cases", "casos"],
-["Acontecimentos atuais contados como uma corrente de seis elos: o acontecimento, o efeito na saúde mental, a resposta do mercado, o que a ciência mostra (e por quê), quem é mais atingido e o que ajuda. Cada elo tem fonte.",
- "Current events told as a chain of six links: the event, the effect on mental health, the market response, what science shows (and why), who is hit hardest and what helps. Every link is sourced.",
- "Acontecimientos actuales contados como una cadena de seis eslabones: el acontecimiento, el efecto en la salud mental, la respuesta del mercado, lo que muestra la ciencia (y por qué), a quién alcanza más y lo que ayuda. Cada eslabón tiene fuente."],
+["Acontecimentos atuais contados como uma corrente de seis elos: o acontecimento, o efeito na saúde mental, quem lucra, o que a ciência mostra (e por quê), quem é mais atingido e o que ajuda. Cada elo tem fonte.",
+ "Current events told as a chain of six links: the event, the effect on mental health, who profits, what science shows (and why), who is hit hardest and what helps. Every link is sourced.",
+ "Acontecimientos actuales contados como una cadena de seis eslabones: el acontecimiento, el efecto en la salud mental, quién lucra, lo que muestra la ciencia (y por qué), a quién alcanza más y lo que ayuda. Cada eslabón tiene fuente."],
 ["linha do tempo", "timeline", "línea de tiempo"],
 ["O que aconteceu, o que acontece agora e o que pode vir a curto prazo (até 6 meses), médio (até 5 anos) e longo (até 2050), em faixas: saúde mental, clima, guerra e fome, dinheiro, ciência e população. Ponto cheio: aconteceu. Ponto com halo: acontecendo. Ponto vazado: previsão ou projeção de quem a assina.",
  "What happened, what is happening and what may come in the short (up to 6 months), medium (up to 5 years) and long term (up to 2050), in lanes: mental health, climate, war and hunger, money, science and population. Solid dot: happened. Dot with halo: happening. Hollow dot: a forecast or projection by whoever signs it.",
  "Lo que pasó, lo que pasa ahora y lo que puede venir a corto plazo (hasta 6 meses), medio (hasta 5 años) y largo (hasta 2050), en franjas: salud mental, clima, guerra y hambre, dinero, ciencia y población. Punto lleno: ocurrió. Punto con halo: en curso. Punto hueco: previsión o proyección de quien la firma."],
 ["pregão e ativos", "floor and assets", "sesión y activos"],
-["Cada linha é um ativo de aflição de um lugar, de 0 a 100. O código junta o que mede e onde: COR é o cortisol do lugar (a carga total), ANSI a aflição coletiva em buscas e posts, VIOL violência, GUER guerra, FOME fome, DESL deslocamento, ECON pressão econômica e CUID cuidado, o contraponto. COR.SAO é o cortisol de São Paulo. ▲ é piora; ▼ é alívio.",
- "Each row is an affliction asset of a place, from 0 to 100. The code combines what it measures and where: COR is the place's cortisol (total load), ANSI collective distress in searches and posts, VIOL violence, GUER war, FOME hunger, DESL displacement, ECON economic pressure and CUID care, the counterpoint. COR.SAO is São Paulo's cortisol. ▲ means worse; ▼ means relief.",
- "Cada fila es un activo de aflicción de un lugar, de 0 a 100. El código une lo que mide y dónde: COR es el cortisol del lugar (la carga total), ANSI la aflicción colectiva en búsquedas y publicaciones, VIOL violencia, GUER guerra, FOME hambre, DESL desplazamiento, ECON presión económica y CUID cuidado, el contrapunto. COR.SAO es el cortisol de São Paulo. ▲ es empeora; ▼ es alivio."],
+["Cada linha é um índice de aflição de um lugar, de 0 a 100. O código junta o que mede e onde: COR é o cortisol do lugar (a carga total), ANSI a aflição coletiva em buscas e posts, VIOL violência, GUER guerra, FOME fome, DESL deslocamento, ECON pressão econômica e CUID cuidado, o contraponto. COR.SAO é o cortisol de São Paulo. ▲ é piora; ▼ é alívio.",
+ "Each row is an affliction index of a place, from 0 to 100. The code combines what it measures and where: COR is the place's cortisol (total load), ANSI collective distress in searches and posts, VIOL violence, GUER war, FOME hunger, DESL displacement, ECON economic pressure and CUID care, the counterpoint. COR.SAO is São Paulo's cortisol. ▲ means worse; ▼ means relief.",
+ "Cada fila es un índice de aflicción de un lugar, de 0 a 100. El código une lo que mide y dónde: COR es el cortisol del lugar (la carga total), ANSI la aflicción colectiva en búsquedas y publicaciones, VIOL violencia, GUER guerra, FOME hambre, DESL desplazamiento, ECON presión económica y CUID cuidado, el contrapunto. COR.SAO es el cortisol de São Paulo. ▲ es empeora; ▼ es alivio."],
 ["índices", "indices", "índices"],
-["Os do dinheiro vêm do mercado: Ibovespa, S&P 500 e VIX, o índice do medo dos mercados. Os do sofrimento são médias dos lugares: cortisol global, fome e cuidado.",
- "The money ones come from the market: Ibovespa, S&P 500 and VIX, the market fear index. The suffering ones are averages across places: global cortisol, hunger and care.",
- "Los del dinero vienen del mercado: Ibovespa, S&P 500 y VIX, el índice del miedo de los mercados. Los del sufrimiento son medias de los lugares: cortisol global, hambre y cuidado."],
+["Os econômicos são Ibovespa, S&P 500 e VIX, que mede a volatilidade financeira esperada. Os do sofrimento são médias dos lugares: cortisol global, fome e cuidado.",
+ "The economic ones are Ibovespa, S&P 500 and VIX, which measures expected financial volatility. The suffering ones are averages across places: global cortisol, hunger and care.",
+ "Los económicos son Ibovespa, S&P 500 y VIX, que mide la volatilidad financiera esperada. Los del sufrimiento son medias de los lugares: cortisol global, hambre y cuidado."],
 ["boletim e robô", "newswire and bot", "boletín y bot"],
-["Notas escritas na língua do mercado, cruzando dinheiro e pessoas no mesmo dia. O robô publica essas notas no Bluesky quando a bolsa mexe forte ou um ativo dispara.",
- "Notes written in the language of the market, crossing money and people on the same day. The bot posts them on Bluesky when markets move hard or an asset surges.",
- "Notas escritas en la lengua del mercado, cruzando dinero y personas el mismo día. El bot las publica en Bluesky cuando la bolsa se mueve fuerte o un activo se dispara."],
-["pregão sonoro", "sound floor", "sesión sonora"],
-["Cada ativo em alta soa na frequência do mediador químico que ele mobiliza; o VIX é o grave por baixo. Toca até você desligar.",
- "Each rising asset sounds at the frequency of the chemical mediator it mobilises; the VIX is the bass underneath. It plays until you turn it off.",
- "Cada activo al alza suena en la frecuencia del mediador químico que moviliza; el VIX es el grave de fondo. Suena hasta que lo apagas."],
+["Notas curtas que cruzam dinheiro e pessoas no mesmo dia. O robô publica essas notas no Bluesky quando um índice de aflição dispara.",
+ "Short notes that cross money and people on the same day. The bot posts them on Bluesky when an affliction index surges.",
+ "Notas cortas que cruzan dinero y personas el mismo día. El bot las publica en Bluesky cuando un índice de aflicción se dispara."],
+["chão sonoro", "sound floor", "sesión sonora"],
+["Cada índice em alta soa na frequência do mediador químico que ele mobiliza; o VIX é o grave por baixo. Toca até você desligar.",
+ "Each rising index sounds at the frequency of the chemical mediator it mobilises; the VIX is the bass underneath. It plays until you turn it off.",
+ "Cada índice al alza suena en la frecuencia del mediador químico que moviliza; el VIX es el grave de fondo. Suena hasta que lo apagas."],
 ["zona de simulação", "simulation zone", "zona de simulación"],
-["Escolha respostas (renda, comida, cessar-fogo, apoio psicológico, áreas verdes) e veja como os ativos cairiam. Os pesos seguem a direção das evidências, não são previsão.",
- "Choose responses (income, food, ceasefire, psychological support, green space) and see how the assets would fall. The weights follow the direction of the evidence; they are not a forecast.",
- "Elige respuestas (ingresos, comida, alto el fuego, apoyo psicológico, áreas verdes) y mira cómo bajarían los activos. Los pesos siguen la dirección de la evidencia; no son previsión."],
+["Escolha respostas (renda, comida, cessar-fogo, apoio psicológico, áreas verdes) e veja como os índices cairiam. Os pesos seguem a direção das evidências, não são previsão.",
+ "Choose responses (income, food, ceasefire, psychological support, green space) and see how the indices would fall. The weights follow the direction of the evidence; they are not a forecast.",
+ "Elige respuestas (ingresos, comida, alto el fuego, apoyo psicológico, áreas verdes) y mira cómo bajarían los índices. Los pesos siguen la dirección de la evidencia; no son previsión."],
 ["pesquisa ao vivo", "live research", "investigación en vivo"],
 ["Artigos científicos da semana por tema (Europe PMC) e ensaios clínicos em saúde mental recrutando agora (ClinicalTrials.gov), com quanto deles é financiado pela indústria.",
  "This week's scientific papers by topic (Europe PMC) and mental health clinical trials recruiting now (ClinicalTrials.gov), with how much of them industry funds.",
@@ -1883,7 +1883,7 @@ const T = [
  "The same crises seen from both sides: what they did to minds and who made money in the same period. It is a juxtaposition, not an accusation.",
  "Las mismas crisis vistas desde los dos lados: lo que hicieron a las mentes y quién ganó dinero en el mismo periodo. Es una yuxtaposición, no una acusación."],
 ["demonstração e ao vivo", "demo and live", "demostración y en vivo"],
-["Aqui os valores são de demonstração. Na versão do GitHub, uma coleta automática atualiza tudo a cada hora com dados públicos.",
+["Aqui os valores são de demonstração. Na versão publicada, uma coleta automática atualiza tudo ao longo do dia com dados públicos.",
  "Here the values are a demo. In the GitHub version, an automatic collection updates everything every hour with public data.",
  "Aquí los valores son de demostración. En la versión de GitHub, una recolección automática actualiza todo cada hora con datos públicos."],
 ];
@@ -1897,9 +1897,9 @@ const P = window.GLOSS["_partes"]; D.en[P[0]] = P[2]; D.es[P[0]] = P[4];
 window.GUIDE = { titulo: T[0][0], intro: T[1][0], rodape: FOOT[0], groups: [{ nome: P[0], items: partes }].concat(window.GLOSS_USE([["_cod", ["cCOR","cANSI","cVIOL","cGUER","cFOME","cDESL","cECON","cCUID","cSUF"]], ["_merc", ["ativo","pregao","cotacao","ibov","sp","vix","liquidez"]], ["_cien", ["meta","obs","rct","ensaio","rr","placebo","farmaco","faers","pubchem","epmc","ctgov","isrs","irsn","benzo","antipsi","descont","tarja"]], ["_med", ["ADR","NOR","COR","GLU","IL6","SER","DOP","GABA","MEL","GRE","OXT"]], ["_conc", ["carga","hpa","psico","infl","contra"]], ["_mund", ["elnino","deslint","ipc","orgs","coleta"]], ["_som", ["massa","hz","oitava"]]])) };
 })();
 (function () { const D = window.I18N_DICT, G = window.GUIDE;
-const row = ["conexões", "Clique em qualquer coisa (um caso, um ponto da linha do tempo, um ativo, um achado, um remédio, uma linha de quem recolhe) e abre ao lado tudo o que toca no mesmo assunto nas outras seções. Os assuntos são fios, como calor, fome ou antidepressivos; clicar num fio mostra tudo o que passa por ele. Estar no mesmo fio não quer dizer que uma coisa causou a outra.",
- "connections", "Click anything (a case, a timeline point, an asset, a finding, a medicine, a row in who collects) and everything touching the same subject in other sections opens alongside. Subjects are threads, such as heat, hunger or antidepressants; clicking a thread shows everything that runs through it. Being on the same thread does not mean one thing caused the other.",
- "conexiones", "Haz clic en cualquier cosa (un caso, un punto de la línea de tiempo, un activo, un hallazgo, un medicamento, una fila de quién recauda) y se abre al lado todo lo que toca el mismo asunto en las otras secciones. Los asuntos son hilos, como calor, hambre o antidepresivos; al hacer clic en un hilo se ve todo lo que pasa por él. Estar en el mismo hilo no quiere decir que una cosa causó la otra."];
+const row = ["conexões", "Clique em qualquer coisa (um caso, um ponto da linha do tempo, um índice, um achado, um remédio, uma linha de quem recolhe) e abre ao lado tudo o que toca no mesmo assunto nas outras seções. Os assuntos são fios, como calor, fome ou antidepressivos; clicar num fio mostra tudo o que passa por ele. Estar no mesmo fio não quer dizer que uma coisa causou a outra.",
+ "connections", "Click anything (a case, a timeline point, an index, a finding, a medicine, a row in who collects) and everything touching the same subject in other sections opens alongside. Subjects are threads, such as heat, hunger or antidepressants; clicking a thread shows everything that runs through it. Being on the same thread does not mean one thing caused the other.",
+ "conexiones", "Haz clic en cualquier cosa (un caso, un punto de la línea de tiempo, un índice, un hallazgo, un medicamento, una fila de quién recauda) y se abre al lado todo lo que toca el mismo asunto en las otras secciones. Los asuntos son hilos, como calor, hambre o antidepresivos; al hacer clic en un hilo se ve todo lo que pasa por él. Estar en el mismo hilo no quiere decir que una cosa causó la otra."];
 D.en[row[0]] = row[2]; D.en[row[1]] = row[3]; D.es[row[0]] = row[4]; D.es[row[1]] = row[5];
 G.groups[0].items.splice(1, 0, [row[0], row[1]]);
 })();
@@ -1913,8 +1913,7 @@ G.groups[0].items.splice(1, 0, [row[0], row[1]]);
   const pick = () => {
     let q = null; try { q = new URLSearchParams(location.search).get("lang"); } catch (e) {}
     let s = null; try { s = localStorage.getItem("lang"); } catch (e) {}
-    const n = (navigator.language || "pt").slice(0, 2).toLowerCase();
-    return [q, s, n].find(x => LANGS.includes(x)) || "pt";
+    return [q, s].find(x => LANGS.includes(x)) || "en";   // English first unless chosen
   };
   let lang = pick();
   const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
