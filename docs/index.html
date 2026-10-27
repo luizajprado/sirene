@@ -122,7 +122,8 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       <button type="button" data-v="figuras"><span>figuras</span><kbd>2</kbd></button>
       <button type="button" data-v="mapa"><span>reprise 72 h</span><kbd>3</kbd></button>
       <button type="button" data-v="som"><span>som e cimática</span><kbd>4</kbd></button>
-      <button type="button" data-v="metodo"><span>método</span><kbd>5</kbd></button>
+      <button type="button" data-v="estereo"><span>estereograma</span><kbd>5</kbd></button>
+      <button type="button" data-v="metodo"><span>método</span><kbd>6</kbd></button>
     </div>
     <div class="navnote">Tudo aqui é calculado ao vivo no seu navegador, a partir de 26 alertas reais do GDACS (20 a 22/10/2026). Teclas 1 a 5 trocam de seção. Espaço liga e desliga o som.</div>
   </nav>
@@ -339,6 +340,49 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       </div>
     </section>
 
+    <!-- ESTEREOGRAMA -->
+    <section class="view" data-view="estereo" hidden>
+      <div class="vhead">
+        <div><h2>Estereograma</h2><p>Cada lugar vira um estereograma: a textura usa as cores das substâncias do lugar e esconde uma forma em relevo. O que pesa sobre um lugar está ali o tempo todo, mas só aparece quando se muda o jeito de olhar. Continua a pesquisa de Social Hacker (2019) com estereogramas e sistemas vistos de cima.</p></div>
+      </div>
+      <div class="search" data-search="estereo"></div>
+      <div class="chips" id="eChips" role="group" aria-label="Lugares"></div>
+      <div class="grid2">
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <canvas id="eCv" width="1200" height="760" style="width:100%;height:auto;background:#000;display:block" aria-label="Estereograma do lugar"></canvas>
+          <div class="dim" id="eCap" style="font-size:11px"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+          <div class="panel">
+            <h3>forma escondida</h3>
+            <div class="row" id="eModes" role="group" aria-label="Forma escondida">
+              <button type="button" class="btn" data-m="relevo" aria-pressed="true">relevo</button>
+              <button type="button" class="btn" data-m="mandala" aria-pressed="false">mandala</button>
+              <button type="button" class="btn" data-m="pergunta" aria-pressed="false">pergunta</button>
+            </div>
+            <div class="dim" id="eModeTxt"></div>
+          </div>
+          <div class="panel">
+            <h3>ver</h3>
+            <div class="row">
+              <button type="button" class="btn" id="eReveal" aria-pressed="false">mostrar a forma</button>
+              <button type="button" class="btn" id="eDown">baixar imagem</button>
+            </div>
+            <ol class="chain">
+              <li>aproxime o rosto da tela, com o olhar relaxado</li>
+              <li>olhe através da imagem, como se ela estivesse longe</li>
+              <li>afaste-se devagar até os dois pontos do topo virarem três</li>
+            </ol>
+            <div class="dim">Nem todo mundo consegue ver estereogramas. Não force a vista: se cansar, pare e use "mostrar a forma".</div>
+          </div>
+          <div class="panel">
+            <h3>o que forma a imagem</h3>
+            <dl class="kv" id="eRows"></dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- METODO -->
     <section class="view" data-view="metodo" hidden>
       <div class="vhead">
@@ -474,7 +518,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     EV.find(e => e.v === 19584),
     EV.find(e => e.country === "Vanuatu"),
     EV.find(e => e.country.startsWith("EUA")),
-  ];
+  ].filter(Boolean);
 
   // ================= simulation engine =================
   function createSim(W, H) {
@@ -1855,8 +1899,140 @@ void main(){
     }
   }
   document.addEventListener("click", (ev) => { const b = ev.target.closest && ev.target.closest(".psndBtn"); if (!b) return; PSND.on ? psndStop() : psndStart(); });
+  // ================= estereograma: the place hides a shape in a texture of its own substances =================
+  const E = { cv: document.getElementById("eCv"), mode: "relevo", reveal: false, src: null, lang: null };
+  const E_MODES = {
+    relevo: "Cada fator que pesa vira um morro, com altura pela intensidade, como um território visto de cima. O cuidado e a esperança aplainam o relevo.",
+    mandala: "Cada substância vira um anel em relevo; o número de pétalas vem da frequência dela, como a mandala da Sirene.",
+    pergunta: "A pergunta do projeto escondida na textura do lugar. Serve para impressão e para a rua.",
+  };
+  const E_Q = { pt: ["O QUE É", "A LOUCURA?"], en: ["WHAT IS", "MADNESS?"], es: ["¿QUÉ ES", "LA LOCURA?"] };
+  const eLang = () => (document.documentElement.lang || "pt").slice(0, 2);
+  function eSeed(str) { let s = 2166136261; for (const ch of String(str)) s = Math.imul(s ^ ch.charCodeAt(0), 16777619) >>> 0; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
+  // depth map z in 0..1 (1 = nearest)
+  function eDepth(src, mode, W, H) {
+    const z = new Float32Array(W * H);
+    if (mode === "pergunta") {
+      const c = document.createElement("canvas"); c.width = W; c.height = H; const x = c.getContext("2d");
+      x.fillStyle = "#000"; x.fillRect(0, 0, W, H); x.fillStyle = "#fff"; x.textAlign = "center"; x.textBaseline = "middle";
+      const L = E_Q[eLang()] || E_Q.pt, fs = Math.round(H * 0.24);
+      x.font = `800 ${fs}px "Martian Mono", "Arial Black", Arial, sans-serif`;
+      const wmax = Math.max(...L.map(t => x.measureText(t).width)), k = Math.min(1, (W * 0.84) / wmax);
+      x.font = `800 ${Math.round(fs * k)}px "Martian Mono", "Arial Black", Arial, sans-serif`;
+      x.filter = `blur(${Math.max(2, Math.round(W / 160))}px)`;
+      x.fillText(L[0], W / 2, H * 0.36); x.fillText(L[1], W / 2, H * 0.66);
+      const d = x.getImageData(0, 0, W, H).data; for (let i = 0; i < z.length; i++) z[i] = 0.7 * d[i * 4] / 255;
+      return z;
+    }
+    if (mode === "mandala") {
+      const chem = chemProfile(src.factors).filter(m => m[1] > 0.03).slice(0, 8), cx = W / 2, cy = H / 2, R = Math.min(W, H) * 0.46;
+      for (let y = 0; y < H; y++) for (let xx = 0; xx < W; xx++) {
+        const dx = (xx - cx) / R, dy = (y - cy) / R, r = Math.hypot(dx, dy), th = Math.atan2(dy, dx); if (r > 1.05) continue;
+        let v = 0.25 * Math.exp(-(r * r) / 0.02);
+        chem.forEach(([m, w], k) => {
+          const n = 5 + Math.round(medHz(m)) % 9, rk = 0.16 + k * 0.105, rr = rk * (1 + 0.07 * Math.cos(n * th));
+          v += (0.45 + 0.55 * w) * Math.exp(-(((r - rr) / 0.032) ** 2));
+        });
+        z[y * W + xx] = Math.min(1, v);
+      }
+      return z;
+    }
+    // relevo: one hill per weighing factor, placed from the place's name; care flattens
+    const rnd = eSeed(src.label || "x"), fac = src.factors.filter(f => !f.positivo && f.i > 0.02 && f.key !== "LIGHT").sort((a, b) => b.i - a.i).slice(0, 10);
+    const care = src.factors.filter(f => f.positivo).reduce((a, f) => a + (f.i || 0), 0) / 2;
+    const hills = fac.map(f => ({ x: (0.15 + 0.7 * rnd()) * W, y: (0.15 + 0.7 * rnd()) * H, s: (0.1 + 0.16 * f.i + 0.05 * rnd()) * Math.min(W, H), h: 0.25 + 0.75 * f.i }));
+    let mx = 1e-6;
+    for (let y = 0; y < H; y++) for (let xx = 0; xx < W; xx++) {
+      let v = 0.04 * Math.sin(xx / W * 9) * Math.sin(y / H * 7);
+      for (const h of hills) { const d2 = ((xx - h.x) ** 2 + (y - h.y) ** 2) / (h.s * h.s); if (d2 < 9) v += h.h * Math.exp(-d2); }
+      v = Math.max(0, v); z[y * W + xx] = v; if (v > mx) mx = v;
+    }
+    const flat = 1 - 0.45 * Math.min(1, care);
+    for (let i = 0; i < z.length; i++) z[i] = Math.pow(z[i] / mx, 1.2) * flat;
+    return z;
+  }
+  // texture tile in the colours of the place's substances
+  function eTexture(src, P, H) {
+    const chem = chemProfile(src.factors).filter(m => m[1] > 0.03).slice(0, 6), pal = chem.length ? chem : [["GABA", 1]];
+    const tot = pal.reduce((a, m) => a + m[1], 0), rnd = eSeed((src.label || "x") + "t");
+    const tile = new Uint8ClampedArray(P * H * 3);
+    const blobs = Array.from({ length: Math.round(P * H / 260) }, () => { let u = rnd() * tot, k = 0; while (k < pal.length - 1 && u > pal[k][1]) { u -= pal[k][1]; k++; } return { x: rnd() * P, y: rnd() * H, r: 2 + rnd() * P * 0.09, c: MED[pal[k][0]] ? MED[pal[k][0]].cor : COL[pal[k][0]], b: 0.55 + 0.45 * rnd() }; });
+    for (let i = 0; i < P * H; i++) { tile[i * 3] = 10; tile[i * 3 + 1] = 10; tile[i * 3 + 2] = 12; }
+    for (const bl of blobs) {
+      const x0 = Math.floor(bl.x - bl.r), x1 = Math.ceil(bl.x + bl.r), y0 = Math.max(0, Math.floor(bl.y - bl.r)), y1 = Math.min(H - 1, Math.ceil(bl.y + bl.r));
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        const d = Math.hypot(x - bl.x, y - bl.y) / bl.r; if (d > 1) continue;
+        const a = (1 - d * d) * bl.b, xx = ((x % P) + P) % P, p = (y * P + xx) * 3;
+        tile[p] = tile[p] * (1 - a) + bl.c[0] * a; tile[p + 1] = tile[p + 1] * (1 - a) + bl.c[1] * a; tile[p + 2] = tile[p + 2] * (1 - a) + bl.c[2] * a;
+      }
+    }
+    return tile;
+  }
+  // Thimbleby, Inglis and Witten (1994): symmetric constraints, hidden-surface removal
+  function eRender(cv, src, mode, reveal) {
+    const W = cv.width, H = cv.height, ctx = cv.getContext("2d"), img = ctx.createImageData(W, H), d = img.data;
+    const z = eDepth(src, mode, W, H), DPI = W / 12, Ed = Math.round(2.5 * DPI), mu = 1 / 3;
+    const sep = zz => Math.round((1 - mu * zz) * Ed / (2 - mu * zz));
+    if (reveal) {
+      const chem = chemProfile(src.factors).slice(0, 3), c = chem.length ? (MED[chem[0][0]] || {}).cor || [240, 240, 240] : [240, 240, 240];
+      for (let i = 0; i < W * H; i++) { const v = z[i]; d[i * 4] = 12 + v * (c[0] - 12); d[i * 4 + 1] = 12 + v * (c[1] - 12); d[i * 4 + 2] = 14 + v * (c[2] - 14); d[i * 4 + 3] = 255; }
+      ctx.putImageData(img, 0, 0); return;
+    }
+    const P = sep(0), tile = eTexture(src, P, H), same = new Int32Array(W), col = new Int32Array(W);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) same[x] = x;
+      for (let x = 0; x < W; x++) {
+        const zz = z[y * W + x], s = sep(zz); let left = x - (s >> 1), right = left + s;
+        if (left < 0 || right >= W) continue;
+        let t = 1, zt, visible;
+        do { zt = zz + 2 * (2 - mu * zz) * t / (mu * Ed); visible = (x - t < 0 || z[y * W + x - t] < zt) && (x + t >= W || z[y * W + x + t] < zt); t++; } while (visible && zt < 1);
+        if (!visible) continue;
+        for (let k = same[left]; k !== left && k !== right; k = same[left]) { if (k < right) left = k; else { left = right; right = k; } }
+        same[left] = right;
+      }
+      for (let x = W - 1; x >= 0; x--) {
+        if (same[x] === x) col[x] = x; else col[x] = col[same[x]];
+        const sx = col[x] % P, p = (y * P + sx) * 3, q = (y * W + x) * 4;
+        d[q] = tile[p]; d[q + 1] = tile[p + 1]; d[q + 2] = tile[p + 2]; d[q + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    // convergence guides
+    const gy = Math.round(H * 0.035), r = Math.max(4, Math.round(W / 220));
+    ctx.fillStyle = "#000"; ctx.fillRect(W / 2 - Ed / 2 - r * 3, gy - r * 3, Ed + r * 6, r * 6);
+    ctx.fillStyle = "#f0efe9"; for (const gx of [W / 2 - Ed / 2, W / 2 + Ed / 2]) { ctx.beginPath(); ctx.arc(gx, gy, r, 0, Math.PI * 2); ctx.fill(); }
+  }
+  function eDraw() {
+    if (!E.src) return; E.lang = eLang();
+    eRender(E.cv, E.src, E.mode, E.reveal);
+    document.querySelectorAll("#eModes .btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === E.mode)));
+    document.getElementById("eReveal").setAttribute("aria-pressed", String(E.reveal));
+    document.getElementById("eReveal").textContent = E.reveal ? "voltar ao estereograma" : "mostrar a forma";
+    document.getElementById("eModeTxt").textContent = E_MODES[E.mode];
+    document.getElementById("eCap").textContent = `${E.src.label} · ${E.mode} · ${new Date().toLocaleDateString("pt-BR")}`;
+    document.querySelectorAll("#eChips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.sid === E.src.id)));
+    const chem = chemProfile(E.src.factors).filter(m => m[1] > 0.03).slice(0, 6);
+    document.getElementById("eRows").innerHTML = chem.map(([m, w]) => `<dt style="color:${hex(MED[m] ? MED[m].cor : COL[m])}">${COLNAME[m]}</dt><dd>${w.toFixed(2).replace(".", ",")} · ${Math.round(medHz(m))} Hz</dd>`).join("");
+  }
+  function eSet(src) { E.src = src.pl && (src.pl.world || PLACES.includes(src.pl)) ? freshSrc(src) : src; eDraw(); }
+  (function eInit() {
+    const el = document.getElementById("eChips"), hd = document.createElement("div"); hd.className = "chiphead"; hd.textContent = "lugares · do maior peso para o menor, agora"; el.append(hd);
+    PSRC.forEach(ps => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.sid = ps.pl.world ? "world" : ps.id;
+      b.innerHTML = speciesFor(ps).map(x => `<i style="color:${hex(COL[x[0]])}">●</i>`).join("") + " " + chipLabel(ps);
+      b.addEventListener("click", () => eSet(ps)); el.append(b);
+    });
+    document.querySelectorAll("#eModes .btn").forEach(b => b.addEventListener("click", () => { E.mode = b.dataset.m; E.reveal = false; eDraw(); }));
+    document.getElementById("eReveal").addEventListener("click", () => { E.reveal = !E.reveal; eDraw(); });
+    document.getElementById("eDown").addEventListener("click", () => {
+      if (!E.src) return; const c = document.createElement("canvas"); c.width = 3600; c.height = 2280; eRender(c, E.src, E.mode, false);
+      const slug = String(E.src.label).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      c.toBlob(bl => { if (!bl) return; const a = document.createElement("a"); a.href = URL.createObjectURL(bl); a.download = `estereograma-${slug}-${E.mode}-${new Date().toISOString().slice(0, 10)}.png`; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }, "image/png");
+    });
+    buildSearch(document.querySelector('[data-search="estereo"]'), src => eSet(src));
+  })();
   // ================= navigation =================
-  const VIEWS = ["agora", "figuras", "mapa", "som", "metodo"];
+  const VIEWS = ["agora", "figuras", "mapa", "som", "estereo", "metodo"];
   const OLD_VIEWS = ["retratos", "mandala"];   // portrait and sound now live on one page
   let view = "agora";
   function show(v) {
@@ -1864,16 +2040,17 @@ void main(){
     if (!VIEWS.includes(v)) v = "agora"; view = v;
     document.querySelectorAll(".view").forEach(s => s.hidden = s.dataset.view !== v);
     document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-current", b.dataset.v === v ? "page" : "false"));
-    document.getElementById("stView").textContent = v === "som" ? "som e cimática" : v === "mapa" ? "reprise 72 h" : v;
+    document.getElementById("stView").textContent = v === "som" ? "som e cimática" : v === "estereo" ? "estereograma" : v === "mapa" ? "reprise 72 h" : v;
     if (v === "mapa") requestAnimationFrame(mResize);
     if (v === "agora") requestAnimationFrame(aResize);
     if (v === "figuras" && NB.mode === "neb") requestAnimationFrame(nbResize);
+    if (v === "estereo") requestAnimationFrame(() => E.src ? eDraw() : eSet(PSRC[0]));
     try { history.replaceState(null, "", "#" + v); } catch (err) {}
   }
   document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.v)));
   document.addEventListener("keydown", (ev) => {
     if (ev.target.closest && ev.target.closest("input, textarea")) return;
-    if (["1", "2", "3", "4", "5"].includes(ev.key)) show(VIEWS[+ev.key - 1]);
+    if (["1", "2", "3", "4", "5", "6"].includes(ev.key)) show(VIEWS[+ev.key - 1]);
     if (ev.key === " " && ev.target === document.body) { ev.preventDefault(); toggleSound(); }
   });
   function toggleSound() {
@@ -1892,6 +2069,7 @@ void main(){
     if (view === "mapa") mTick(dt);
     else if (view === "retratos") { pTick(); pRender(P.ctx, P.cv.width, P.cv.height); }
     else if (view === "som") sTick();
+    if (view === "estereo" && E.src && E.mode === "pergunta" && E.lang !== eLang()) eDraw();
     if (fpsAcc > 0.5) { document.getElementById("stFps").textContent = Math.round(fpsN / fpsAcc); fpsAcc = 0; fpsN = 0; document.getElementById("stSteps").textContent = totalSteps.toLocaleString("pt-BR"); document.getElementById("stAudio").textContent = live() ? "ligado" : "desligado"; }
     requestAnimationFrame(tick);
   }
@@ -1901,7 +2079,7 @@ void main(){
   mReset(); P.qi = 1; pStart(portraitFromPlace(PSRC[0])); gMode("net");
   const start = (location.hash || "").slice(1);
   show(VIEWS.includes(start) || OLD_VIEWS.includes(start) ? start : "agora");
-  if (LIVE) { const el = document.getElementById("fonteData"); if (el) el.textContent = `Coleta automática a cada hora. Última: ${LIVE.atualizado.replace("T", " ").replace("Z", " UTC")}. ${Object.entries(LIVE.fontes || {}).map(([k, v]) => `${k}: ${v}`).join(" · ")}.`; }
+  if (LIVE) { const el = document.getElementById("fonteData"); if (el) el.textContent = `Coleta automática ao longo do dia. Última: ${LIVE.atualizado.replace("T", " ").replace("Z", " UTC")}. ${Object.entries(LIVE.fontes || {}).map(([k, v]) => `${k}: ${v}`).join(" · ")}.`; }
   mResize(); aResize(); new ResizeObserver(() => { if (view === "mapa") mResize(); }).observe(M.cv); new ResizeObserver(() => { if (view === "agora") aResize(); }).observe(A.cv); new ResizeObserver(() => { if (view === "figuras" && NB.mode === "neb") nbResize(); }).observe(NB.cv);
   requestAnimationFrame(tick);
 })();
@@ -1977,6 +2155,28 @@ window.I18N_FRAG = {
 
 window.I18N_DICT = {
 en: {
+"estereograma": "stereogram",
+"Estereograma": "Stereogram",
+"Cada lugar vira um estereograma: a textura usa as cores das substâncias do lugar e esconde uma forma em relevo. O que pesa sobre um lugar está ali o tempo todo, mas só aparece quando se muda o jeito de olhar. Continua a pesquisa de Social Hacker (2019) com estereogramas e sistemas vistos de cima.": "Each place becomes a stereogram: the texture uses the colours of the place's substances and hides a shape in relief. What weighs on a place is there all the time, but it only appears when you change the way you look. It continues the research of Social Hacker (2019) with stereograms and systems seen from above.",
+"forma escondida": "hidden shape",
+"Forma escondida": "Hidden shape",
+"relevo": "relief",
+"pergunta": "question",
+"ver": "see",
+"mostrar a forma": "show the shape",
+"voltar ao estereograma": "back to the stereogram",
+"baixar imagem": "download image",
+"aproxime o rosto da tela, com o olhar relaxado": "bring your face close to the screen, with relaxed eyes",
+"olhe através da imagem, como se ela estivesse longe": "look through the image, as if it were far away",
+"afaste-se devagar até os dois pontos do topo virarem três": "move back slowly until the two dots at the top become three",
+"Nem todo mundo consegue ver estereogramas. Não force a vista: se cansar, pare e use \"mostrar a forma\".": "Not everyone can see stereograms. Do not strain your eyes: if they tire, stop and use \"show the shape\".",
+"o que forma a imagem": "what makes the image",
+"Estereograma do lugar": "Stereogram of the place",
+"Lugares": "Places",
+"Cada fator que pesa vira um morro, com altura pela intensidade, como um território visto de cima. O cuidado e a esperança aplainam o relevo.": "Each factor that weighs becomes a hill, its height set by intensity, like a territory seen from above. Care and hope flatten the relief.",
+"Cada substância vira um anel em relevo; o número de pétalas vem da frequência dela, como a mandala da Sirene.": "Each substance becomes a ring in relief; the number of petals comes from its frequency, like Sirene's mandala.",
+"A pergunta do projeto escondida na textura do lugar. Serve para impressão e para a rua.": "The project's question hidden in the place's texture. Made for print and for the street.",
+"Coleta automática ao longo do dia.": "Automatic collection throughout the day.",
 "Carga Alostática": "Allostatic Load", "O que é a loucura? · laboratório": "What is madness? · laboratory",
 "A primeira fotografia aparece depois do primeiro minuto.": "The first photograph appears after the first minute.",
 "ALERTA VERMELHO": "RED ALERT", "Agora": "Now", "agora": "now",
@@ -2070,6 +2270,28 @@ en: {
 "Tromsø": "Tromsø", "São Paulo": "São Paulo", "Lagos": "Lagos",
 },
 es: {
+"estereograma": "estereograma",
+"Estereograma": "Estereograma",
+"Cada lugar vira um estereograma: a textura usa as cores das substâncias do lugar e esconde uma forma em relevo. O que pesa sobre um lugar está ali o tempo todo, mas só aparece quando se muda o jeito de olhar. Continua a pesquisa de Social Hacker (2019) com estereogramas e sistemas vistos de cima.": "Cada lugar se convierte en un estereograma: la textura usa los colores de las sustancias del lugar y esconde una forma en relieve. Lo que pesa sobre un lugar está ahí todo el tiempo, pero solo aparece cuando se cambia la forma de mirar. Continúa la investigación de Social Hacker (2019) con estereogramas y sistemas vistos desde arriba.",
+"forma escondida": "forma escondida",
+"Forma escondida": "Forma escondida",
+"relevo": "relieve",
+"pergunta": "pregunta",
+"ver": "ver",
+"mostrar a forma": "mostrar la forma",
+"voltar ao estereograma": "volver al estereograma",
+"baixar imagem": "descargar imagen",
+"aproxime o rosto da tela, com o olhar relaxado": "acerca la cara a la pantalla, con la mirada relajada",
+"olhe através da imagem, como se ela estivesse longe": "mira a través de la imagen, como si estuviera lejos",
+"afaste-se devagar até os dois pontos do topo virarem três": "aléjate despacio hasta que los dos puntos de arriba se vuelvan tres",
+"Nem todo mundo consegue ver estereogramas. Não force a vista: se cansar, pare e use \"mostrar a forma\".": "No todo el mundo puede ver estereogramas. No fuerces la vista: si se cansa, para y usa \"mostrar la forma\".",
+"o que forma a imagem": "lo que forma la imagen",
+"Estereograma do lugar": "Estereograma del lugar",
+"Lugares": "Lugares",
+"Cada fator que pesa vira um morro, com altura pela intensidade, como um território visto de cima. O cuidado e a esperança aplainam o relevo.": "Cada factor que pesa se convierte en una colina, con altura según la intensidad, como un territorio visto desde arriba. El cuidado y la esperanza aplanan el relieve.",
+"Cada substância vira um anel em relevo; o número de pétalas vem da frequência dela, como a mandala da Sirene.": "Cada sustancia se convierte en un anillo en relieve; el número de pétalos viene de su frecuencia, como el mandala de la Sirene.",
+"A pergunta do projeto escondida na textura do lugar. Serve para impressão e para a rua.": "La pregunta del proyecto escondida en la textura del lugar. Sirve para impresión y para la calle.",
+"Coleta automática ao longo do dia.": "Recolección automática a lo largo del día.",
 "Carga Alostática": "Carga Alostática", "O que é a loucura? · laboratório": "¿Qué es la locura? · laboratorio",
 "A primeira fotografia aparece depois do primeiro minuto.": "La primera fotografía aparece después del primer minuto.",
 "ALERTA VERMELHO": "ALERTA ROJA", "Agora": "Ahora", "agora": "ahora",
@@ -2328,9 +2550,9 @@ meteo: ["Open-Meteo", "Serviço aberto de clima e qualidade do ar usado para tem
 utc: ["UTC", "O horário universal de referência, sem fuso. São Paulo está 3 horas atrás.",
  "UTC", "The universal reference time, with no time zone. São Paulo is 3 hours behind.",
  "UTC", "La hora universal de referencia, sin huso. São Paulo está 3 horas atrás."],
-coleta: ["coleta automática", "Um programa no GitHub que busca os dados públicos a cada hora e atualiza a obra.",
- "automatic collection", "A program on GitHub that fetches the public data every hour and updates the work.",
- "recolección automática", "Un programa en GitHub que busca los datos públicos cada hora y actualiza la obra."],
+coleta: ["coleta automática", "Um programa no GitHub que busca os dados públicos ao longo do dia e atualiza a obra.",
+ "automatic collection", "A program on GitHub that fetches the public data throughout the day and updates the work.",
+ "recolección automática", "Un programa en GitHub que busca los datos públicos a lo largo del día y actualiza la obra."],
 // market
 ativo: ["ativo", "Algo cotado no pregão. Aqui, um tipo de aflição num lugar, de 0 a 100.",
  "asset", "Something quoted on the floor. Here, a kind of affliction in a place, from 0 to 100.",
