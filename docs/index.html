@@ -121,7 +121,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
       <button type="button" data-v="agora"><span>agora</span><kbd>1</kbd></button>
       <button type="button" data-v="figuras"><span>figuras</span><kbd>2</kbd></button>
       <button type="button" data-v="mapa"><span>reprise 72 h</span><kbd>3</kbd></button>
-      <button type="button" data-v="som"><span>retrato e som</span><kbd>4</kbd></button>
+      <button type="button" data-v="som"><span>som e cimática</span><kbd>4</kbd></button>
       <button type="button" data-v="metodo"><span>método</span><kbd>5</kbd></button>
     </div>
     <div class="navnote">Tudo aqui é calculado ao vivo no seu navegador, a partir de 26 alertas reais do GDACS (20 a 22/10/2026). Teclas 1 a 5 trocam de seção. Espaço liga e desliga o som.</div>
@@ -179,10 +179,10 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     <!-- FIGURAS -->
     <section class="view" data-view="figuras" hidden>
       <div class="vhead">
-        <div><h2>Figuras</h2><p>Cada figura é um lugar do mundo. Ela junta tudo o que pode pesar na saúde mental de quem vive ali (desastres próximos, calor, ar, ruído, luz, conflito) e se transforma sem parar, passando de um lugar ao próximo sem recomeçar. Dois motores: nebulosa e rede.</p></div>
+        <div><h2>Figuras</h2><p>Cada figura é um lugar do mundo. Ela junta tudo o que pode pesar na saúde mental de quem vive ali (desastres próximos, calor, ar, ruído, luz, conflito) e se transforma sem parar, passando de um lugar ao próximo sem recomeçar. A figura é uma rede de reação-difusão.</p></div>
         <div class="row">
-          <button type="button" class="btn" id="gModeNeb" aria-pressed="true">nebulosa</button>
-          <button type="button" class="btn" id="gModeNet" aria-pressed="false">rede</button>
+          <button type="button" class="btn" id="gModeNeb" aria-pressed="false" hidden>nebulosa</button>
+          <button type="button" class="btn" id="gModeNet" aria-pressed="true" hidden>rede</button>
           <button type="button" class="btn" id="gAuto" aria-pressed="true">automático: ligado</button>
           <button type="button" class="btn psndBtn" aria-pressed="false">som do lugar: desligado</button>
         </div>
@@ -254,7 +254,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     <!-- RETRATOS -->
     <section class="view" data-view="retratos" hidden>
       <div class="vhead">
-        <div><h2>Retratos</h2><p>Cada retrato é um lugar do mundo como tinta na água: os fatores que mais pesam ali soltam cor, que se espalha, se mistura e vai se dissipando. Na troca de lugar, a imagem anterior se desfaz enquanto a nova nasce. No modo automático, a máquina passa de um lugar a outro e guarda fotografias no mural abaixo.</p></div>
+        <div><h2>Retratos</h2><p>Cada retrato é um lugar do mundo em cor: os fatores que mais pesam ali dão a cor da figura. Na troca de lugar, a imagem anterior se desfaz enquanto a nova nasce. No modo automático, a máquina passa de um lugar a outro e guarda fotografias no mural abaixo.</p></div>
         <button type="button" class="btn" id="pAuto" aria-pressed="true">automático: ligado</button>
       </div>
       <div class="chips" id="pChips" role="group" aria-label="Fontes"></div>
@@ -292,15 +292,15 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
     <!-- SOM -->
     <section class="view" data-view="som" hidden>
       <div class="vhead">
-        <div><h2>Retrato e som</h2></div>
+        <div><h2>Som e cimática</h2></div>
         <button type="button" class="btn" id="sAuto" aria-pressed="true">automático: ligado</button>
       </div>
       <div class="search" data-search="som"></div>
       <div class="chips" id="sChips" role="group" aria-label="Eventos"></div>
       <div class="grid2">
         <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
-          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px">
-            <div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div class="square"><canvas id="sCv" width="720" height="720" aria-label="Retrato com a linha de leitura sonora"></canvas></div><span class="dim">retrato · tinta na água</span></div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:20px;max-width:560px">
+            <div style="display:none"><div class="square"><canvas id="sCv" width="720" height="720" aria-label="Retrato com a linha de leitura sonora"></canvas></div></div>
             <div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div class="square"><canvas id="sCym" aria-label="Figura de Chladni gerada pelas frequências do lugar"></canvas></div><span class="dim">cimática · figuras de Chladni das frequências</span></div>
           </div>
           <canvas class="scope" id="sScope" width="480" height="84" style="height:auto;aspect-ratio:480/84;max-width:340px;border:0" aria-label="Partitura do lugar: uma onda por fator, com sua frequência e seu peso"></canvas>
@@ -311,13 +311,13 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
           <div class="panel">
             <h3>tocar</h3>
             <div class="row">
-              <button type="button" class="btn" id="sSonify" aria-pressed="false">ler retrato como som</button>
+              <button type="button" class="btn" id="sSonify" aria-pressed="false" hidden>ler retrato como som</button>
               <button type="button" class="btn psndBtn" aria-pressed="false">som do lugar: desligado</button>
             </div>
             <div class="psndMon" hidden style="display:flex;flex-direction:column;gap:6px"></div>
             <div class="dim">O som do lugar é contínuo: segue o lugar da tela e muda junto com os dados, e só para quando você desligar. Volume limitado por compressor.</div>
           </div>
-          <div class="panel">
+          <div class="panel" hidden>
             <h3>leitura do retrato</h3>
             <ol class="chain">
               <li>coluna x da imagem (varre em 12 s)</li>
@@ -1346,7 +1346,7 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
   }
 
   // ================= figuras: nebula engine (WebGL fragment shader, data-driven uniforms) =================
-  const NB = { cv: document.getElementById("gGl"), ok: false, t0: performance.now(), mode: "neb" };
+  const NB = { cv: document.getElementById("gGl"), ok: false, t0: performance.now(), mode: "net" };
   (function nbInit() {
     const gl = NB.cv.getContext("webgl", { preserveDrawingBuffer: true, antialias: false });
     if (!gl) return;
@@ -1864,7 +1864,7 @@ void main(){
     if (!VIEWS.includes(v)) v = "agora"; view = v;
     document.querySelectorAll(".view").forEach(s => s.hidden = s.dataset.view !== v);
     document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-current", b.dataset.v === v ? "page" : "false"));
-    document.getElementById("stView").textContent = v === "som" ? "retrato e som" : v === "mapa" ? "reprise 72 h" : v;
+    document.getElementById("stView").textContent = v === "som" ? "som e cimática" : v === "mapa" ? "reprise 72 h" : v;
     if (v === "mapa") requestAnimationFrame(mResize);
     if (v === "agora") requestAnimationFrame(aResize);
     if (v === "figuras" && NB.mode === "neb") requestAnimationFrame(nbResize);
@@ -1898,7 +1898,7 @@ void main(){
   buildPlaceChips(document.getElementById("pChips")); buildPlaceChips(document.getElementById("sChips"));
   buildSearch(document.querySelector('[data-search="figuras"]'), src => { gAuto(false); gSet(src); });
   buildSearch(document.querySelector('[data-search="som"]'), src => { setAuto(false); pStart(portraitFromPlace(src)); });
-  mReset(); P.qi = 1; pStart(portraitFromPlace(PSRC[0])); gMode("neb");
+  mReset(); P.qi = 1; pStart(portraitFromPlace(PSRC[0])); gMode("net");
   const start = (location.hash || "").slice(1);
   show(VIEWS.includes(start) || OLD_VIEWS.includes(start) ? start : "agora");
   if (LIVE) { const el = document.getElementById("fonteData"); if (el) el.textContent = `Coleta automática a cada hora. Última: ${LIVE.atualizado.replace("T", " ").replace("Z", " UTC")}. ${Object.entries(LIVE.fontes || {}).map(([k, v]) => `${k}: ${v}`).join(" · ")}.`; }
@@ -1983,12 +1983,12 @@ en: {
 "Aqui: Du = {#} · Dv = {#} · Δt = {#} · laplaciano {#}×{#} ({#} nos lados, {#} nas diagonais).": "Here: Du = {#} · Dv = {#} · Δt = {#} · {#}×{#} Laplacian ({#} on the sides, {#} on the diagonals).",
 "As fotografias aparecem aqui enquanto a figura se transforma.": "Photographs appear here as the figure transforms.",
 "Buscar lugar": "Search place", "buscar": "search", "buscar qualquer lugar do mundo · cidade, região, país": "search any place in the world · city, region, country",
-"Cada figura é um lugar do mundo. Ela junta tudo o que pode pesar na saúde mental de quem vive ali (desastres próximos, calor, ar, ruído, luz, conflito) e se transforma sem parar, passando de um lugar ao próximo sem recomeçar. Dois motores: nebulosa e rede.": "Each figure is a place in the world. It gathers everything that can weigh on the mental health of the people who live there (nearby disasters, heat, air, noise, light, conflict) and transforms without pause, moving from one place to the next without restarting. Two engines: nebula and network.",
-"Cada lugar como tinta na água e como som. Os fatores que mais pesam ali soltam cor, que se espalha e vai se dissipando; as mesmas frequências desenham a cimática ao lado e tocam sem parar. O retrato também pode ser lido como partitura: uma linha percorre a imagem e cada faixa de altura vira uma frequência.": "Each place as ink in water and as sound. The factors that weigh most there release colour that spreads and slowly fades; the same frequencies draw the cymatics alongside and play without stopping. The portrait can also be read as a score: a line sweeps the image and each height band becomes a frequency.",
-"Cada retrato é um lugar do mundo como tinta na água: os fatores que mais pesam ali soltam cor, que se espalha, se mistura e vai se dissipando. Na troca de lugar, a imagem anterior se desfaz enquanto a nova nasce. No modo automático, a máquina passa de um lugar a outro e guarda fotografias no mural abaixo.": "Each portrait is a place in the world as ink in water: the factors that weigh most there release colour that spreads, mixes and slowly fades. When the place changes, the previous image dissolves as the new one is born. In automatic mode, the machine moves from place to place and keeps photographs on the wall below.",
+"Cada figura é um lugar do mundo. Ela junta tudo o que pode pesar na saúde mental de quem vive ali (desastres próximos, calor, ar, ruído, luz, conflito) e se transforma sem parar, passando de um lugar ao próximo sem recomeçar. A figura é uma rede de reação-difusão.": "Each figure is a place in the world. It gathers everything that can weigh on the mental health of the people who live there (nearby disasters, heat, air, noise, light, conflict) and transforms without pause, moving from one place to the next without restarting. The figure is a reaction-diffusion network.",
+"Cada lugar como som. As frequências dos fatores que mais pesam ali desenham a cimática e tocam sem parar.": "Each place as sound. The frequencies of the factors that weigh most there draw the cymatics and play without stopping.",
+"Cada retrato é um lugar do mundo em cor: os fatores que mais pesam ali dão a cor da figura. Na troca de lugar, a imagem anterior se desfaz enquanto a nova nasce. No modo automático, a máquina passa de um lugar a outro e guarda fotografias no mural abaixo.": "Each portrait is a place in the world in colour: the factors that weigh most there give the figure its colour. When the place changes, the previous image dissolves as the new one is born. In automatic mode, the machine moves from place to place and keeps photographs on the wall below.",
 "Carga ao longo do tempo": "Load over time", "Cascata espectral": "Spectral cascade",
 "Duas substâncias se espalham e reagem. u é o alimento, v é o organismo. F controla quanto alimento entra; k controla quanto organismo se perde. Pequenas mudanças em F e k produzem células, vermes, labirintos ou corais, como na formação de manchas em tecidos vivos descrita por Alan Turing em {#}.": "Two substances spread and react. u is the food, v is the organism. F controls how much food comes in; k controls how much organism is lost. Small changes in F and k produce cells, worms, labyrinths or corals, like the pattern formation in living tissue described by Alan Turing in {#}.",
-"Eventos": "Events", "Figuras": "Figures", "figuras": "figures", "Fontes": "Sources", "Método": "Method", "método": "method", "metodo": "method", "Seções": "Sections", "Retratos": "Portraits", "Retrato e som": "Portrait and sound", "retrato e som": "portrait and sound",
+"Eventos": "Events", "Figuras": "Figures", "figuras": "figures", "Fontes": "Sources", "Método": "Method", "método": "method", "metodo": "method", "Seções": "Sections", "Retratos": "Portraits", "Som e cimática": "Sound and cymatics", "som e cimática": "sound and cymatics",
 "Figura de Chladni gerada pelas frequências do lugar": "Chladni figure generated from the place's frequencies",
 "Figura gerada continuamente a partir dos dados": "Figure generated continuously from the data",
 "GDACS, Global Disaster Alert and Coordination System (ONU e Comissão Europeia). Lido em {#}/{#}/{#}, {#} UTC.": "GDACS, Global Disaster Alert and Coordination System (UN and European Commission). Read on {#}/{#}/{#}, {#} UTC.",
@@ -2051,7 +2051,7 @@ en: {
 "processo": "process", "quantidade de organismo na faixa → volume": "amount of organism in the band → volume", "química · mediador → cor e som": "chemistry · mediator → colour and sound",
 "raio do retrato": "portrait radius", "recomeçar": "restart", "regras de tradução": "translation rules",
 "repouso e calma; o estado de base quando pouco pesa": "rest and calm; the baseline state when little weighs",
-"retrato · tinta na água": "portrait · ink in water", "ritmo circadiano · o organismo pulsa": "circadian rhythm · the organism pulses",
+"ritmo circadiano · o organismo pulsa": "circadian rhythm · the organism pulses",
 "ritmo do sono; alterada por luz, calor e ruído à noite": "sleep rhythm; altered by light, heat and noise at night",
 "sementes": "seeds", "sinal de fome; eleva ansiedade e alerta": "hunger signal; raises anxiety and alertness", "sincronizando": "syncing",
 "sobreposição": "overlap", "som": "sound", "som contínuo": "continuous sound", "som do lugar: desligado": "place sound: off", "som do lugar: ligado": "place sound: on", "som ligado": "sound on",
@@ -2076,12 +2076,12 @@ es: {
 "Aqui: Du = {#} · Dv = {#} · Δt = {#} · laplaciano {#}×{#} ({#} nos lados, {#} nas diagonais).": "Aquí: Du = {#} · Dv = {#} · Δt = {#} · laplaciano {#}×{#} ({#} en los lados, {#} en las diagonales).",
 "As fotografias aparecem aqui enquanto a figura se transforma.": "Las fotografías aparecen aquí mientras la figura se transforma.",
 "Buscar lugar": "Buscar lugar", "buscar": "buscar", "buscar qualquer lugar do mundo · cidade, região, país": "buscar cualquier lugar del mundo · ciudad, región, país",
-"Cada figura é um lugar do mundo. Ela junta tudo o que pode pesar na saúde mental de quem vive ali (desastres próximos, calor, ar, ruído, luz, conflito) e se transforma sem parar, passando de um lugar ao próximo sem recomeçar. Dois motores: nebulosa e rede.": "Cada figura es un lugar del mundo. Reúne todo lo que puede pesar en la salud mental de quien vive allí (desastres cercanos, calor, aire, ruido, luz, conflicto) y se transforma sin parar, pasando de un lugar al siguiente sin reiniciar. Dos motores: nebulosa y red.",
-"Cada lugar como tinta na água e como som. Os fatores que mais pesam ali soltam cor, que se espalha e vai se dissipando; as mesmas frequências desenham a cimática ao lado e tocam sem parar. O retrato também pode ser lido como partitura: uma linha percorre a imagem e cada faixa de altura vira uma frequência.": "Cada lugar como tinta en el agua y como sonido. Los factores que más pesan allí sueltan color, que se esparce y se va disipando; las mismas frecuencias dibujan la cimática al lado y suenan sin parar. El retrato también puede leerse como partitura: una línea recorre la imagen y cada franja de altura se vuelve una frecuencia.",
-"Cada retrato é um lugar do mundo como tinta na água: os fatores que mais pesam ali soltam cor, que se espalha, se mistura e vai se dissipando. Na troca de lugar, a imagem anterior se desfaz enquanto a nova nasce. No modo automático, a máquina passa de um lugar a outro e guarda fotografias no mural abaixo.": "Cada retrato es un lugar del mundo como tinta en el agua: los factores que más pesan allí sueltan color, que se esparce, se mezcla y se va disipando. Al cambiar de lugar, la imagen anterior se deshace mientras nace la nueva. En modo automático, la máquina pasa de un lugar a otro y guarda fotografías en el mural de abajo.",
+"Cada figura é um lugar do mundo. Ela junta tudo o que pode pesar na saúde mental de quem vive ali (desastres próximos, calor, ar, ruído, luz, conflito) e se transforma sem parar, passando de um lugar ao próximo sem recomeçar. A figura é uma rede de reação-difusão.": "Cada figura es un lugar del mundo. Reúne todo lo que puede pesar en la salud mental de quien vive allí (desastres cercanos, calor, aire, ruido, luz, conflicto) y se transforma sin parar, pasando de un lugar al siguiente sin reiniciar. La figura es una red de reacción-difusión.",
+"Cada lugar como som. As frequências dos fatores que mais pesam ali desenham a cimática e tocam sem parar.": "Cada lugar como sonido. Las frecuencias de los factores que más pesan allí dibujan la cimática y suenan sin parar.",
+"Cada retrato é um lugar do mundo em cor: os fatores que mais pesam ali dão a cor da figura. Na troca de lugar, a imagem anterior se desfaz enquanto a nova nasce. No modo automático, a máquina passa de um lugar a outro e guarda fotografias no mural abaixo.": "Cada retrato es un lugar del mundo en color: los factores que más pesan allí dan el color de la figura. Al cambiar de lugar, la imagen anterior se deshace mientras nace la nueva. En modo automático, la máquina pasa de un lugar a otro y guarda fotografías en el mural de abajo.",
 "Carga ao longo do tempo": "Carga a lo largo del tiempo", "Cascata espectral": "Cascada espectral",
 "Duas substâncias se espalham e reagem. u é o alimento, v é o organismo. F controla quanto alimento entra; k controla quanto organismo se perde. Pequenas mudanças em F e k produzem células, vermes, labirintos ou corais, como na formação de manchas em tecidos vivos descrita por Alan Turing em {#}.": "Dos sustancias se esparcen y reaccionan. u es el alimento, v es el organismo. F controla cuánto alimento entra; k controla cuánto organismo se pierde. Pequeños cambios en F y k producen células, gusanos, laberintos o corales, como en la formación de manchas en tejidos vivos descrita por Alan Turing en {#}.",
-"Eventos": "Eventos", "Figuras": "Figuras", "figuras": "figuras", "Fontes": "Fuentes", "Método": "Método", "método": "método", "metodo": "método", "Seções": "Secciones", "Retratos": "Retratos", "Retrato e som": "Retrato y sonido", "retrato e som": "retrato y sonido",
+"Eventos": "Eventos", "Figuras": "Figuras", "figuras": "figuras", "Fontes": "Fuentes", "Método": "Método", "método": "método", "metodo": "método", "Seções": "Secciones", "Retratos": "Retratos", "Som e cimática": "Sonido y cimática", "som e cimática": "sonido y cimática",
 "Figura de Chladni gerada pelas frequências do lugar": "Figura de Chladni generada por las frecuencias del lugar",
 "Figura gerada continuamente a partir dos dados": "Figura generada continuamente a partir de los datos",
 "GDACS, Global Disaster Alert and Coordination System (ONU e Comissão Europeia). Lido em {#}/{#}/{#}, {#} UTC.": "GDACS, Global Disaster Alert and Coordination System (ONU y Comisión Europea). Leído el {#}/{#}/{#}, {#} UTC.",
@@ -2144,7 +2144,7 @@ es: {
 "processo": "proceso", "quantidade de organismo na faixa → volume": "cantidad de organismo en la franja → volumen", "química · mediador → cor e som": "química · mediador → color y sonido",
 "raio do retrato": "radio del retrato", "recomeçar": "reiniciar", "regras de tradução": "reglas de traducción",
 "repouso e calma; o estado de base quando pouco pesa": "reposo y calma; el estado de base cuando poco pesa",
-"retrato · tinta na água": "retrato · tinta en el agua", "ritmo circadiano · o organismo pulsa": "ritmo circadiano · el organismo late",
+"ritmo circadiano · o organismo pulsa": "ritmo circadiano · el organismo late",
 "ritmo do sono; alterada por luz, calor e ruído à noite": "ritmo del sueño; alterada por luz, calor y ruido de noche",
 "sementes": "semillas", "sinal de fome; eleva ansiedade e alerta": "señal de hambre; eleva la ansiedad y la alerta", "sincronizando": "sincronizando",
 "sobreposição": "superposición", "som": "sonido", "som contínuo": "sonido continuo", "som do lugar: desligado": "sonido del lugar: apagado", "som do lugar: ligado": "sonido del lugar: encendido", "som ligado": "sonido encendido",
@@ -2297,9 +2297,6 @@ rd: ["reação-difusão (Gray-Scott)", "Modelo matemático de duas substâncias 
 nebu: ["nebulosa", "Figura feita de nuvens de cor que se dobram sobre si mesmas. A cor da nuvem e das estrelas vem dos mediadores do lugar.",
  "nebula", "A figure made of clouds of colour folding over themselves. The colour of the cloud and the stars comes from the place's mediators.",
  "nebulosa", "Figura hecha de nubes de color que se pliegan sobre sí mismas. El color de la nube y de las estrellas viene de los mediadores del lugar."],
-tinta: ["tinta na água", "O retrato do lugar: cada mediador solta tinta da sua cor, que se espalha e vai se dissipando.",
- "ink in water", "The portrait of the place: each mediator releases ink of its colour, which spreads and slowly fades.",
- "tinta en el agua", "El retrato del lugar: cada mediador suelta tinta de su color, que se esparce y se va disipando."],
 partitura: ["partitura", "Ler o retrato como música: uma linha varre a imagem e cada faixa de altura vira uma frequência.",
  "score", "Reading the portrait as music: a line sweeps the image and each height band becomes a frequency.",
  "partitura", "Leer el retrato como música: una línea barre la imagen y cada franja de altura se vuelve una frecuencia."],
@@ -2488,17 +2485,17 @@ const T = [
  "A single organism grows over the world map where there are real disaster alerts (GDACS). It never restarts, keeps scars from the alerts and slows down on the side of the planet where it is night.",
  "Un único organismo crece sobre el mapa del mundo donde hay alertas reales de desastre (GDACS). Nunca reinicia, guarda cicatrices de las alertas y desacelera en el lado del planeta donde es de noche."],
 ["figuras", "figures", "figuras"],
-["Cada lugar vira uma figura em movimento, em dois motores: a nebulosa (nuvem de cor) e a rede (reação-difusão). A lista ao lado ordena os lugares do maior peso para o menor.",
- "Each place becomes a moving figure, in two engines: the nebula (a cloud of colour) and the network (reaction-diffusion). The list alongside orders places from heaviest to lightest.",
- "Cada lugar se vuelve una figura en movimiento, en dos motores: la nebulosa (nube de color) y la red (reacción-difusión). La lista al lado ordena los lugares del mayor peso al menor."],
+["Cada lugar vira uma figura em movimento, uma rede de reação-difusão. A lista ao lado ordena os lugares do maior peso para o menor.",
+ "Each place becomes a moving figure, a reaction-diffusion network. The list alongside orders places from heaviest to lightest.",
+ "Cada lugar se vuelve una figura en movimiento, una red de reacción-difusión. La lista al lado ordena los lugares del mayor peso al menor."],
 ["reprise 72 h", "replay 72 h", "repetición 72 h"],
 ["Os alertas das últimas 72 horas passam de novo, acelerados, na ordem em que aconteceram.",
  "The alerts of the last 72 hours play again, sped up, in the order they happened.",
  "Las alertas de las últimas 72 horas pasan de nuevo, aceleradas, en el orden en que ocurrieron."],
-["retrato e som", "portrait and sound", "retrato y sonido"],
-["O lugar como tinta na água: os mediadores soltam cor que se espalha e se dissipa. Ao lado, a cimática (figuras de Chladni) desenha as mesmas frequências, e o som do lugar toca sem parar até você desligar. O retrato também pode ser lido como partitura.",
- "The place as ink in water: the mediators release colour that spreads and fades. Alongside, the cymatics (Chladni figures) draw the same frequencies, and the place's sound plays until you turn it off. The portrait can also be read as a score.",
- "El lugar como tinta en el agua: los mediadores sueltan color que se esparce y se disipa. Al lado, la cimática (figuras de Chladni) dibuja las mismas frecuencias, y el sonido del lugar suena sin parar hasta que lo apagas. El retrato también puede leerse como partitura."],
+["som e cimática", "sound and cymatics", "sonido y cimática"],
+["A cimática (figuras de Chladni) desenha as frequências dos mediadores do lugar, e o som do lugar toca sem parar até você desligar.",
+ "The cymatics (Chladni figures) draw the frequencies of the place's mediators, and the place's sound plays until you turn it off.",
+ "La cimática (figuras de Chladni) dibuja las frecuencias de los mediadores del lugar, y el sonido del lugar suena sin parar hasta que lo apagas."],
 ["cimática", "cymatics", "cimática"],
 ["Numa placa que vibra, a areia se junta nos pontos parados e desenha linhas. Cada frequência vira um desses desenhos, e eles se somam.",
  "On a vibrating plate, sand gathers at the still points and draws lines. Each frequency becomes one of these drawings, and they add up.",
@@ -2523,7 +2520,7 @@ D.en[FOOT[0]] = FOOT[1]; D.es[FOOT[0]] = FOOT[2];
 const partes = [];
 for (let i = 2; i < T.length; i += 2) partes.push([T[i][0], T[i + 1][0]]);
 const P = window.GLOSS["_partes"]; D.en[P[0]] = P[2]; D.es[P[0]] = P[4];
-window.GUIDE = { titulo: T[0][0], intro: T[1][0], rodape: FOOT[0], groups: [{ nome: P[0], items: partes }].concat(window.GLOSS_USE([["_med", ["ADR","NOR","COR","CRH","GLU","IL6","SUBP","HIS","ACH","SER","DOP","GABA","MEL","GRE","OXT","AVP","END","ANA"]], ["_conc", ["carga","alostase","hpa","psico","neuro","horm","infl","circ","fator","contra"]], ["_som", ["massa","hz","oitava","cima","rd","nebu","tinta","partitura","comp"]], ["_dados", ["gdacs","eqwftc","inform","pm","db","ipc","meteo","utc","coleta"]]])) };
+window.GUIDE = { titulo: T[0][0], intro: T[1][0], rodape: FOOT[0], groups: [{ nome: P[0], items: partes }].concat(window.GLOSS_USE([["_med", ["ADR","NOR","COR","CRH","GLU","IL6","SUBP","HIS","ACH","SER","DOP","GABA","MEL","GRE","OXT","AVP","END","ANA"]], ["_conc", ["carga","alostase","hpa","psico","neuro","horm","infl","circ","fator","contra"]], ["_som", ["massa","hz","oitava","cima","rd","comp"]], ["_dados", ["gdacs","eqwftc","inform","pm","db","ipc","meteo","utc","coleta"]]])) };
 })();
 
 // Three languages without touching the page's own code: every Portuguese text node (and placeholder, aria-label,
