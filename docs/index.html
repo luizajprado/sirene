@@ -53,6 +53,10 @@ main { min-width: 0; padding-bottom: 24px; }
 .kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 18px; margin: 0; font-variant-numeric: tabular-nums; line-height: 1.5; }
 .kv dt { color: var(--dim); }
 .kv dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.kv > :not(dt):not(dd) { grid-column: 1 / -1; }
+#gParams { grid-template-columns: minmax(84px, 34%) minmax(0, 1fr); }
+.nebsolo .square { width: min(100%, calc(86vh * 0.8)); aspect-ratio: 4 / 5; margin: 0 auto; }
+.nebsolo .grid2 { grid-template-columns: minmax(0, 1fr) 360px; }
 .stage { position: relative; width: 100%; max-width: 100%; aspect-ratio: 2 / 1; border: 1px solid var(--line); cursor: crosshair; touch-action: manipulation; }
 .square { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / 1; border: 1px solid var(--line); background: #000; }
 .stage canvas, .square canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
@@ -211,10 +215,28 @@ th { color: var(--dim); font-weight: 400; font-size: 10px; letter-spacing: 0.12e
             <div class="chips" id="gChips" role="group" aria-label="Fontes"></div>
           </div>
           <div class="panel" id="nbAtlas" hidden>
-            <h3>prancha do atlas</h3>
-            <p class="dim" style="margin:0 0 10px">Escolha um lugar, fixe a imagem quando ela estiver como você quer e baixe a prancha em alta resolução (4:5, 2400 × 3000 px). O nome do arquivo guarda o lugar e a data.</p>
-            <div class="row"><button type="button" class="btn" id="nbFix" aria-pressed="false">fixar imagem</button><button type="button" class="btn" id="nbDown">baixar prancha</button></div>
+            <h3>atlas · pranchas fixas</h3>
+            <p class="dim" style="margin:0 0 10px">O Atlas das nebulosas é uma série fixa de 5 a 7 pranchas, para impressão ou caixa de luz. Cada prancha é um lugar numa data e não muda depois de escolhida. Escolha o lugar, fixe a imagem e adicione ao atlas.</p>
+            <div class="row"><button type="button" class="btn" id="nbVary" aria-pressed="true">cores: variando</button><button type="button" class="btn" id="nbFix" aria-pressed="false">fixar imagem</button><button type="button" class="btn" id="nbAdd">adicionar ao atlas</button></div>
             <div class="dim" id="nbCap" style="margin-top:8px;font-size:11px"></div>
+            <div id="nbList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:12px"></div>
+            <div class="row" style="margin-top:10px"><button type="button" class="btn" id="nbDown">baixar pranchas e ficha</button><button type="button" class="btn ghost" id="nbClear">limpar atlas</button></div>
+          </div>
+          <div class="panel" id="nbRoom" hidden>
+            <h3>sala de luz · projeção</h3>
+            <p class="dim" style="margin:0 0 10px">Na instalação, a nebulosa é projetada através de água ou vidro, e também sobre as Máscaras e como fundo do mapping. Ela pode ser movida pelas frequências do lugar ou pelo corpo de quem está na sala.</p>
+            <div class="row" id="nbDrive" role="group" aria-label="O que move a nebulosa">
+              <button type="button" class="btn" data-d="calma" aria-pressed="true">parada</button>
+              <button type="button" class="btn" data-d="lugar" aria-pressed="false">movida pelo lugar</button>
+              <button type="button" class="btn" data-d="corpo" aria-pressed="false">movida pelo corpo</button>
+            </div>
+            <div class="dim" id="nbDriveTxt" style="margin-top:8px;font-size:11px"></div>
+            <div class="row" style="margin-top:10px" id="nbCut" role="group" aria-label="Recorte da projeção">
+              <button type="button" class="btn" data-c="inteiro" aria-pressed="true">recorte: inteiro</button>
+              <button type="button" class="btn" data-c="oval" aria-pressed="false">recorte: oval (Máscaras)</button>
+              <button type="button" class="btn" data-c="circulo" aria-pressed="false">recorte: círculo (água)</button>
+            </div>
+            <div class="row" style="margin-top:10px"><button type="button" class="btn" id="nbFull">tela cheia para projetar</button></div>
           </div>
         </div>
       </div>
@@ -1472,6 +1494,7 @@ void main(){
     NB.gl = gl; NB.u = {}; for (const k of ["uRes", "uOff", "uT", "uC1", "uC2", "uC3", "uC4", "uC5", "uW1", "uW2", "uWarp", "uFil", "uPts"]) NB.u[k] = gl.getUniformLocation(pr, k);
     NB.ok = true;
   })();
+  NB.tc = 0; NB.speed = 1; NB.m = 1;
   NB.cur = { c4: [1, 1, 1], c5: [1, 1, 1], c1: [0.9, 0.2, 0.15], c2: [0.92, 0.9, 0.86], c3: [0.35, 0.5, 1], w1: 0.8, w2: 0.4, warp: 4, fil: 0.8, pts: 0.5, off: [0, 0] };
   NB.tgt = JSON.parse(JSON.stringify(NB.cur));
   function nbTarget(src) {
@@ -1481,6 +1504,9 @@ void main(){
     const c4 = ext[0] ? COL[ext[0][0]].map(v => v / 255) : [1, 1, 1], c5 = ext[1] ? COL[ext[1][0]].map(v => v / 255) : c4;
     NB.tgt = { c4, c5, c1: COL[s0[0]].map(v => v / 255), c3: COL[s1[0]].map(v => v / 255), c2: COL[s2[0]].map(v => v / 255),
       w1: 0.6 + 0.6 * s0[1], w2: 0.2 + 0.55 * s2[1], warp: 2.5 + 3 * s0[1], fil: 0.3 + 0.9 * s1[1], pts: 0.15 + 0.8 * noise, off: [(src.lon || 0) / 25, (src.lat || 0) / 25] };
+    // every substance that weighs on the place, strongest first: the palette the colours travel through when they vary
+    const keys = []; for (const k of [...L.map(x => x[0]), ...(src.kind === "lugar" ? chemProfile(src.factors).map(x => x[0]) : [])]) if (COL[k] && k !== "NOISE" && !keys.includes(k)) keys.push(k);
+    NB.pal = keys.slice(0, 7).map(k => COL[k].map(v => v / 255)); NB.base = { c1: NB.tgt.c1, c2: NB.tgt.c2, c3: NB.tgt.c3, c4: NB.tgt.c4, c5: NB.tgt.c5 }; NB.vi = -1;
     const row = (key, what, v) => `<dt style="color:${hex(COL[key])}">${COLNAME[key]}</dt><dd>${what} · ${v}</dd>`;
     document.getElementById("gNebRows").innerHTML = NB.mode === "neb" ?
       row(s0[0], "nuvem principal", `densidade ${NB.tgt.w1.toFixed(2)} · torção ${NB.tgt.warp.toFixed(1)}`) +
@@ -1494,15 +1520,20 @@ void main(){
   }
   function nbTick(dt) {
     if (!NB.ok) return;
+    if (NB.frozen == null) { if (NB.drive) NB.drive(dt); NB.tc += dt * NB.speed; }
     const k = Math.min(1, dt * (0.1 + 1.4 * Math.exp(-(performance.now() - (G.lastSwitch || 0)) / 1800))), c = NB.cur, t = NB.tgt;
+    if (NB.vary && NB.frozen == null && NB.pal && NB.pal.length > 1) {   // colours travel through the place's substances, one step every 8 s
+      const n = NB.pal.length, i0 = Math.floor(performance.now() / 8000);
+      if (i0 !== NB.vi) { NB.vi = i0; ["c1", "c3", "c2", "c4", "c5"].forEach((key, j) => { t[key] = NB.pal[(i0 + j) % n].slice(); }); }
+    } else if (!NB.vary && NB.base && NB.vi !== -1) { NB.vi = -1; Object.assign(t, JSON.parse(JSON.stringify(NB.base))); }
     for (let i = 0; i < 2; i++) c.off[i] += (t.off[i] - c.off[i]) * k * 0.35;
     for (const key of ["c1", "c2", "c3", "c4", "c5"]) for (let i = 0; i < 3; i++) c[key][i] += (t[key][i] - c[key][i]) * k;
     for (const key of ["w1", "w2", "warp", "fil", "pts"]) c[key] += (t[key] - c[key]) * k;
     const gl = NB.gl, u = NB.u; if (NB.cv.width < 3) nbResize();
     gl.viewport(0, 0, NB.cv.width, NB.cv.height);
-    gl.uniform2f(u.uRes, NB.cv.width, NB.cv.height); gl.uniform2f(u.uOff, c.off[0], c.off[1]); gl.uniform1f(u.uT, ((NB.frozen ?? performance.now()) - NB.t0) / 1000);
+    gl.uniform2f(u.uRes, NB.cv.width, NB.cv.height); gl.uniform2f(u.uOff, c.off[0], c.off[1]); gl.uniform1f(u.uT, NB.tc);
     gl.uniform3fv(u.uC1, c.c1); gl.uniform3fv(u.uC2, c.c2); gl.uniform3fv(u.uC3, c.c3); gl.uniform3fv(u.uC4, c.c4); gl.uniform3fv(u.uC5, c.c5);
-    gl.uniform1f(u.uW1, c.w1); gl.uniform1f(u.uW2, c.w2); gl.uniform1f(u.uWarp, c.warp); gl.uniform1f(u.uFil, c.fil); gl.uniform1f(u.uPts, c.pts);
+    const m = NB.frozen != null ? 1 : (NB.m ?? 1); gl.uniform1f(u.uW1, c.w1 * (0.8 + 0.2 * m)); gl.uniform1f(u.uW2, c.w2); gl.uniform1f(u.uWarp, c.warp * (0.9 + 0.1 * m)); gl.uniform1f(u.uFil, c.fil * (0.45 + 0.55 * m)); gl.uniform1f(u.uPts, c.pts);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
   function gMode(m) {
@@ -2174,22 +2205,92 @@ void main(){
     document.body.classList.add("solo"); document.title = "Mapa do cuidado";
     VIEWS.splice(0, VIEWS.length, "cuidado"); show("cuidado");
   } else if (SOLO === "nebulosa") {
-    document.body.classList.add("solo"); document.title = "Nebulosas";
+    document.body.classList.add("solo", "nebsolo"); document.title = "Nebulosas";
     const sec = document.querySelector('[data-view="figuras"]');
     sec.querySelector(".vhead h2").textContent = "Nebulosas";
-    sec.querySelector(".vhead p").textContent = "Gerador do Atlas das nebulosas. Cada nebulosa é um lugar numa data: a cor da nuvem principal, dos filamentos e das manchas vem das substâncias que mais pesam ali, e a densidade, a torção, o brilho e os pontos de luz vêm dos dados do dia. Cada prancha baixada é uma imagem fixa, com lugar e data.";
+    sec.querySelector(".vhead p").textContent = "As nebulosas têm dois destinos no projeto. O Atlas: uma série fixa de 5 a 7 pranchas, impressas ou em caixa de luz, cada uma um lugar numa data. A sala de luz: a nebulosa projetada através de água ou vidro, sobre as Máscaras e como fundo do mapping, movida pelas frequências do lugar ou pelo corpo de quem está na sala. Cor, densidade, torção, brilho e pontos de luz vêm das substâncias e dos dados do lugar naquele dia.";
     document.getElementById("gAuto").hidden = true; document.getElementById("nbAtlas").hidden = false;
     VIEWS.splice(0, VIEWS.length, "figuras"); gAuto(false); gMode("neb"); show("figuras");
-    const slug = x => String(x || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-    const cap = () => { const n = G.src ? (window.trCanvas ? trCanvas(G.src.label || "") : G.src.label) : ""; document.getElementById("nbCap").textContent = `${n} · ${new Date().toLocaleDateString("pt-BR")}`; };
+    document.getElementById("nbRoom").hidden = false;
+    { const col = document.getElementById("nbAtlas").parentElement; col.prepend(document.getElementById("nbRoom")); col.prepend(document.getElementById("nbAtlas")); }
+    const slug = x => String(x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const T = x => window.trCanvas ? trCanvas(x) : x, today = () => new Date().toLocaleDateString("pt-BR");
+    const placeName = () => G.src ? T(G.src.label || "") : "";
+    const subs = () => (NB.pal && G.src ? speciesFor(G.src).map(x => (MED[x[0]] || {}).nome).filter(Boolean) : []).map(T);
+    const cap = () => { document.getElementById("nbCap").textContent = `${placeName()} · ${today()}${subs().length ? " · " + subs().join(", ") : ""}`; };
     setInterval(cap, 1000); cap();
-    document.getElementById("nbFix").addEventListener("click", e => { const on = NB.frozen == null; NB.frozen = on ? performance.now() : null; e.currentTarget.setAttribute("aria-pressed", String(on)); e.currentTarget.textContent = on ? "imagem fixa · soltar" : "fixar imagem"; });
-    document.getElementById("nbDown").addEventListener("click", () => {
-      if (!NB.ok) return; const keep = NB.frozen; NB.frozen = keep ?? performance.now();
-      NB.cv.width = 2400; NB.cv.height = 3000; nbTick(0);
-      NB.cv.toBlob(bl => { NB.frozen = keep; nbResize(); if (!bl) return; const a = document.createElement("a"); a.href = URL.createObjectURL(bl);
-        a.download = `nebulosa-${slug(G.src && (window.trCanvas ? trCanvas(G.src.label) : G.src.label))}-${new Date().toISOString().slice(0, 10)}.png`; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }, "image/png");
+    // --- atlas: 5 to 7 fixed plates, kept in this browser only
+    const KEY = "nebulosas-atlas";
+    const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { return []; } };
+    const save = a => { try { localStorage.setItem(KEY, JSON.stringify(a)); } catch (e) {} };
+    let atlas = load();
+    const snap = () => ({ place: placeName(), date: today(), iso: new Date().toISOString().slice(0, 10), subs: subs(), cur: JSON.parse(JSON.stringify(NB.cur)), tc: NB.tc });
+    function renderPlate(pl, w, h) {   // draws a stored plate exactly as it was fixed
+      const keepCur = NB.cur, keepT = NB.tgt, keepTc = NB.tc, keepF = NB.frozen, keepV = NB.vary;
+      NB.cur = JSON.parse(JSON.stringify(pl.cur)); NB.tgt = JSON.parse(JSON.stringify(pl.cur)); NB.tc = pl.tc; NB.frozen = 0; NB.vary = false;
+      NB.cv.width = w; NB.cv.height = h; nbTick(0);
+      const out = document.createElement("canvas"); out.width = w; out.height = h; out.getContext("2d").drawImage(NB.cv, 0, 0);
+      NB.cur = keepCur; NB.tgt = keepT; NB.tc = keepTc; NB.frozen = keepF; NB.vary = keepV; nbResize(); return out;
+    }
+    function list() {
+      const el = document.getElementById("nbList"); el.textContent = "";
+      atlas.forEach((pl, i) => {
+        const d = document.createElement("div"); d.style.cssText = "display:flex;flex-direction:column;gap:4px;font-size:10px";
+        const c = renderPlate(pl, 192, 240); c.style.cssText = "width:100%;height:auto;border:1px solid var(--line)";
+        const t = document.createElement("div"); t.className = "dim"; t.textContent = `${String(i + 1).padStart(2, "0")} · ${pl.place} · ${pl.date}`;
+        const x = document.createElement("button"); x.type = "button"; x.className = "btn ghost"; x.style.fontSize = "10px"; x.textContent = "tirar";
+        x.addEventListener("click", () => { atlas.splice(i, 1); save(atlas); list(); });
+        d.append(c, t, x); el.append(d);
+      });
+      const add = document.getElementById("nbAdd"); add.textContent = `adicionar ao atlas (${atlas.length}/7)`; add.disabled = atlas.length >= 7;
+    }
+    list();
+    document.getElementById("nbAdd").addEventListener("click", () => {
+      if (atlas.length >= 7) return;
+      if (NB.frozen == null) document.getElementById("nbFix").click();
+      atlas.push(snap()); save(atlas); list();
     });
+    document.getElementById("nbClear").addEventListener("click", () => { atlas = []; save(atlas); list(); });
+    const dl = (blob, name) => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); };
+    document.getElementById("nbDown").addEventListener("click", async () => {
+      const plates = atlas.length ? atlas : [snap()];
+      for (let i = 0; i < plates.length; i++) {
+        const pl = plates[i], c = renderPlate(pl, 2400, 3000);
+        await new Promise(r => c.toBlob(b => { if (b) dl(b, `atlas-${String(i + 1).padStart(2, "0")}-${slug(pl.place)}-${pl.iso}.png`); setTimeout(r, 400); }, "image/png"));
+      }
+      const ficha = ["Atlas das nebulosas · O que é a loucura? · Luiza Jesus do Prado", "Série fixa: cada prancha é um lugar numa data e não muda depois de escolhida. Impressão 4:5 (2400 × 3000 px).", ""]
+        .concat(plates.map((pl, i) => `${String(i + 1).padStart(2, "0")} · ${pl.place} · ${pl.date} · substâncias: ${pl.subs.join(", ") || "n/d"}`)).join("\n");
+      dl(new Blob([ficha], { type: "text/plain" }), `atlas-ficha-${new Date().toISOString().slice(0, 10)}.txt`);
+    });
+    NB.vary = true;
+    document.getElementById("nbVary").addEventListener("click", e => { NB.vary = !NB.vary; e.currentTarget.setAttribute("aria-pressed", String(NB.vary)); e.currentTarget.textContent = NB.vary ? "cores: variando" : "cores: do lugar"; });
+    document.getElementById("nbFix").addEventListener("click", e => { const on = NB.frozen == null; NB.frozen = on ? performance.now() : null; e.currentTarget.setAttribute("aria-pressed", String(on)); e.currentTarget.textContent = on ? "imagem fixa · soltar" : "fixar imagem"; });
+    // --- light room: what moves the nebula
+    let mic = null;
+    const driveTxt = { calma: "A nebulosa se move devagar, sem estímulo.", lugar: "A luz pulsa no ritmo do lugar: quanto maior a carga, mais rápido e mais forte o pulso.", corpo: "O microfone mede só o volume do som na sala, para mover a nebulosa. Nada é gravado nem enviado." };
+    function setDrive(d) {
+      document.querySelectorAll("#nbDrive .btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.d === d)));
+      document.getElementById("nbDriveTxt").textContent = driveTxt[d];
+      if (mic && d !== "corpo") { mic.stream.getTracks().forEach(t => t.stop()); mic = null; }
+      if (d === "calma") { NB.drive = null; NB.speed = 1; NB.m = 1; }
+      if (d === "lugar") NB.drive = () => { const ld = G.src && !(G.src.pl && G.src.pl.world) ? placeLoad(G.src) : 0.5, hz = 0.12 + 0.5 * ld, ph = performance.now() / 1000 * hz * Math.PI * 2;
+        NB.m = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(ph)); NB.speed = 0.8 + 2.2 * ld; };
+      if (d === "corpo") {
+        NB.drive = () => { if (!mic) return; mic.an.getFloatTimeDomainData(mic.buf); let e = 0; for (const v of mic.buf) e += v * v; const rms = Math.sqrt(e / mic.buf.length);
+          mic.lv += (Math.min(1, rms * 12) - mic.lv) * 0.08; NB.m = 0.45 + 0.55 * mic.lv; NB.speed = 0.6 + 6 * mic.lv; };
+        navigator.mediaDevices && navigator.mediaDevices.getUserMedia({ audio: true }).then(st => { const ac = new (window.AudioContext || window.webkitAudioContext)(), an = ac.createAnalyser(); an.fftSize = 1024;
+          ac.createMediaStreamSource(st).connect(an); mic = { stream: st, an, buf: new Float32Array(an.fftSize), lv: 0 }; }).catch(() => { document.getElementById("nbDriveTxt").textContent = "Sem acesso ao microfone neste navegador."; });
+      }
+    }
+    document.querySelectorAll("#nbDrive .btn").forEach(b => b.addEventListener("click", () => setDrive(b.dataset.d))); setDrive("calma");
+    // --- projection: crop for the Masks (oval) or a round water vessel, full screen
+    const sq = NB.cv.parentElement;
+    document.querySelectorAll("#nbCut .btn").forEach(b => b.addEventListener("click", () => {
+      document.querySelectorAll("#nbCut .btn").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+      const c = b.dataset.c; NB.cv.style.clipPath = c === "oval" ? "ellipse(30% 46% at 50% 50%)" : c === "circulo" ? "circle(46% at 50% 50%)" : "";
+    }));
+    document.getElementById("nbFull").addEventListener("click", () => { const el = sq; (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el); });
+    document.addEventListener("fullscreenchange", () => requestAnimationFrame(nbResize));
   } else show(VIEWS.includes(start) || OLD_VIEWS.includes(start) ? start : "agora");
   if (LIVE) { const el = document.getElementById("fonteData"); if (el) el.textContent = `Coleta automática ao longo do dia. Última: ${LIVE.atualizado.replace("T", " ").replace("Z", " UTC")}. ${Object.entries(LIVE.fontes || {}).map(([k, v]) => `${k}: ${v}`).join(" · ")}.`; }
   mResize(); aResize(); new ResizeObserver(() => { if (view === "mapa") mResize(); }).observe(M.cv); new ResizeObserver(() => { if (view === "agora") aResize(); }).observe(A.cv); new ResizeObserver(() => { if (view === "figuras" && NB.mode === "neb") nbResize(); }).observe(NB.cv);
@@ -2892,13 +2993,13 @@ window.GUIDE = { titulo: T[0][0], intro: T[1][0], rodape: FOOT[0], groups: [{ no
 // "carga 0,62" matches the template "carga {#}". Composed sentences fall back to phrase-by-phrase replacement.
 (() => {
   if (window.I18N_DICT) { Object.assign(window.I18N_DICT.en, {
-    "prancha do atlas": "atlas plate", "fixar imagem": "fix the image", "imagem fixa · soltar": "image fixed · release", "baixar prancha": "download plate", "Nebulosas": "Nebulae",
+    "prancha do atlas": "atlas plate", "atlas · pranchas fixas": "atlas · fixed plates", "adicionar ao atlas": "add to the atlas", "adicionar ao atlas ({#}/{#})": "add to the atlas ({#}/{#})", "baixar pranchas e ficha": "download plates and record", "limpar atlas": "clear atlas", "tirar": "remove", "sala de luz · projeção": "light room · projection", "parada": "still", "movida pelo lugar": "moved by the place", "movida pelo corpo": "moved by the body", "recorte: inteiro": "crop: full", "recorte: oval (Máscaras)": "crop: oval (Masks)", "recorte: círculo (água)": "crop: circle (water)", "tela cheia para projetar": "full screen for projection", "O Atlas das nebulosas é uma série fixa de 5 a 7 pranchas, para impressão ou caixa de luz. Cada prancha é um lugar numa data e não muda depois de escolhida. Escolha o lugar, fixe a imagem e adicione ao atlas.": "The Atlas of nebulae is a fixed series of 5 to 7 plates, for print or lightbox. Each plate is a place on a date and does not change once chosen. Choose the place, fix the image and add it to the atlas.", "Na instalação, a nebulosa é projetada através de água ou vidro, e também sobre as Máscaras e como fundo do mapping. Ela pode ser movida pelas frequências do lugar ou pelo corpo de quem está na sala.": "In the installation, the nebula is projected through water or glass, and also onto the Masks and as the background of the mapping. It can be moved by the frequencies of the place or by the body of whoever is in the room.", "A nebulosa se move devagar, sem estímulo.": "The nebula moves slowly, with no stimulus.", "A luz pulsa no ritmo do lugar: quanto maior a carga, mais rápido e mais forte o pulso.": "The light pulses at the rhythm of the place: the higher the load, the faster and stronger the pulse.", "O microfone mede só o volume do som na sala, para mover a nebulosa. Nada é gravado nem enviado.": "The microphone only measures the sound level in the room, to move the nebula. Nothing is recorded or sent.", "Sem acesso ao microfone neste navegador.": "No microphone access in this browser.", "cores: variando": "colours: varying", "cores: do lugar": "colours: of the place", "fixar imagem": "fix the image", "imagem fixa · soltar": "image fixed · release", "baixar prancha": "download plate", "Nebulosas": "Nebulae",
     "Escolha um lugar, fixe a imagem quando ela estiver como você quer e baixe a prancha em alta resolução (4:5, 2400 × 3000 px). O nome do arquivo guarda o lugar e a data.": "Choose a place, fix the image when it looks the way you want and download the plate in high resolution (4:5, 2400 × 3000 px). The file name keeps the place and the date.",
-    "Gerador do Atlas das nebulosas. Cada nebulosa é um lugar numa data: a cor da nuvem principal, dos filamentos e das manchas vem das substâncias que mais pesam ali, e a densidade, a torção, o brilho e os pontos de luz vêm dos dados do dia. Cada prancha baixada é uma imagem fixa, com lugar e data.": "Generator for the Atlas of nebulae. Each nebula is a place on a date: the colours of the main cloud, the filaments and the patches come from the substances that weigh most there, and the density, twist, brightness and points of light come from that day's data. Each downloaded plate is a fixed image, with place and date." });
+    "As nebulosas têm dois destinos no projeto. O Atlas: uma série fixa de 5 a 7 pranchas, impressas ou em caixa de luz, cada uma um lugar numa data. A sala de luz: a nebulosa projetada através de água ou vidro, sobre as Máscaras e como fundo do mapping, movida pelas frequências do lugar ou pelo corpo de quem está na sala. Cor, densidade, torção, brilho e pontos de luz vêm das substâncias e dos dados do lugar naquele dia.": "The nebulae have two purposes in the project. The Atlas: a fixed series of 5 to 7 plates, printed or in lightboxes, each one a place on a date. The light room: the nebula projected through water or glass, onto the Masks and as the background of the mapping, moved by the frequencies of the place or by the body of whoever is in the room. Colour, density, twist, brightness and points of light come from the substances and data of the place on that day." });
     Object.assign(window.I18N_DICT.es, {
-    "prancha do atlas": "lámina del atlas", "fixar imagem": "fijar la imagen", "imagem fixa · soltar": "imagen fija · soltar", "baixar prancha": "descargar lámina", "Nebulosas": "Nebulosas",
+    "prancha do atlas": "lámina del atlas", "atlas · pranchas fixas": "atlas · láminas fijas", "adicionar ao atlas": "añadir al atlas", "adicionar ao atlas ({#}/{#})": "añadir al atlas ({#}/{#})", "baixar pranchas e ficha": "descargar láminas y ficha", "limpar atlas": "vaciar atlas", "tirar": "quitar", "sala de luz · projeção": "sala de luz · proyección", "parada": "quieta", "movida pelo lugar": "movida por el lugar", "movida pelo corpo": "movida por el cuerpo", "recorte: inteiro": "recorte: entero", "recorte: oval (Máscaras)": "recorte: óvalo (Máscaras)", "recorte: círculo (água)": "recorte: círculo (agua)", "tela cheia para projetar": "pantalla completa para proyectar", "O Atlas das nebulosas é uma série fixa de 5 a 7 pranchas, para impressão ou caixa de luz. Cada prancha é um lugar numa data e não muda depois de escolhida. Escolha o lugar, fixe a imagem e adicione ao atlas.": "El Atlas de las nebulosas es una serie fija de 5 a 7 láminas, para impresión o caja de luz. Cada lámina es un lugar en una fecha y no cambia una vez elegida. Elige el lugar, fija la imagen y añádela al atlas.", "Na instalação, a nebulosa é projetada através de água ou vidro, e também sobre as Máscaras e como fundo do mapping. Ela pode ser movida pelas frequências do lugar ou pelo corpo de quem está na sala.": "En la instalación, la nebulosa se proyecta a través de agua o vidrio, y también sobre las Máscaras y como fondo del mapping. Puede moverse con las frecuencias del lugar o con el cuerpo de quien está en la sala.", "A nebulosa se move devagar, sem estímulo.": "La nebulosa se mueve despacio, sin estímulo.", "A luz pulsa no ritmo do lugar: quanto maior a carga, mais rápido e mais forte o pulso.": "La luz pulsa al ritmo del lugar: cuanto mayor la carga, más rápido y más fuerte el pulso.", "O microfone mede só o volume do som na sala, para mover a nebulosa. Nada é gravado nem enviado.": "El micrófono solo mide el volumen del sonido en la sala, para mover la nebulosa. Nada se graba ni se envía.", "Sem acesso ao microfone neste navegador.": "Sin acceso al micrófono en este navegador.", "cores: variando": "colores: variando", "cores: do lugar": "colores: del lugar", "fixar imagem": "fijar la imagen", "imagem fixa · soltar": "imagen fija · soltar", "baixar prancha": "descargar lámina", "Nebulosas": "Nebulosas",
     "Escolha um lugar, fixe a imagem quando ela estiver como você quer e baixe a prancha em alta resolução (4:5, 2400 × 3000 px). O nome do arquivo guarda o lugar e a data.": "Elige un lugar, fija la imagen cuando esté como quieres y descarga la lámina en alta resolución (4:5, 2400 × 3000 px). El nombre del archivo guarda el lugar y la fecha.",
-    "Gerador do Atlas das nebulosas. Cada nebulosa é um lugar numa data: a cor da nuvem principal, dos filamentos e das manchas vem das substâncias que mais pesam ali, e a densidade, a torção, o brilho e os pontos de luz vêm dos dados do dia. Cada prancha baixada é uma imagem fixa, com lugar e data.": "Generador del Atlas de las nebulosas. Cada nebulosa es un lugar en una fecha: los colores de la nube principal, de los filamentos y de las manchas vienen de las sustancias que más pesan allí, y la densidad, la torsión, el brillo y los puntos de luz vienen de los datos del día. Cada lámina descargada es una imagen fija, con lugar y fecha." }); }
+    "As nebulosas têm dois destinos no projeto. O Atlas: uma série fixa de 5 a 7 pranchas, impressas ou em caixa de luz, cada uma um lugar numa data. A sala de luz: a nebulosa projetada através de água ou vidro, sobre as Máscaras e como fundo do mapping, movida pelas frequências do lugar ou pelo corpo de quem está na sala. Cor, densidade, torção, brilho e pontos de luz vêm das substâncias e dos dados do lugar naquele dia.": "Las nebulosas tienen dos destinos en el proyecto. El Atlas: una serie fija de 5 a 7 láminas, impresas o en caja de luz, cada una un lugar en una fecha. La sala de luz: la nebulosa proyectada a través de agua o vidrio, sobre las Máscaras y como fondo del mapping, movida por las frecuencias del lugar o por el cuerpo de quien está en la sala. Color, densidad, torsión, brillo y puntos de luz vienen de las sustancias y los datos del lugar ese día." }); }
   const D = window.I18N_DICT || { en: {}, es: {} }, F = window.I18N_FRAG || { en: [], es: [] };
   const NUM = /\d+(?:[.,:]\d+)*/g, LANGS = ["pt", "en", "es"], LABEL = { pt: "PT", en: "EN", es: "ES" };
   const pick = () => {
