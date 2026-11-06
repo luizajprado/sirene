@@ -2212,6 +2212,7 @@ void main(){
     document.getElementById("gAuto").hidden = true; document.getElementById("nbAtlas").hidden = false;
     VIEWS.splice(0, VIEWS.length, "figuras"); gAuto(false); gMode("neb"); show("figuras");
     document.getElementById("nbRoom").hidden = false;
+    window.__neb = { NB, nbTick, nbResize };
     { const col = document.getElementById("nbAtlas").parentElement; col.prepend(document.getElementById("nbRoom")); col.prepend(document.getElementById("nbAtlas")); }
     const slug = x => String(x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     const T = x => window.trCanvas ? trCanvas(x) : x, today = () => new Date().toLocaleDateString("pt-BR");
