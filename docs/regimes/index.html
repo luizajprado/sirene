@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Regimes de Sanidade · simulação</title>
+<meta name="description" content="Simulação 3D de Regimes de Sanidade: três salas de luz azul, vermelha e de limiar, no projeto O que é a loucura? de Luiza Jesus do Prado.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Single dark look by design: the work is a dark room, so the page stays dark in both themes. */
+:root { --bg: #050508; --fg: #ECE8F2; --dim: #9A96A8; --line: rgba(255,255,255,.14); --panel: rgba(8,8,12,.78); --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace; color-scheme: dark; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font-family: var(--mono); overflow: hidden; }
+[hidden] { display: none !important; }
+body.clean .ui { display: none !important; }
+#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.ui { position: fixed; z-index: 2; }
+#top { left: max(16px, env(safe-area-inset-left)); top: 16px; right: max(16px, env(safe-area-inset-right)); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; pointer-events: none; }
+#top > * { pointer-events: auto; }
+#top > div:first-child { background: var(--panel); padding: 10px 14px; border: 1px solid var(--line); }
+h1 { margin: 0; font-size: clamp(18px, 2.4vw, 28px); letter-spacing: .08em; font-weight: 600; text-transform: uppercase; }
+.k { color: var(--dim); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; margin-top: 6px; }
+#lng { display: flex; gap: 4px; }
+button { font: inherit; font-size: 12px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); padding: 8px 12px; cursor: pointer; letter-spacing: .04em; }
+button[aria-pressed="true"] { background: var(--fg); color: #08080b; }
+button:focus-visible { outline: 2px solid #8fb0ff; outline-offset: 2px; }
+#desk { left: max(16px, env(safe-area-inset-left)); bottom: 16px; width: min(440px, calc(100% - 32px)); background: var(--panel); border: 1px solid var(--line); padding: 16px; backdrop-filter: blur(6px); }
+#rooms { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+#desk h2 { margin: 0 0 6px; font-size: 15px; letter-spacing: .06em; }
+#desk p { margin: 0 0 8px; font-size: 12.5px; line-height: 1.55; color: #CFCBD8; }
+#desk .dim { color: var(--dim); font-size: 11px; }
+.row { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 12px; color: var(--dim); }
+input[type=range] { flex: 1; accent-color: #c24bd8; }
+#hint { right: max(16px, env(safe-area-inset-right)); bottom: 16px; color: var(--dim); font-size: 11px; text-align: right; max-width: 240px; }
+#cue { position: fixed; z-index: 2; right: max(16px, env(safe-area-inset-right)); top: 80px; color: var(--dim); font-size: 11px; text-align: right; letter-spacing: .08em; }
+@media (max-width: 640px) { #hint { display: none; } #desk { padding: 12px; } #desk p { font-size: 12px; } #cue { top: 96px; } }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="c" aria-label="Simulação 3D das três salas de Regimes de Sanidade"></canvas>
+<div id="top" class="ui">
+  <div><h1>Regimes de Sanidade</h1><div class="k" data-t="sub">O que é a loucura? · simulação 3D · proposta</div></div>
+  <div id="lng" role="group" aria-label="Idioma"><button data-l="pt">PT</button><button data-l="en">EN</button><button data-l="es">ES</button></div>
+</div>
+<div id="cue" class="ui" aria-live="polite"></div>
+<div id="desk" class="ui">
+  <div id="rooms" role="group" aria-label="Salas">
+    <button data-r="0" aria-pressed="true">1 · <span data-t="rm">manicômio</span></button>
+    <button data-r="1" aria-pressed="false">2 · <span data-t="r0">azul</span></button>
+    <button data-r="2" aria-pressed="false">3 · <span data-t="r1">vermelho</span></button>
+    <button data-r="3" aria-pressed="false">4 · <span data-t="r2">limiar</span></button>
+    <button data-r="4" aria-pressed="false" data-t="all">percurso inteiro</button>
+    <button id="tour" aria-pressed="false" data-t="tour">percorrer</button>
+  </div>
+  <h2 id="rt"></h2>
+  <p id="rd"></p>
+  <div class="row" id="sndRow" hidden><button id="snd" aria-pressed="false" data-t="listen">ouvir as frases</button><span class="dim" data-t="listenNote">vozes do seu navegador</span></div>
+  <div class="row" id="balRow" hidden><span data-t="blue">azul</span><input id="bal" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="Equilíbrio entre azul e vermelho"><span data-t="red">vermelho</span></div>
+  <div class="dim" id="note"></div>
+</div>
+<div id="hint" class="ui" data-t="hint">Arraste para olhar em volta, role para aproximar. Nenhuma luz pisca: toda mudança leva no mínimo 2 segundos.</div>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+
+// ---------- texts
+const T = {
+  pt: { sub: "O que é a loucura? · simulação 3D · proposta", rm: "manicômio", listen: "ouvir as frases", stop: "parar as vozes", listenNote: "vozes do seu navegador", r0: "azul", r1: "vermelho", r2: "limiar", all: "percurso inteiro", tour: "percorrer", blue: "azul", red: "vermelho",
+    hint: "Arraste para olhar em volta, role para aproximar. Nenhuma luz pisca: toda mudança leva no mínimo 2 segundos.",
+    rooms: [
+      ["Manicômio · o mundo", "Um quarto todo branco, com luz branca e uniforme. Do teto, oito alto-falantes falam ao mesmo tempo, em tons diferentes: frases sobre coisas absurdas e verdadeiras que acontecem no mundo todo, todas com fonte. Quem é o louco: quem ouve, ou o mundo que fala?", "3 a 5 minutos · em pé"],
+      ["Regime azul · vigilância", "Paredes de painéis de LED azul (460 a 470 nm) atrás de difusor, bancos brancos e uma caixa de luz no fundo, como uma tela. É o comprimento de onda que mais suprime a melatonina e aumenta o alerta. A luz respira devagar, como notificações que nunca param.", "6 a 8 minutos · sentado ou em pé"],
+      ["Regime vermelho · repouso", "Luz vermelha (625 a 635 nm) em baixa intensidade, vinda de cima, sobre camas baixas com almofadas, e uma névoa leve. A luz vermelha não suprime a melatonina: o corpo pode desacelerar. Pode-se deitar.", "10 a 15 minutos · deitado ou sentado"],
+      ["Limiar · passagem", "Névoa e quatro feixes lentos, dois azuis e dois vermelhos, que se cruzam e viram magenta. Não há lugar certo: cada pessoa escolhe onde ficar. Na instalação, o equilíbrio entre azul e vermelho segue a carga alostática do mundo, lida no laboratório do projeto.", "tempo livre · em pé, andando"],
+      ["Percurso inteiro", "Quatro salas de 6 por 6 metros, separadas por cortinas de blecaute em zigue-zague. Primeiro o ruído do mundo, depois os regimes. A sanidade, aqui, é a capacidade de transitar entre regimes: vigiar, descansar e escolher o próprio lugar entre os dois.", "cerca de 30 minutos · 8 a 12 pessoas por sala"] ],
+    cue: ["oito vozes ao mesmo tempo", "luz azul · respirando devagar", "luz vermelha · constante", "feixes · ciclo lento", ""],
+    note: "Simulação de proposta. Cores e medidas serão definidas em protótipo." },
+  en: { sub: "What Is Madness? · 3D simulation · proposal", rm: "asylum", listen: "hear the phrases", stop: "stop the voices", listenNote: "your browser\u2019s voices", r0: "blue", r1: "red", r2: "threshold", all: "whole route", tour: "walk through", blue: "blue", red: "red",
+    hint: "Drag to look around, scroll to zoom. No light flashes: every change takes at least 2 seconds.",
+    rooms: [
+      ["Asylum · the world", "An all-white room with flat, even white light. From the ceiling, eight speakers talk at the same time, in different tones: sentences about absurd and true things happening all over the world, each with a source. Who is mad: the one who listens, or the world that speaks?", "3 to 5 minutes · standing"],
+      ["Blue regime · vigilance", "Walls of blue LED panels (460 to 470 nm) behind a diffuser, white benches and a lightbox at the end, like a screen. It is the wavelength that most suppresses melatonin and raises alertness. The light breathes slowly, like notifications that never stop.", "6 to 8 minutes · seated or standing"],
+      ["Red regime · rest", "Low red light (625 to 635 nm) from above, over low beds with cushions, and a light haze. Red light does not suppress melatonin: the body can slow down. Visitors may lie down.", "10 to 15 minutes · lying or seated"],
+      ["Threshold · passage", "Haze and four slow beams, two blue and two red, crossing and turning magenta. There is no right place: each person chooses where to stand. In the installation, the balance between blue and red follows the world's allostatic load, read by the project's lab.", "free time · standing, walking"],
+      ["Whole route", "Four rooms of 6 by 6 metres, separated by zigzag blackout curtains. First the noise of the world, then the regimes. Sanity, here, is the capacity to move between regimes: to stay alert, to rest, and to choose one's own place between the two.", "about 30 minutes · 8 to 12 people per room"] ],
+    cue: ["eight voices at once", "blue light · breathing slowly", "red light · steady", "beams · slow cycle", ""],
+    note: "Proposal simulation. Colours and dimensions will be set in a prototype." },
+  es: { sub: "¿Qué es la locura? · simulación 3D · propuesta", rm: "manicomio", listen: "escuchar las frases", stop: "parar las voces", listenNote: "voces de tu navegador", r0: "azul", r1: "rojo", r2: "umbral", all: "recorrido entero", tour: "recorrer", blue: "azul", red: "rojo",
+    hint: "Arrastra para mirar alrededor, rueda para acercar. Ninguna luz parpadea: todo cambio dura al menos 2 segundos.",
+    rooms: [
+      ["Manicomio · el mundo", "Un cuarto todo blanco, con luz blanca y uniforme. Desde el techo, ocho altavoces hablan al mismo tiempo, en tonos distintos: frases sobre cosas absurdas y verdaderas que pasan en todo el mundo, todas con fuente. ¿Quién es el loco: quien escucha, o el mundo que habla?", "3 a 5 minutos · de pie"],
+      ["Régimen azul · vigilancia", "Paredes de paneles LED azules (460 a 470 nm) tras un difusor, bancos blancos y una caja de luz al fondo, como una pantalla. Es la longitud de onda que más suprime la melatonina y aumenta el alerta. La luz respira despacio, como notificaciones que nunca paran.", "6 a 8 minutos · sentado o de pie"],
+      ["Régimen rojo · reposo", "Luz roja (625 a 635 nm) de baja intensidad, desde arriba, sobre camas bajas con cojines, y una niebla leve. La luz roja no suprime la melatonina: el cuerpo puede desacelerar. Se puede acostar.", "10 a 15 minutos · acostado o sentado"],
+      ["Umbral · paso", "Niebla y cuatro haces lentos, dos azules y dos rojos, que se cruzan y se vuelven magenta. No hay lugar correcto: cada persona elige dónde quedarse. En la instalación, el equilibrio entre azul y rojo sigue la carga alostática del mundo, leída en el laboratorio del proyecto.", "tiempo libre · de pie, caminando"],
+      ["Recorrido entero", "Cuatro salas de 6 por 6 metros, separadas por cortinas de blackout en zigzag. Primero el ruido del mundo, después los regímenes. La cordura, aquí, es la capacidad de transitar entre regímenes: vigilar, descansar y elegir el propio lugar entre ambos.", "unos 30 minutos · 8 a 12 personas por sala"] ],
+    cue: ["ocho voces a la vez", "luz azul · respirando despacio", "luz roja · constante", "haces · ciclo lento", ""],
+    note: "Simulación de propuesta. Colores y medidas se definirán en prototipo." }
+};
+const LANGS = ["pt", "en", "es"];
+let lang = (() => { const q = new URLSearchParams(location.search).get("lang"); let s = null; try { s = localStorage.getItem("lang"); } catch (e) {} return [q, s].find(x => LANGS.includes(x)) || "en"; })();
+let room = 0;
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach(el => { const v = T[lang][el.dataset.t]; if (typeof v === "string") el.textContent = v; });
+  document.querySelectorAll("#lng button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.l === lang)));
+  const r = T[lang].rooms[room]; document.getElementById("rt").textContent = r[0]; document.getElementById("rd").textContent = r[1];
+  document.getElementById("note").textContent = r[2] + " · " + T[lang].note;
+  document.getElementById("cue").textContent = T[lang].cue[room];
+  const sb = document.getElementById("snd"); if (sb) sb.textContent = sb.getAttribute("aria-pressed") === "true" ? T[lang].stop : T[lang].listen;
+}
+document.querySelectorAll("#lng button").forEach(b => b.addEventListener("click", () => { lang = b.dataset.l; try { localStorage.setItem("lang", lang); } catch (e) {} applyLang(); }));
+
+// ---------- renderer
+const canvas = document.getElementById("c");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x020203);
+const camera = new THREE.PerspectiveCamera(55, 1, 0.05, 200);
+const controls = new OrbitControls(camera, canvas); controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI * 0.6; controls.minDistance = 0.6; controls.maxDistance = 30;
+
+const BLUE = new THREE.Color(0x2f5bff), RED = new THREE.Color(0xff2a1f), MAG = new THREE.Color(0xc24bd8);
+const CH = 1.2, RM = 6, WD = 6, HT = 3.5;
+const X = i => CH + i * (RM + CH);          // x start of room i
+const cx = i => X(i) + RM / 2;              // centre x
+const L = 5 * CH + 4 * RM;
+
+// ---------- architecture
+const wallMat = new THREE.MeshStandardMaterial({ color: 0x1a1a20, roughness: .92 });
+const floorMat = new THREE.MeshStandardMaterial({ color: 0x0c0c10, roughness: .35, metalness: .15 });
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(L, WD), floorMat); floor.rotation.x = -Math.PI / 2; floor.position.set(L / 2, 0, 0); floor.receiveShadow = true; scene.add(floor);
+const ceil = new THREE.Mesh(new THREE.PlaneGeometry(L, WD), new THREE.MeshStandardMaterial({ color: 0x0e0e12, roughness: 1 })); ceil.rotation.x = Math.PI / 2; ceil.position.set(L / 2, HT, 0); scene.add(ceil);
+for (const z of [-WD / 2, WD / 2]) { const w = new THREE.Mesh(new THREE.PlaneGeometry(L, HT), wallMat); w.position.set(L / 2, HT / 2, z); w.rotation.y = z < 0 ? 0 : Math.PI; w.receiveShadow = true; scene.add(w); }
+// partition walls with a door gap (chicane simplified to an offset doorway + curtain)
+const curtainMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0d, roughness: 1, side: THREE.DoubleSide });
+function partition(x, doorZ, mat = wallMat) {
+  const g = new THREE.Group(); const dw = 1.0;
+  const a = (WD / 2 + doorZ - dw / 2), b = (WD / 2 - doorZ - dw / 2);
+  const m1 = new THREE.Mesh(new THREE.BoxGeometry(.12, HT, a), mat); m1.position.set(x, HT / 2, -WD / 2 + a / 2); g.add(m1);
+  const m2 = new THREE.Mesh(new THREE.BoxGeometry(.12, HT, b), mat); m2.position.set(x, HT / 2, WD / 2 - b / 2); g.add(m2);
+  const m3 = new THREE.Mesh(new THREE.BoxGeometry(.12, HT - 2.3, dw), mat); m3.position.set(x, 2.3 + (HT - 2.3) / 2, doorZ); g.add(m3);
+  scene.add(g);
+}
+const whiteWall = new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: .5 });
+for (let i = 0; i < 4; i++) { partition(X(i), i % 2 ? -1.8 : 1.8, i === 0 ? whiteWall : wallMat); partition(X(i) + RM, i % 2 ? 1.8 : -1.8, i === 0 ? whiteWall : wallMat); }
+// soft area light made of short-range points, so light stays inside its room
+function softLight(color, intensity, pts, dist = 3.6) { return pts.map(([x, y, z]) => { const l = new THREE.PointLight(color, intensity, dist, 2); l.position.set(x, y, z); scene.add(l); return l; }); }
+// curtains inside chicanes (pleated)
+function curtain(x, z0, z1) { const n = 24, g = new THREE.Group(); for (let k = 0; k < n; k++) { const seg = new THREE.Mesh(new THREE.PlaneGeometry((z1 - z0) / n * 1.15, HT), curtainMat); seg.position.set(x + (k % 2 ? .05 : -.05), HT / 2, z0 + (k + .5) * (z1 - z0) / n); seg.rotation.y = Math.PI / 2 + (k % 2 ? .35 : -.35); g.add(seg); } scene.add(g); }
+for (let i = 0; i < 5; i++) { const x0 = i * (RM + CH); curtain(x0 + .4, -WD / 2, WD / 2 - 1.4); curtain(x0 + .8, -WD / 2 + 1.4, WD / 2); }
+scene.add(new THREE.AmbientLight(0xffffff, 0.015));
+
+// ---------- helpers
+function glowTexture() { const c = document.createElement("canvas"); c.width = c.height = 128; const x = c.getContext("2d"); const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, "rgba(255,255,255,1)"); g.addColorStop(.4, "rgba(255,255,255,.35)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); }
+const GLOW = glowTexture();
+function dotGrid() { const c = document.createElement("canvas"); c.width = 512; c.height = 256; const x = c.getContext("2d"); x.fillStyle = "#0b1a5a"; x.fillRect(0, 0, 512, 256); for (let i = 0; i < 48; i++) for (let j = 0; j < 22; j++) { const g = x.createRadialGradient(6 + i * 10.6, 6 + j * 11.4, 0, 6 + i * 10.6, 6 + j * 11.4, 4); g.addColorStop(0, "#dfe8ff"); g.addColorStop(1, "rgba(80,120,255,0)"); x.fillStyle = g; x.fillRect(i * 10.6, j * 11.4, 12, 12); } x.fillStyle = "rgba(220,235,255,.9)"; x.fillRect(0, 150, 512, 3); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+function person(x, z, h = 1.7, col = 0x08080a, lying = false, rotY = 0) {
+  const g = new THREE.Group(); const m = new THREE.MeshStandardMaterial({ color: col, roughness: .9 });
+  if (lying) { const b = new THREE.Mesh(new THREE.CapsuleGeometry(.17, 1.3, 6, 12), m); b.rotation.z = Math.PI / 2; b.position.y = .55; g.add(b); const hd = new THREE.Mesh(new THREE.SphereGeometry(.12, 16, 12), m); hd.position.set(.85, .58, 0); g.add(hd); }
+  else { const b = new THREE.Mesh(new THREE.CapsuleGeometry(.19, h - .62, 6, 14), m); b.position.y = (h - .62) / 2 + .19; b.castShadow = true; g.add(b); const hd = new THREE.Mesh(new THREE.SphereGeometry(.12, 16, 12), m); hd.position.y = h - .12; hd.castShadow = true; g.add(hd); }
+  g.position.set(x, 0, z); g.rotation.y = rotY; scene.add(g); return g;
+}
+function hazeVolume(x0, density, color) {
+  const n = 70, geo = new THREE.BufferGeometry(), pos = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { pos[i * 3] = x0 + Math.random() * RM; pos[i * 3 + 1] = .3 + Math.random() * (HT - .5); pos[i * 3 + 2] = -WD / 2 + Math.random() * WD; }
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ map: GLOW, size: 3.2, transparent: true, opacity: density, depthWrite: false, blending: THREE.AdditiveBlending, color });
+  const p = new THREE.Points(geo, mat); scene.add(p); return p;
+}
+function beamCone(color, length, radius, opacity) {
+  const geo = new THREE.ConeGeometry(radius, length, 40, 1, true); geo.translate(0, -length / 2, 0); geo.rotateX(-Math.PI / 2);
+  const mat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    uniforms: { uCol: { value: color.clone() }, uOp: { value: opacity }, uLen: { value: length } },
+    vertexShader: `varying float vD; varying vec3 vN; varying vec3 vV; uniform float uLen; void main(){ vD = -position.z / uLen; vec4 mv = modelViewMatrix * vec4(position,1.); vN = normalize(normalMatrix*normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix*mv; }`,
+    fragmentShader: `varying float vD; varying vec3 vN; varying vec3 vV; uniform vec3 uCol; uniform float uOp; void main(){ float edge = pow(abs(dot(vN, vV)), 1.6); float fall = pow(1.0 - clamp(vD,0.,1.), 1.4); gl_FragColor = vec4(uCol * edge * fall * uOp, 1.); }` });
+  return new THREE.Mesh(geo, mat);
+}
+
+// ---------- ROOM 0: asylum (white room, voices)
+const PH = {
+  pt: ["Em 2024, o mundo gastou 2,7 trilhões de dólares em armas.", "Por dia, o mundo joga fora mais de um bilhão de refeições.", "783 milhões de pessoas passam fome.", "O 1% mais rico polui o clima tanto quanto 5 bilhões de pessoas.", "Mais de um bilhão de pessoas vivem com um transtorno mental.", "Os governos gastam, em média, 2% da saúde com saúde mental.", "Mais de 117 milhões de pessoas foram forçadas a deixar suas casas.", "2024 foi o ano mais quente já medido.", "Em 2024, a fortuna dos bilionários cresceu 2 trilhões de dólares.", "Num único hospital psiquiátrico brasileiro, morreram cerca de 60 mil pessoas."],
+  en: ["In 2024, the world spent 2.7 trillion dollars on weapons.", "Every day, the world throws away more than a billion meals.", "783 million people go hungry.", "The richest 1% pollute the climate as much as 5 billion people.", "More than a billion people live with a mental disorder.", "Governments spend, on average, 2% of health budgets on mental health.", "More than 117 million people have been forced from their homes.", "2024 was the hottest year ever measured.", "In 2024, billionaires' fortunes grew by 2 trillion dollars.", "In a single Brazilian psychiatric hospital, around 60,000 people died."],
+  es: ["En 2024, el mundo gastó 2,7 billones de dólares en armas.", "Cada día, el mundo tira más de mil millones de comidas.", "783 millones de personas pasan hambre.", "El 1% más rico contamina el clima tanto como 5.000 millones de personas.", "Más de mil millones de personas viven con un trastorno mental.", "Los gobiernos gastan, en promedio, el 2% de la salud en salud mental.", "Más de 117 millones de personas fueron forzadas a dejar sus casas.", "2024 fue el año más caluroso jamás medido.", "En 2024, la fortuna de los milmillonarios creció 2 billones de dólares.", "En un solo hospital psiquiátrico brasileño murieron unas 60.000 personas."] };
+const rM = { boards: [], speakers: [] };
+{
+  const x0 = X(0);
+  const white = new THREE.MeshStandardMaterial({ color: 0xf2f2f0, roughness: .55 });
+  // white tiled box inside the room (walls, floor, ceiling)
+  const tile = (() => { const c = document.createElement("canvas"); c.width = c.height = 256; const g = c.getContext("2d"); g.fillStyle = "#f4f4f1"; g.fillRect(0, 0, 256, 256); g.strokeStyle = "#d9d9d4"; g.lineWidth = 3; for (let i = 0; i <= 8; i++) { g.beginPath(); g.moveTo(i * 32, 0); g.lineTo(i * 32, 256); g.stroke(); g.beginPath(); g.moveTo(0, i * 32); g.lineTo(256, i * 32); g.stroke(); } const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 2); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+  const tileMat = new THREE.MeshStandardMaterial({ map: tile, roughness: .4 });
+  for (const z of [-WD / 2 + .03, WD / 2 - .03]) { const w = new THREE.Mesh(new THREE.PlaneGeometry(RM, HT), tileMat); w.position.set(x0 + RM / 2, HT / 2, z); w.rotation.y = z < 0 ? 0 : Math.PI; scene.add(w); }
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(RM, WD), new THREE.MeshStandardMaterial({ color: 0xe9e9e6, roughness: .3 })); fl.rotation.x = -Math.PI / 2; fl.position.set(x0 + RM / 2, .005, 0); fl.receiveShadow = true; scene.add(fl);
+  const ce = new THREE.Mesh(new THREE.PlaneGeometry(RM, WD), white); ce.rotation.x = Math.PI / 2; ce.position.set(x0 + RM / 2, HT - .01, 0); scene.add(ce);
+  // flat, even white light from the whole ceiling
+  softLight(0xf4f6ff, 4, [[x0 + 1.7, HT - .5, -1.4], [x0 + 4.3, HT - .5, -1.4], [x0 + 1.7, HT - .5, 1.4], [x0 + 4.3, HT - .5, 1.4]], 4.2);
+  // eight ceiling speakers
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) { const sp = new THREE.Mesh(new THREE.CylinderGeometry(.16, .16, .04, 28), new THREE.MeshStandardMaterial({ color: 0xdedede, roughness: .7 })); sp.position.set(x0 + .9 + i * 1.4, HT - .03, j ? 1.4 : -1.4); scene.add(sp); rM.speakers.push(sp); }
+  // phrases appear on the walls as faint grey type, overlapping, fading in and out
+  for (let k = 0; k < 6; k++) {
+    const c = document.createElement("canvas"); c.width = 1024; c.height = 128; const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+    const m = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0, depthWrite: false });
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(4.2, .52), m);
+    const side = k % 2 ? 1 : -1; plane.position.set(x0 + 1.4 + (k % 3) * 1.6, .7 + (k % 3) * .75 + (k > 2 ? .35 : 0), side * (WD / 2 - .05)); plane.rotation.y = side < 0 ? 0 : Math.PI; scene.add(plane);
+    rM.boards.push({ c, tex, m, idx: k, t0: k * 2.7 });
+  }
+  person(x0 + 2.4, .3, 1.7, 0x6a6a70, false, .4); person(x0 + 3.8, -.9, 1.62, 0x6a6a70, false, -1.1); person(x0 + 4.6, 1.2, 1.76, 0x6a6a70, false, 2.6);
+}
+function drawBoard(b, text) { const g = b.c.getContext("2d"); g.clearRect(0, 0, 1024, 128); g.fillStyle = "#3a3a3e"; g.font = "500 44px 'IBM Plex Mono', monospace"; g.textBaseline = "middle"; let s = text; while (g.measureText(s).width > 1000 && s.length > 4) s = s.slice(0, -2); if (s !== text) s = s.slice(0, -1) + "…"; g.fillText(s, 10, 64); b.tex.needsUpdate = true; }
+// voices: the browser speaks the phrases with different pitches and rates (one engine queues them; the installation uses eight speakers at once)
+let speaking = false;
+function speakLoop() {
+  if (!speaking || !window.speechSynthesis) return;
+  const list = PH[lang], txt = list[Math.floor(Math.random() * list.length)];
+  const u = new SpeechSynthesisUtterance(txt); u.lang = { pt: "pt-BR", en: "en-GB", es: "es-ES" }[lang];
+  const vs = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith(lang)); if (vs.length) u.voice = vs[Math.floor(Math.random() * vs.length)];
+  u.pitch = .4 + Math.random() * 1.4; u.rate = .75 + Math.random() * .6; u.volume = .8;
+  u.onend = () => setTimeout(speakLoop, 150); speechSynthesis.speak(u);
+}
+const sndBtn = document.getElementById("snd");
+sndBtn.addEventListener("click", () => { speaking = !speaking; sndBtn.setAttribute("aria-pressed", String(speaking)); sndBtn.textContent = speaking ? T[lang].stop : T[lang].listen; if (speaking) speakLoop(); else if (window.speechSynthesis) speechSynthesis.cancel(); });
+
+// ---------- ROOM 1: blue regime (vigilance)
+const r1 = { lights: [], mats: [] };
+{
+  const x0 = X(1), tex = dotGrid();
+  for (const z of [-WD / 2 + .02, WD / 2 - .02]) {
+    const pm = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 1.6, roughness: 1 });
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(RM - .6, 2.5), pm); p.position.set(cx(1), 1.35, z); p.rotation.y = z < 0 ? 0 : Math.PI; scene.add(p); r1.mats.push(pm);
+    r1.lights.push(...softLight(BLUE, 5, [[X(1) + 1.6, 1.4, z * .8], [X(1) + 3, 1.4, z * .8], [X(1) + 4.4, 1.4, z * .8]], 3.4));
+  }
+  // lightbox at the far wall
+  const lbm = new THREE.MeshStandardMaterial({ color: 0, emissive: 0xdde8ff, emissiveIntensity: 3.2 });
+  const lb = new THREE.Mesh(new THREE.PlaneGeometry(.9, 2.1), lbm); lb.position.set(x0 + RM - .08, 1.05, 0); lb.rotation.y = -Math.PI / 2; scene.add(lb); r1.mats.push(lbm);
+  r1.lights.push(...softLight(0x9fbaff, 6, [[x0 + RM - 1.3, 1.1, 0]], 3.2));
+
+  const bm = new THREE.MeshStandardMaterial({ color: 0xe8eeff, roughness: .5 });
+  for (const [bx, bz] of [[1.0, -2.1], [3.4, -2.1], [1.0, 2.1], [3.4, 2.1]]) { const b = new THREE.Mesh(new RoundedBoxGeometry(1.2, .45, .6, 3, .04), bm); b.position.set(x0 + bx + .6, .225, bz); b.castShadow = b.receiveShadow = true; scene.add(b); }
+  person(x0 + 2.6, -.2, 1.74, 0x07070a, false, .3); person(x0 + 1.5, -2.1, 1.25, 0x07070a); person(x0 + 4.0, 2.1, 1.25, 0x07070a); person(x0 + 4.6, -2.0, 1.25, 0x07070a);
+}
+// ---------- ROOM 2: red regime (rest)
+const r2 = { spots: [], mats: [], haze: null };
+{
+  const x0 = X(2);
+  const platMat = new THREE.MeshStandardMaterial({ color: 0x3a1210, roughness: .95 });
+  const cushMat = new THREE.MeshStandardMaterial({ color: 0x5a1c18, roughness: 1 });
+  for (const [bx, bz] of [[.6, -2.3], [.6, .4], [3.4, -2.3], [3.4, .4]]) {
+    const p = new THREE.Mesh(new RoundedBoxGeometry(2.0, .35, 1.9, 4, .08), platMat); p.position.set(x0 + bx + 1.0, .175, bz + .95); p.castShadow = p.receiveShadow = true; scene.add(p);
+    for (let k = 0; k < 3; k++) { const c = new THREE.Mesh(new RoundedBoxGeometry(.7, .22, .5, 4, .1), cushMat); c.position.set(x0 + bx + .4 + k * .62, .45, bz + .3 + (k % 2) * .9); c.rotation.y = (k - 1) * .4; c.castShadow = true; scene.add(c); }
+  }
+  for (const dx of [1.6, 4.4]) for (const dz of [-1.35, 1.35]) {
+    const s = new THREE.SpotLight(RED, 16, 9, .62, .65, 1.6); s.position.set(x0 + dx, HT - .05, dz); s.target.position.set(x0 + dx, 0, dz); s.castShadow = true; s.shadow.mapSize.set(512, 512); scene.add(s, s.target); r2.spots.push(s);
+    const cone = beamCone(RED, HT - .1, 1.25, .09); cone.position.set(x0 + dx, HT - .05, dz); cone.lookAt(x0 + dx, 0, dz); scene.add(cone);
+    const f = new THREE.Mesh(new THREE.CylinderGeometry(.14, .14, .08, 20), new THREE.MeshStandardMaterial({ color: 0, emissive: RED, emissiveIntensity: 4 })); f.position.set(x0 + dx, HT - .04, dz); scene.add(f);
+  }
+  const lbm = new THREE.MeshStandardMaterial({ color: 0, emissive: 0xff5a4a, emissiveIntensity: 1.5 }); const lb = new THREE.Mesh(new THREE.PlaneGeometry(.9, 2.1), lbm); lb.position.set(x0 + RM - .08, 1.05, -.6); lb.rotation.y = -Math.PI / 2; scene.add(lb); r2.mats.push(lbm);
+  softLight(RED, 4, [[x0 + RM - 1.3, 1.1, -.6]], 3);
+  r2.haze = hazeVolume(x0, .035, RED);
+  person(x0 + 1.4, -1.0, 0, 0x060607, true, .2); person(x0 + 4.4, 1.6, 0, 0x060607, true, -.4); person(x0 + 2.0, 1.3, 0, 0x060607, true, 2.9);
+  person(x0 + 3.0, -.2, 1.68, 0x060607, false, -.6);
+}
+// ---------- ROOM 3: threshold
+const r3 = { beams: [], haze: null };
+{
+  const x0 = X(3);
+  const defs = [[.4, -2.6, BLUE, 0], [5.6, -2.6, RED, 1.4], [.4, 2.6, RED, 2.8], [5.6, 2.6, BLUE, 4.2]];
+  for (const [sx, sz, col, ph] of defs) {
+    const pos = new THREE.Vector3(x0 + sx, HT - .15, sz);
+    const s = new THREE.SpotLight(col, 60, 14, .2, .5, 1.3); s.position.copy(pos); scene.add(s, s.target);
+    const cone = beamCone(col, 7.5, .9, .5); cone.position.copy(pos); scene.add(cone);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(.1, 16, 12), new THREE.MeshStandardMaterial({ color: 0, emissive: col, emissiveIntensity: 5 })); head.position.copy(pos); scene.add(head);
+    r3.beams.push({ s, cone, pos, col: col.clone(), ph, base: col === BLUE ? "b" : "r", head });
+  }
+  r3.haze = hazeVolume(x0, .06, new THREE.Color(0x9a7ab0));
+  person(x0 + 1.8, .6, 1.72, 0x050506, false, 1.2); person(x0 + 3.1, -.4, 1.66, 0x050506, false, -.8); person(x0 + 4.3, .9, 1.78, 0x050506, false, 2.2); person(x0 + 5.0, -1.6, 1.6, 0x050506, false, -2);
+}
+
+// ---------- post
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), .7, .6, .55); composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+// ---------- views
+const VIEWS = [
+  { pos: [X(0) + .4, 1.6, 1.6], tgt: [X(0) + RM - .5, 1.4, -.8] },
+  { pos: [X(1) + .4, 1.6, -.4], tgt: [X(1) + RM - .5, 1.3, 0] },
+  { pos: [X(2) + .5, 1.55, -2.4], tgt: [X(2) + RM - .6, .7, .6] },
+  { pos: [X(3) + .3, 1.6, -.2], tgt: [X(3) + RM - .5, 1.6, .2] },
+  { pos: [L / 2, 17, 11.5], tgt: [L / 2, 0, 0] } ];
+let fly = null;
+function goRoom(i, instant = false) {
+  room = i; document.querySelectorAll("#rooms [data-r]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.r === i)));
+  document.getElementById("balRow").hidden = i !== 3; document.getElementById("sndRow").hidden = i !== 0; applyLang();
+  const v = VIEWS[i]; const to = { p: new THREE.Vector3(...v.pos), t: new THREE.Vector3(...v.tgt) };
+  if (instant) { camera.position.copy(to.p); controls.target.copy(to.t); controls.update(); return; }
+  fly = { fromP: camera.position.clone(), fromT: controls.target.clone(), to, t0: performance.now(), d: 1600 };
+}
+document.querySelectorAll("#rooms [data-r]").forEach(b => b.addEventListener("click", () => { stopTour(); goRoom(+b.dataset.r); }));
+// tour: walks through the three rooms, staying in each
+let tour = null;
+const tourBtn = document.getElementById("tour");
+function stopTour() { tour = null; tourBtn.setAttribute("aria-pressed", "false"); }
+tourBtn.addEventListener("click", () => { if (tour) return stopTour(); tour = { i: 0, t0: performance.now() }; tourBtn.setAttribute("aria-pressed", "true"); goRoom(0); });
+const bal = document.getElementById("bal");
+
+// ---------- animate: every change is slow (minimum 2 s); nothing flashes
+const clock = new THREE.Clock(); let tSim = 0;
+function frame() {
+  const dt = Math.min(clock.getDelta(), .05); if (!window.__freeze) tSim += dt; const t = window.__freeze != null ? window.__freeze : tSim;
+  // room 1: slow breathing between 70% and 100% over 8 s, plus a gentle "notification" swell every 20 s that rises over 3 s
+  const breath = .85 + .15 * Math.sin(t * Math.PI * 2 / 8), swell = Math.max(0, Math.sin(Math.max(0, (t % 20) - 14) * Math.PI / 6)) * .25;
+  r1.mats.forEach((m, i) => m.emissiveIntensity = (i < 2 ? 1.6 : 3.2) * (breath + swell));
+  r1.lights.forEach((l, i) => l.intensity = (i < 6 ? 5 : 6) * (breath + swell));
+  // room 2: steady, a very slow 30 s drift of the haze
+  if (r2.haze) r2.haze.rotation.y = Math.sin(t / 30) * .02;
+  // room 3: beams sweep in slow figure-eights (40 s cycle); balance slider shifts blue vs red
+  const b = +bal.value;
+  r3.beams.forEach(o => {
+    const a = t * Math.PI * 2 / 40 + o.ph;
+    const tgt = new THREE.Vector3(cx(3) + Math.sin(a) * 2.4, 0, Math.sin(a * 2) * 1.8);
+    o.s.target.position.copy(tgt); o.cone.lookAt(tgt);
+    const w = o.base === "b" ? (1 - b) * 2 : b * 2;
+    o.s.intensity = 60 * w; o.cone.material.uniforms.uOp.value = .5 * w; o.head.material.emissiveIntensity = 5 * w;
+  });
+  r3.haze.rotation.y = Math.sin(t / 25) * .03;
+  // asylum: each wall phrase fades in over 2 s, holds, fades out over 2 s, on its own clock
+  rM.boards.forEach(b => { const cyc = 9 + b.idx * 1.3, u = ((t + b.t0) % cyc) / cyc, k = Math.floor((t + b.t0) / cyc);
+    if (b.k !== k || b.lang !== lang) { b.k = k; b.lang = lang; const list = PH[lang]; drawBoard(b, list[(k * 3 + b.idx * 7) % list.length]); }
+    b.m.opacity = Math.min(1, u * cyc / 2, (1 - u) * cyc / 2) * .85; });
+  // camera flight + tour
+  if (fly) { const k = Math.min(1, (performance.now() - fly.t0) / fly.d), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    camera.position.lerpVectors(fly.fromP, fly.to.p, e); controls.target.lerpVectors(fly.fromT, fly.to.t, e); if (k >= 1) fly = null; }
+  if (tour && performance.now() - tour.t0 > 12000) { tour.i++; tour.t0 = performance.now(); if (tour.i > 3) { stopTour(); goRoom(4); } else goRoom(tour.i); }
+  if (tour && !fly) { const r = (performance.now() - tour.t0) / 12000; const v = VIEWS[tour.i]; camera.position.x = v.pos[0] + r * 1.6; }
+  controls.update(); composer.render(); window.__frames = (window.__frames || 0) + 1; requestAnimationFrame(frame);
+}
+function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); composer.setSize(w, h); bloom.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+addEventListener("resize", resize); resize();
+const startRoom = (() => { const r = new URLSearchParams(location.search).get("sala"); return ["0", "1", "2", "3", "4"].includes(r) ? +r : 4; })();
+if (new URLSearchParams(location.search).get("clean")) document.body.classList.add("clean");
+goRoom(startRoom, true); applyLang(); frame();
+window.__regimes = { goRoom, bal };
+</script>
+</body>
+</html>
